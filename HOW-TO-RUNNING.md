@@ -144,6 +144,10 @@ Menjaga source code CodeIgniter 4 berada di luar akses publik untuk keamanan mak
      $pathsPath = FCPATH . '../mmc-app/app/Config/Paths.php';
      ```
 
+Contoh domainnya:
+public_html/mm.rasxmedia.my.id/public/
+jadi di depan domain harus ada /public nya.
+
 #### 📂 Metode B: Direct Subdomain / Root Hosting dengan `.htaccess`
 Jika menggunakan subdomain (misal: `club.sman1tamansari.sch.id`) atau root folder terpisah:
 
