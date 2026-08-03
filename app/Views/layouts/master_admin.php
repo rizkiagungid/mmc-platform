@@ -1,3 +1,4 @@
+<?php helper(['pwa', 'setting']); ?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -19,6 +20,10 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
+
+    <!-- PWA Meta Tags -->
+    <?php helper('pwa'); ?>
+    <?= pwa_meta_tags() ?>
 </head>
 <body class="d-flex flex-column flex-lg-row">
 
@@ -30,7 +35,7 @@
         </div>
 
         <a href="<?= base_url('dashboard') ?>" class="d-flex align-items-center gap-2 mb-4 text-white text-decoration-none px-2 font-heading">
-            <img src="<?= base_url('assets/logo-mm-2023.png') ?>" alt="MMC Logo" style="height: 38px;" class="rounded-2 p-1 bg-white">
+            <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="MMC Logo" style="height: 38px;" class="rounded-2 p-1 bg-white">
             <div class="d-flex flex-column">
                 <span class="fs-6 fw-bold lh-1 text-white">MMC <span class="text-danger">Platform</span></span>
                 <span class="text-secondary small font-monospace" style="font-size: 0.7rem;">SMAN 1 Tamansari</span>
@@ -60,9 +65,15 @@
                     <i class="fa-solid fa-list-check text-primary me-1"></i> Tugas & Proyek
                 </a>
 
+                  <a href="<?= base_url('admin/learning') ?>" class="sidebar-link <?= (url_is('admin/learning*')) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-book-bookmark text-danger me-1"></i> Materi Pembelajaran
+                </a>
+                
                 <a href="<?= base_url('admin/users') ?>" class="sidebar-link <?= (url_is('admin/users*')) ? 'active' : '' ?>">
                     <i class="fa-solid fa-users-gear text-success me-1"></i> Manajemen Anggota
                 </a>
+
+                
 
                 <div class="px-2 mt-3 mb-2">
                     <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">WEBSITE CMS</span>
@@ -130,6 +141,10 @@
 
                 <a href="<?= base_url('member/tasks') ?>" class="sidebar-link <?= (url_is('member/tasks*')) ? 'active' : '' ?>">
                     <i class="fa-solid fa-file-arrow-up text-info me-1"></i> Tugas Saya
+                </a>
+
+                <a href="<?= base_url('member/learning') ?>" class="sidebar-link <?= (url_is('member/learning*')) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-book-bookmark text-danger me-1"></i> Materi Pembelajaran
                 </a>
             <?php endif; ?>
 
@@ -282,5 +297,50 @@
     </script>
 
     <?= $this->renderSection('scripts') ?>
+
+    <!-- PWA Install Banner (Android / Chrome / Edge) -->
+    <div id="pwaInstallBanner" class="position-fixed bottom-0 start-50 translate-middle-x mb-3 p-3 rounded-3 bg-dark border border-danger shadow-lg text-white style-tiny z-3" style="display: none; max-width: 480px; width: 92%;">
+        <div class="d-flex align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <img src="<?= base_url('assets/logo-mm-2023.png') ?>" alt="MMC Logo" style="height: 32px;" class="bg-white p-1 rounded-2">
+                <div>
+                    <div class="fw-bold">Install MMC Platform</div>
+                    <div class="text-secondary style-tiny">Akses cepat seperti aplikasi native di smartphone.</div>
+                </div>
+            </div>
+            <div class="d-flex gap-1 text-nowrap">
+                <button class="btn btn-sm btn-red px-3" onclick="triggerPwaInstall()">Install</button>
+                <button class="btn btn-sm btn-outline-light px-2" onclick="dismissPwaInstallBanner()">Nanti</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PWA Install Helper Banner (iOS Safari) -->
+    <div id="pwaIosBanner" class="position-fixed bottom-0 start-50 translate-middle-x mb-3 p-3 rounded-3 bg-dark border border-danger shadow-lg text-white style-tiny z-3" style="display: none; max-width: 480px; width: 92%;">
+        <div class="d-flex align-items-center justify-content-between gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <img src="<?= base_url('assets/logo-mm-2023.png') ?>" alt="MMC Logo" style="height: 32px;" class="bg-white p-1 rounded-2">
+                <div>
+                    <div class="fw-bold text-white">Install MMC Platform (iOS)</div>
+                    <div class="text-secondary style-tiny">Tekan tombol <i class="fa-solid fa-arrow-up-from-bracket text-info"></i> Share lalu pilih <strong>'Tambah ke Layar Utama'</strong>.</div>
+                </div>
+            </div>
+            <button class="btn btn-sm btn-outline-light px-2 text-nowrap" onclick="dismissPwaInstallBanner()">Mengerti</button>
+        </div>
+    </div>
+
+    <!-- PWA Update Available Toast -->
+    <div id="pwaUpdateToast" class="position-fixed bottom-0 end-0 m-3 p-3 rounded-3 bg-dark border border-info shadow-lg text-white style-tiny z-3" style="display: none; max-width: 360px;">
+        <div class="d-flex align-items-center justify-content-between gap-2">
+            <div>
+                <div class="fw-bold text-info"><i class="fa-solid fa-cloud-arrow-down me-1"></i> Versi Baru Tersedia</div>
+                <div class="text-secondary style-tiny">Pembaruan aplikasi MMC Platform siap digunakan.</div>
+            </div>
+            <button class="btn btn-sm btn-info text-dark font-monospace fw-bold text-nowrap px-3" onclick="reloadPwaForUpdate()">Muat Ulang</button>
+        </div>
+    </div>
+
+    <!-- PWA Service Worker Registration & Scripts -->
+    <?= pwa_sw_script() ?>
 </body>
 </html>

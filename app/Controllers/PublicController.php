@@ -39,6 +39,22 @@ class PublicController extends BaseController
                           ->orderBy('sort_order', 'ASC')
                           ->get()->getResultArray();
 
+        foreach ($stats as &$st) {
+            if (!empty($st['is_auto']) && !empty($st['auto_source'])) {
+                switch ($st['auto_source']) {
+                    case 'total_members':
+                        $st['value'] = (string) $this->db->table('users')->where('status', 'active')->where('deleted_at IS NULL')->countAllResults();
+                        break;
+                    case 'total_achievements':
+                        $st['value'] = (string) $this->db->table('achievements')->countAllResults();
+                        break;
+                    case 'total_portfolios':
+                        $st['value'] = (string) $this->db->table('portfolios')->countAllResults();
+                        break;
+                }
+            }
+        }
+
         // 4. Divisions
         $divisions = $this->db->table('divisions')
                               ->where('status', 'active')
@@ -55,6 +71,7 @@ class PublicController extends BaseController
                                           ->select('users.full_name')
                                           ->join('users', 'users.id = portfolio_contributors.user_id')
                                           ->where('portfolio_id', $p['id'])
+                                          ->where('users.deleted_at IS NULL')
                                           ->get()->getResultArray();
         }
 
@@ -74,23 +91,25 @@ class PublicController extends BaseController
                                             ->select('achievement_members.user_id, users.full_name, users.avatar, users.class_dept, achievement_members.role_in_team')
                                             ->join('users', 'users.id = achievement_members.user_id')
                                             ->where('achievement_id', $ach['id'])
+                                            ->where('users.deleted_at IS NULL')
                                             ->get()->getResultArray();
         }
 
         return view('public/home', [
-            'title'          => 'Multimedia Club SMAN 1 Tamansari - Home',
-            'siteTitle'      => $this->settingModel->getSetting('site_title', 'Multimedia Club SMAN 1 Tamansari'),
-            'sections'       => $sections,
-            'hero'           => $hero,
-            'stats'          => $stats,
-            'divisions'      => $divisions,
-            'portfolios'     => $portfolios,
-            'achievements'   => $achievements,
-            'faqs'           => $faqs,
-            'totalMembers'   => $userModel->where('status', 'active')->countAllResults(),
-            'totalMeetings'  => $meetingModel->countAllResults(),
-            'totalTasks'     => $taskModel->countAllResults(),
-            'activeMeeting'  => $meetingModel->getActiveMeeting(),
+            'title'              => 'Multimedia Club SMAN 1 Tamansari - Home',
+            'siteTitle'          => $this->settingModel->getSetting('site_title', 'Multimedia Club SMAN 1 Tamansari'),
+            'enableRegistration' => $this->settingModel->getSetting('enable_registration', '1'),
+            'sections'           => $sections,
+            'hero'               => $hero,
+            'stats'              => $stats,
+            'divisions'          => $divisions,
+            'portfolios'         => $portfolios,
+            'achievements'       => $achievements,
+            'faqs'               => $faqs,
+            'totalMembers'       => $userModel->where('status', 'active')->countAllResults(),
+            'totalMeetings'      => $meetingModel->countAllResults(),
+            'totalTasks'         => $taskModel->countAllResults(),
+            'activeMeeting'      => $meetingModel->getActiveMeeting(),
         ]);
     }
 
@@ -105,6 +124,7 @@ class PublicController extends BaseController
                                             ->select('achievement_members.user_id, users.full_name, users.avatar, users.class_dept, achievement_members.role_in_team')
                                             ->join('users', 'users.id = achievement_members.user_id')
                                             ->where('achievement_id', $ach['id'])
+                                            ->where('users.deleted_at IS NULL')
                                             ->get()->getResultArray();
         }
 
@@ -178,6 +198,7 @@ class PublicController extends BaseController
                                           ->select('users.full_name')
                                           ->join('users', 'users.id = portfolio_contributors.user_id')
                                           ->where('portfolio_id', $p['id'])
+                                          ->where('users.deleted_at IS NULL')
                                           ->get()->getResultArray();
         }
 

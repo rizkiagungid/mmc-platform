@@ -53,3 +53,7 @@
 - [x] Dynamic Club History & Timelines
 - [x] Organization Structure Chart
 - [x] Live Contact Chat System (Public-to-Admin)
+
+## Phase 8
+- [x] Implement PWA (Progressive Web App) features (manifest.json, Service Worker) to allow offline access and "Add to Home Screen" installation.
+

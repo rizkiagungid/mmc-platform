@@ -91,8 +91,20 @@ class CmsService extends BaseService
         }
     }
 
+    private function ensureStatsColumnsExist()
+    {
+        if (!$this->db->fieldExists('is_auto', 'homepage_stats')) {
+            $forge = \Config\Database::forge();
+            $forge->addColumn('homepage_stats', [
+                'is_auto'     => ['type' => 'TINYINT', 'constraint' => 1, 'default' => 0],
+                'auto_source' => ['type' => 'VARCHAR', 'constraint' => 50, 'null' => true],
+            ]);
+        }
+    }
+
     public function getHomepageStats(): array
     {
+        $this->ensureStatsColumnsExist();
         return $this->db->table('homepage_stats')
                         ->orderBy('sort_order', 'ASC')
                         ->get()->getResultArray();
@@ -100,18 +112,35 @@ class CmsService extends BaseService
 
     public function saveHomepageStat(array $data, int $actorId): array
     {
+        $this->ensureStatsColumnsExist();
         $this->beginTransaction();
         try {
             $id = (int)($data['id'] ?? 0);
+            $label = trim($data['label'] ?? '');
+
+            // Auto detect auto_source based on label if not explicitly set
+            $autoSource = trim($data['auto_source'] ?? '');
+            if (empty($autoSource)) {
+                if (stripos($label, 'Anggota') !== false) {
+                    $autoSource = 'total_members';
+                } elseif (stripos($label, 'Juara') !== false || stripos($label, 'Penghargaan') !== false || stripos($label, 'Prestasi') !== false) {
+                    $autoSource = 'total_achievements';
+                } elseif (stripos($label, 'Proyek') !== false || stripos($label, 'Karya') !== false || stripos($label, 'Portofolio') !== false) {
+                    $autoSource = 'total_portfolios';
+                }
+            }
+
             $payload = [
-                'label'      => trim($data['label'] ?? ''),
-                'value'      => trim($data['value'] ?? ''),
-                'icon'       => trim($data['icon'] ?? 'fa-chart-line'),
-                'prefix'     => trim($data['prefix'] ?? ''),
-                'suffix'     => trim($data['suffix'] ?? ''),
-                'sort_order' => (int)($data['sort_order'] ?? 0),
-                'is_active'  => isset($data['is_active']) ? 1 : 0,
-                'updated_at' => date('Y-m-d H:i:s'),
+                'label'       => $label,
+                'value'       => trim($data['value'] ?? ''),
+                'icon'        => trim($data['icon'] ?? 'fa-chart-line'),
+                'prefix'      => trim($data['prefix'] ?? ''),
+                'suffix'      => trim($data['suffix'] ?? ''),
+                'sort_order'  => (int)($data['sort_order'] ?? 0),
+                'is_active'   => isset($data['is_active']) ? 1 : 0,
+                'is_auto'     => isset($data['is_auto']) ? 1 : 0,
+                'auto_source' => $autoSource,
+                'updated_at'  => date('Y-m-d H:i:s'),
             ];
 
             if ($id > 0) {

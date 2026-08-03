@@ -73,7 +73,7 @@
                                     <h5 class="modal-title font-heading"><i class="fa-solid fa-pen text-info me-2"></i> Edit Karya Portofolio</h5>
                                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                                 </div>
-                                <form action="<?= base_url('admin/cms/portfolios/update/' . $p['id']) ?>" method="POST">
+                                <form action="<?= base_url('admin/cms/portfolios/update/' . $p['id']) ?>" method="POST" enctype="multipart/form-data">
                                     <?= csrf_field() ?>
                                     <div class="modal-body">
                                         <div class="row g-3 mb-3">
@@ -82,14 +82,14 @@
                                                 <input type="text" name="title" class="form-control" value="<?= esc($p['title']) ?>" required>
                                             </div>
                                             <div class="col-md-4">
-                                                <label class="form-label text-secondary small">Kategori Divisi</label>
+                                                <label class="form-label text-secondary small">Kategori</label>
                                                 <select name="category" class="form-select">
+                                                    <option value="Broadcasting" <?= $p['category'] === 'Broadcasting' ? 'selected' : '' ?>>Broadcasting</option>
+                                                    <option value="Programming" <?= $p['category'] === 'Programming' ? 'selected' : '' ?>>Programming</option>
                                                     <option value="Videography" <?= $p['category'] === 'Videography' ? 'selected' : '' ?>>Videography</option>
                                                     <option value="Photography" <?= $p['category'] === 'Photography' ? 'selected' : '' ?>>Photography</option>
                                                     <option value="Graphic Design" <?= $p['category'] === 'Graphic Design' ? 'selected' : '' ?>>Graphic Design</option>
                                                     <option value="Web Development" <?= $p['category'] === 'Web Development' ? 'selected' : '' ?>>Web Development</option>
-                                                    <option value="Programming" <?= $p['category'] === 'Programming' ? 'selected' : '' ?>>Programming</option>
-                                                    <option value="Broadcasting" <?= $p['category'] === 'Broadcasting' ? 'selected' : '' ?>>Broadcasting</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -100,13 +100,36 @@
                                                 <input type="text" name="year" class="form-control font-monospace" value="<?= esc($p['year']) ?>">
                                             </div>
                                             <div class="col-md-8">
-                                                <label class="form-label text-secondary small">URL External / YouTube Embed</label>
-                                                <input type="text" name="external_url" class="form-control font-monospace" value="<?= esc($p['external_url']) ?>" placeholder="https://youtube.com/watch?v=...">
+                                                <label class="form-label text-secondary small">URL Projek / Link Website / GitHub / YouTube</label>
+                                                <input type="text" name="external_url" class="form-control font-monospace" value="<?= esc($p['external_url']) ?>" placeholder="https://github.com/..., https://..., https://youtube.com/...">
+                                            </div>
+                                        </div>
+
+                                        <div class="row g-3 mb-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label text-secondary small">Upload Cover / Thumbnail</label>
+                                                <input type="file" name="thumbnail_file" class="form-control" accept="image/*">
+                                                <?php if (!empty($p['thumbnail'])): ?>
+                                                    <div class="mt-1 text-secondary style-tiny font-monospace">File saat ini: <?= esc($p['thumbnail']) ?></div>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label text-secondary small">Upload Direct Video / Media Utama</label>
+                                                <input type="file" name="media_file_input" class="form-control" accept="image/*,video/*">
+                                                <?php if (!empty($p['media_file'])): ?>
+                                                    <div class="mt-1 text-success style-tiny font-monospace"><i class="fa-solid fa-circle-check me-1"></i> Media ter-upload: <?= esc($p['media_file']) ?></div>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label text-secondary small">Deskripsi Singkat Karya</label>
+                                            <label class="form-label text-secondary small">Upload Galeri Gambar/Video (Multiple Upload)</label>
+                                            <input type="file" name="gallery_files[]" class="form-control" accept="image/*,video/*" multiple>
+                                            <span class="text-secondary style-tiny">Pilih beberapa file sekaligus (Ctrl + Klik / Drag & Drop) untuk menambah foto/video ke galeri detail.</span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label text-secondary small">Deskripsi Singkat & Spesifikasi Teknis Karya</label>
                                             <textarea name="description" class="form-control" rows="3"><?= esc($p['description']) ?></textarea>
                                         </div>
 
@@ -159,23 +182,23 @@
                 <h5 class="modal-title font-heading"><i class="fa-solid fa-film text-danger me-2"></i> Tambah Karya Portofolio Baru</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form action="<?= base_url('admin/cms/portfolios/store') ?>" method="POST">
+            <form action="<?= base_url('admin/cms/portfolios/store') ?>" method="POST" enctype="multipart/form-data">
                 <?= csrf_field() ?>
                 <div class="modal-body">
                     <div class="row g-3 mb-3">
                         <div class="col-md-8">
                             <label class="form-label text-secondary small">Judul Karya / Proyek <span class="text-danger">*</span></label>
-                            <input type="text" name="title" class="form-control" placeholder="Contoh: Aftermovie MPLS SMAN 1 Tamansari 2026" required>
+                            <input type="text" name="title" class="form-control" placeholder="Contoh: Sistem E-Voting & Broadcasting SMAN 1 Tamansari" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label text-secondary small">Kategori Divisi</label>
                             <select name="category" class="form-select">
+                                <option value="Broadcasting">Broadcasting</option>
+                                <option value="Programming">Programming</option>
                                 <option value="Videography">Videography</option>
                                 <option value="Photography">Photography</option>
                                 <option value="Graphic Design">Graphic Design</option>
                                 <option value="Web Development">Web Development</option>
-                                <option value="Programming">Programming</option>
-                                <option value="Broadcasting">Broadcasting</option>
                             </select>
                         </div>
                     </div>
@@ -186,14 +209,31 @@
                             <input type="text" name="year" class="form-control font-monospace" value="<?= date('Y') ?>">
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label text-secondary small">URL External / YouTube Embed</label>
-                            <input type="text" name="external_url" class="form-control font-monospace" placeholder="https://youtube.com/watch?v=...">
+                            <label class="form-label text-secondary small">URL Projek / Link Website / GitHub / YouTube</label>
+                            <input type="text" name="external_url" class="form-control font-monospace" placeholder="https://github.com/..., https://..., https://youtube.com/...">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Upload Cover / Thumbnail</label>
+                            <input type="file" name="thumbnail_file" class="form-control" accept="image/*">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small">Upload Direct Video / Media Utama</label>
+                            <input type="file" name="media_file_input" class="form-control" accept="image/*,video/*">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-secondary small">Deskripsi Singkat Karya</label>
-                        <textarea name="description" class="form-control" rows="3" placeholder="Penjelasan teknis karya, alat yang digunakan, dll..."></textarea>
+                        <label class="form-label text-secondary small">Upload Galeri Gambar/Video (Multiple Upload)</label>
+                        <input type="file" name="gallery_files[]" class="form-control" accept="image/*,video/*" multiple>
+                        <span class="text-secondary style-tiny">Bisa memilih beberapa file gambar/video sekaligus.</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">Deskripsi Singkat & Spesifikasi Teknis Karya</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Penjelasan teknis karya, fitur utama, alat yang digunakan, dll..."></textarea>
                     </div>
 
                     <!-- Multi-Contributors Selection -->

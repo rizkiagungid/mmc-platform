@@ -16,10 +16,15 @@ class AchievementCmsController extends BaseController
                                       ->select('achievement_members.user_id, users.full_name, achievement_members.role_in_team')
                                       ->join('users', 'users.id = achievement_members.user_id')
                                       ->where('achievement_id', $ach['id'])
+                                      ->where('users.deleted_at IS NULL')
                                       ->get()->getResultArray();
         }
 
-        $members = $db->table('users')->where('status', 'active')->get()->getResultArray();
+        $members = $db->table('users')
+                      ->where('status', 'active')
+                      ->where('deleted_at IS NULL')
+                      ->orderBy('full_name', 'ASC')
+                      ->get()->getResultArray();
 
         return view('App\Modules\Cms\Views\achievements\index', [
             'title'        => 'Manajemen Prestasi & Tim Juara',

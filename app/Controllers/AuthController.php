@@ -94,6 +94,10 @@ class AuthController extends BaseController
             return redirect()->to('/dashboard');
         }
 
+        if ($this->settingModel->getSetting('enable_registration', '1') === '0') {
+            return redirect()->to('/login')->with('error', 'Pendaftaran akun baru saat ini sedang ditutup oleh Administrator.');
+        }
+
         return view('auth/register', [
             'title' => 'Pendaftaran Anggota Baru - Multimedia Club',
         ]);
@@ -101,6 +105,9 @@ class AuthController extends BaseController
 
     public function attemptRegister()
     {
+        if ($this->settingModel->getSetting('enable_registration', '1') === '0') {
+            return redirect()->to('/login')->with('error', 'Pendaftaran akun baru saat ini sedang ditutup oleh Administrator.');
+        }
         $rules = [
             'full_name'  => 'required|min_length[3]|max_length[100]',
             'username'   => 'required|alpha_numeric_punct|min_length[3]|is_unique[users.username]',

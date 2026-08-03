@@ -94,3 +94,9 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
 if (file_exists(APPPATH . 'Modules/Cms/Config/Routes.php')) {
     require APPPATH . 'Modules/Cms/Config/Routes.php';
 }
+
+// Load Modular Learning Routes
+if (file_exists(APPPATH . 'Modules/Learning/Config/Routes.php')) {
+    require APPPATH . 'Modules/Learning/Config/Routes.php';
+}
+

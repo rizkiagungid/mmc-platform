@@ -6,8 +6,9 @@
     <div class="col-lg-5">
         <!-- Permanent QR Card -->
         <div class="saas-card p-4 text-center border border-danger border-opacity-50 shadow-lg">
-            <h5 class="text-white font-heading mb-1">Permanent Member QR Code</h5>
-            <p class="text-secondary small mb-3">Tunjukkan QR ini ke Operator saat absensi sesi pertemuan</p>
+            <h5 class="text-white font-heading mb-0"><?= esc($user['full_name']) ?></h5>
+            <div class="text-danger font-monospace fw-bold mb-2">@<?= esc($user['username']) ?></div>
+            <p class="text-secondary small mb-3">Tunjukkan Permanent Member QR ini ke Operator saat absensi sesi pertemuan</p>
 
             <div class="my-3 text-center">
                 <canvas id="profile-qr-canvas" class="bg-white p-3 rounded-4 shadow-sm"></canvas>
@@ -75,6 +76,15 @@
                     <div class="col-md-6">
                         <label class="form-label text-secondary small fw-medium">Nama Lengkap</label>
                         <input type="text" name="full_name" class="form-control" value="<?= esc($user['full_name']) ?>" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark text-danger border-secondary border-opacity-25 font-monospace">@</span>
+                            <input type="text" class="form-control font-monospace" value="<?= esc($user['username']) ?>" disabled readonly>
+                        </div>
+                        <small class="text-secondary" style="font-size: 0.7rem;">Username identitas unik Anda untuk login</small>
                     </div>
 
                     <div class="col-md-6">
