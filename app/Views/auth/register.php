@@ -50,8 +50,8 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-medium">Kelas / Jurusan / Devisi</label>
-                                <input type="text" name="class_dept" class="form-control" placeholder="Contoh: X MIPA 2" value="<?= old('class_dept') ?>" required>
+                                <label class="form-label text-secondary small fw-medium">Kelas - Divisi</label>
+                                <input type="text" name="class_dept" class="form-control" placeholder="Contoh: X2 - Broadcasting" value="<?= old('class_dept') ?>" required>
                             </div>
 
                             <div class="col-md-6">
