@@ -89,6 +89,9 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
         $routes->get('audit-logs', '\App\Modules\System\Controllers\SystemController::auditLogs');
         $routes->get('settings', '\App\Modules\System\Controllers\SystemController::settings');
         $routes->post('settings', '\App\Modules\System\Controllers\SystemController::updateSettings');
+        $routes->post('system/clear-cache', '\App\Modules\System\Controllers\SystemController::clearCache');
+        $routes->post('system/clear-logs', '\App\Modules\System\Controllers\SystemController::clearLogs');
+        $routes->post('system/clear-all-storage', '\App\Modules\System\Controllers\SystemController::clearAllStorage');
     });
 });
 

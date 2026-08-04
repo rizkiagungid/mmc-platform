@@ -45,6 +45,11 @@
                     <i class="fa-solid fa-lock text-success me-1"></i> Keamanan & Presensi
                 </button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link fw-semibold" id="storage-tab" data-bs-toggle="tab" data-bs-target="#storage-pane" type="button">
+                    <i class="fa-solid fa-hard-drive text-warning me-1"></i> Pembersihan Storage & Cache
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content" id="settingsTabContent">
@@ -255,9 +260,78 @@
                     </label>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label text-secondary small fw-medium">Durasi Masa Berlaku Token QR Pertemuan (Menit)</label>
-                    <input type="number" name="qr_expiry_minutes" class="form-control" value="<?= esc($settings['qr_expiry_minutes'] ?? 15) ?>" min="1" max="120" required>
+                </div>
+            </div>
+
+            <!-- 6. Pembersihan Storage & Cache -->
+            <div class="tab-pane fade" id="storage-pane" role="tabpanel">
+                <h5 class="text-white font-heading mb-3"><i class="fa-solid fa-hard-drive text-warning me-2"></i> Pembersihan File Storage & Cache Sistem</h5>
+                <p class="text-secondary small mb-4">Pantau kapasitas penyimpanan sementara (temporary files) dan bersihkan cache atau log sistem agar tidak membebani kapasitas server storage.</p>
+
+                <div class="row g-3 mb-4">
+                    <!-- Cache Card -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="text-secondary small font-monospace text-uppercase">Cache System</span>
+                                    <i class="fa-solid fa-bolt text-warning fs-5"></i>
+                                </div>
+                                <h3 class="text-white font-heading mb-1"><?= esc($cacheStats['formatted_size'] ?? '0 B') ?></h3>
+                                <p class="text-secondary style-tiny m-0"><?= esc($cacheStats['file_count'] ?? 0) ?> File Cache fisik terdeteksi</p>
+                            </div>
+                            <form action="<?= base_url('admin/system/clear-cache') ?>" method="POST" class="mt-3 form-clear-confirm" data-title="Bersihkan Cache Sistem?" data-text="Aksi ini akan menghapus file cache sementara aplikasi CodeIgniter.">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn btn-outline-warning w-100 btn-sm font-monospace">
+                                    <i class="fa-solid fa-broom me-1"></i> Bersihkan Cache
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Logs Card -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="text-secondary small font-monospace text-uppercase">Log Files System</span>
+                                    <i class="fa-solid fa-file-lines text-info fs-5"></i>
+                                </div>
+                                <h3 class="text-white font-heading mb-1"><?= esc($logStats['formatted_size'] ?? '0 B') ?></h3>
+                                <p class="text-secondary style-tiny m-0"><?= esc($logStats['file_count'] ?? 0) ?> File Log terdeteksi</p>
+                            </div>
+                            <form action="<?= base_url('admin/system/clear-logs') ?>" method="POST" class="mt-3 form-clear-confirm" data-title="Hapus File Logs System?" data-text="Aksi ini akan menghapus seluruh catatan log aktivitas error/system di folder writable/logs.">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn btn-outline-info w-100 btn-sm font-monospace">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Hapus File Logs
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Total Temp Storage Card -->
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3 bg-dark border border-danger border-opacity-25 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="text-secondary small font-monospace text-uppercase">Total Temp Storage</span>
+                                    <i class="fa-solid fa-box-archive text-danger fs-5"></i>
+                                </div>
+                                <h3 class="text-white font-heading mb-1"><?= esc($totalStats['formatted_size'] ?? '0 B') ?></h3>
+                                <p class="text-secondary style-tiny m-0"><?= esc($totalStats['file_count'] ?? 0) ?> Total File Temp (Cache + Logs)</p>
+                            </div>
+                            <form action="<?= base_url('admin/system/clear-all-storage') ?>" method="POST" class="mt-3 form-clear-confirm" data-title="Pembersihan Total Storage Temp?" data-text="Aksi ini akan menghapus sekaligus seluruh file cache dan log sistem.">
+                                <?= csrf_field() ?>
+                                <button type="submit" class="btn btn-red w-100 btn-sm font-monospace">
+                                    <i class="fa-solid fa-dumpster-fire me-1"></i> Bersihkan Seluruh Temp
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-dark border border-secondary border-opacity-25 style-tiny mb-0">
+                    <i class="fa-solid fa-circle-info text-info me-1"></i> Pembersihan cache dan log aman dilakukan secara berkala untuk membebaskan ruang penyimpanan server tanpa mempengaruhi database maupun berkas unggahan publik.
                 </div>
             </div>
 
@@ -271,4 +345,34 @@
     </form>
 </div>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+    $(document).ready(function() {
+        $('.form-clear-confirm').on('submit', function(e) {
+            e.preventDefault();
+            const form = this;
+            const title = $(form).data('title') || 'Bersihkan Storage?';
+            const text = $(form).data('text') || 'Apakah Anda yakin ingin melanjutkan?';
+
+            Swal.fire({
+                title: title,
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#27272a',
+                confirmButtonText: 'Ya, Lanjutkan',
+                cancelButtonText: 'Batal',
+                background: '#121218',
+                color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
 <?= $this->endSection() ?>

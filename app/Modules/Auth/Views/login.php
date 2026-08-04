@@ -52,7 +52,7 @@
                     </form>
 
                     <!-- Quick Demo Credentials Box -->
-                    <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 mt-4">
+                    <!-- <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 mt-4">
                         <small class="text-white font-heading d-block fw-semibold mb-2"><i class="fa-solid fa-key text-warning me-1"></i> Demo Access Credentials:</small>
                         <div class="row g-2 text-secondary font-monospace" style="font-size: 0.75rem;">
                             <div class="col-6"><strong>Super Admin:</strong><br>superadmin / password123</div>
@@ -60,7 +60,7 @@
                             <div class="col-6"><strong>BPH:</strong><br>bph_ketua / password123</div>
                             <div class="col-6"><strong>Member:</strong><br>rizki_member / password123</div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="text-center mt-4 text-secondary small">
                         Belum punya akun? <a href="<?= base_url('register') ?>" class="text-danger font-semibold">Daftar Anggota Baru</a>
