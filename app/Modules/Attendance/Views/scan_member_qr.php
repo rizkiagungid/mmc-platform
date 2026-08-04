@@ -105,11 +105,12 @@
                         });
                     }
                 },
-                error: function() {
+                error: function(xhr) {
+                    const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Gagal memproses scanner.';
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error Server',
-                        text: 'Gagal memproses scanner.',
+                        title: 'Gagal Memproses Scanner',
+                        text: msg,
                         background: '#121218',
                         color: '#fff'
                     });

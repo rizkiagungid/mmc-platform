@@ -107,11 +107,12 @@
                         });
                     }
                 },
-                error: function() {
+                error: function(xhr) {
+                    const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Gagal memproses presensi ke server.';
                     Swal.fire({
                         icon: 'error',
-                        title: 'Error Server',
-                        text: 'Gagal memproses presensi ke server.',
+                        title: 'Gagal Memproses Presensi',
+                        text: msg,
                         background: '#121218',
                         color: '#fff'
                     });

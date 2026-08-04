@@ -67,6 +67,8 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->get('attendance', '\App\Modules\Attendance\Controllers\AttendanceController::index');
     $routes->get('attendance/scan-member', '\App\Modules\Attendance\Controllers\AttendanceController::scanMemberQr');
     $routes->post('attendance/manual', '\App\Modules\Attendance\Controllers\AttendanceController::manualStore');
+    $routes->post('attendance/update/(:num)', '\App\Modules\Attendance\Controllers\AttendanceController::update/$1');
+    $routes->get('attendance/delete/(:num)', '\App\Modules\Attendance\Controllers\AttendanceController::delete/$1');
 
     // Task Management & Submissions Evaluation (Modular Task)
     $routes->get('tasks', '\App\Modules\Task\Controllers\TaskController::index');

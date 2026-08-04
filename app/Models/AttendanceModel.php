@@ -78,4 +78,9 @@ class AttendanceModel extends Model
                     ->where('user_id', $userId)
                     ->first();
     }
+
+    public function isAlreadyAttended(int $meetingId, int $userId): bool
+    {
+        return $this->checkAlreadyAttended($meetingId, $userId) !== null;
+    }
 }
