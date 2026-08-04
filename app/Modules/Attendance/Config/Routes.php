@@ -15,6 +15,9 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], static function ($routes) {
     // Admin attendance views & manual check-in
     $routes->get('attendance', '\App\Modules\Attendance\Controllers\AttendanceController::index');
+    $routes->get('attendance/export', '\App\Modules\Attendance\Controllers\AttendanceController::export');
     $routes->get('attendance/scan-member', '\App\Modules\Attendance\Controllers\AttendanceController::scanMemberQr');
     $routes->post('attendance/manual', '\App\Modules\Attendance\Controllers\AttendanceController::manualStore');
+    $routes->post('attendance/update/(:num)', '\App\Modules\Attendance\Controllers\AttendanceController::update/$1');
+    $routes->get('attendance/delete/(:num)', '\App\Modules\Attendance\Controllers\AttendanceController::delete/$1');
 });

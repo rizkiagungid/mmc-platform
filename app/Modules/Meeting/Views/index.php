@@ -61,6 +61,8 @@
                                 <ul class="dropdown-menu dropdown-menu-dark">
                                     <?php if ($m['status'] !== 'active'): ?>
                                         <li><a class="dropdown-item text-success" href="<?= base_url('admin/meetings/activate/' . $m['id']) ?>" onclick="return confirm('Aktifkan sesi ini? Sesi aktif sebelumnya akan diselesaikan.')"><i class="fa-solid fa-play me-2"></i> Aktifkan Sesi Ini</a></li>
+                                    <?php else: ?>
+                                        <li><a class="dropdown-item text-warning" href="<?= base_url('admin/meetings/complete/' . $m['id']) ?>" onclick="return confirm('Selesaikan sesi ini? Anggota yang belum scan presensi akan otomatis berstatus Alpa.')"><i class="fa-solid fa-check-double me-2"></i> Selesaikan & Set Auto-Alpa</a></li>
                                     <?php endif; ?>
                                     <li><a class="dropdown-item" href="<?= base_url('admin/meetings/qr/' . $m['id']) ?>"><i class="fa-solid fa-qrcode me-2 text-warning"></i> Tampilkan Poster QR</a></li>
                                     <li><hr class="dropdown-divider"></li>

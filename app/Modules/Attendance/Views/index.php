@@ -9,9 +9,14 @@
     </div>
 
     <div class="d-flex gap-2 flex-wrap">
-        <a href="<?= base_url('attendance/scan') ?>" class="btn btn-warning">
-            <i class="fa-solid fa-camera me-2"></i> Presensi Saya (QR / PIN)
-        </a>
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exportFilterModal">
+            <i class="fa-solid fa-file-excel me-2"></i> Export CSV / Excel
+        </button>
+        <?php if (session()->get('role_slug') !== 'superadmin'): ?>
+            <a href="<?= base_url('attendance/scan') ?>" class="btn btn-warning">
+                <i class="fa-solid fa-camera me-2"></i> Presensi Saya (QR / PIN)
+            </a>
+        <?php endif; ?>
         <a href="<?= base_url('admin/attendance/scan-member') ?>" class="btn btn-red">
             <i class="fa-solid fa-qrcode me-2"></i> Buka Scanner Operator (Member QR)
         </a>
@@ -199,9 +204,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-secondary small">Pilih Pengguna / Anggota (Semua Role)</label>
-                        <select name="user_id" class="form-select" required>
-                            <option value="">-- Pilih Pengguna / Anggota --</option>
+                        <label class="form-label text-secondary small fw-medium">Pilih Pengguna / Anggota (Semua Role)</label>
+                        <select name="user_id" class="form-select select2-searchable" required style="width: 100%;">
+                            <option value="">-- Ketik Nama / NIS / Role Pengguna --</option>
                             <?php foreach ($allUsers as $u): ?>
                                 <option value="<?= $u['id'] ?>">[<?= esc(strtoupper($u['role_slug'] ?? 'MEMBER')) ?>] <?= esc($u['full_name']) ?> (<?= esc($u['nis_nip'] ?: '-') ?>)</option>
                             <?php endforeach; ?>
@@ -281,11 +286,194 @@
     </div>
 </div>
 
+<!-- Modal Filter & Export Excel / CSV -->
+<div class="modal fade" id="exportFilterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-secondary border-opacity-25">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title font-heading">
+                    <i class="fa-solid fa-file-excel text-success me-2"></i> Filter & Opsi Export Presensi Excel / CSV
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="<?= base_url('admin/attendance/export') ?>" method="GET" target="_blank">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <!-- Filter Sesi Pertemuan -->
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-medium">1. Sesi Pertemuan / Workshop</label>
+                            <select name="meeting_id" class="form-select">
+                                <option value="all" <?= ($selectedMeetingId === 'all') ? 'selected' : '' ?>>-- Semua Sesi Pertemuan --</option>
+                                <?php foreach ($meetings as $m): ?>
+                                    <option value="<?= $m['id'] ?>" <?= ($selectedMeetingId == $m['id']) ? 'selected' : '' ?>>
+                                        <?= esc($m['title']) ?> (<?= date('d M Y', strtotime($m['meeting_date'])) ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <!-- Filter Status Kehadiran -->
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-medium">2. Status Kehadiran</label>
+                            <select name="status" class="form-select">
+                                <option value="all">-- Semua Status Kehadiran --</option>
+                                <option value="present">Hadir (Present)</option>
+                                <option value="late">Terlambat (Late)</option>
+                                <option value="permitted">Izin (Permitted)</option>
+                                <option value="sick">Sakit (Sick)</option>
+                                <option value="alpha">Alpha (Tanpa Keterangan)</option>
+                            </select>
+                        </div>
+
+                        <!-- Filter Metode Presensi -->
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-medium">3. Metode Presensi</label>
+                            <select name="method" class="form-select">
+                                <option value="all">-- Semua Metode Presensi --</option>
+                                <option value="meeting_qr">Scan QR Poster Sesi</option>
+                                <option value="member_qr">Scan QR Member Operator</option>
+                                <option value="pin">4-Digit PIN Absensi</option>
+                                <option value="manual">Manual Input Admin</option>
+                                <option value="system_auto">Otomatis Sistem (Auto-Alpha)</option>
+                            </select>
+                        </div>
+
+                        <!-- Format Delimiter Excel -->
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-medium">4. Pemisah Kolom (Delimiter Excel)</label>
+                            <select name="delimiter" class="form-select">
+                                <option value=";" selected>Titik Koma ( ; ) - Standard Excel Indonesia (Rekomendasi)</option>
+                                <option value=",">Koma ( , ) - Standard CSV International</option>
+                            </select>
+                        </div>
+
+                        <!-- Rentang Tanggal Scan -->
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-medium">5. Tanggal Scan Mulai (Opsional)</label>
+                            <input type="date" name="start_date" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label text-secondary small fw-medium">6. Tanggal Scan Selesai (Opsional)</label>
+                            <input type="date" name="end_date" class="form-control">
+                        </div>
+
+                        <!-- Pilih Kolom Mana Saja Yang Ingin Di-export -->
+                        <div class="col-12 mt-4">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <label class="form-label text-secondary small fw-bold m-0">7. Pilih Kolom Data Yang Ingin Di-export:</label>
+                                <div>
+                                    <button type="button" class="btn btn-link btn-sm text-info p-0 me-2" id="check-all-cols">Centang Semua</button>
+                                    <button type="button" class="btn btn-link btn-sm text-secondary p-0" id="uncheck-all-cols">Hapus Semua</button>
+                                </div>
+                            </div>
+                            <div class="saas-card p-3 bg-black bg-opacity-25 border border-secondary border-opacity-25">
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="no" id="col_no" checked>
+                                            <label class="form-check-label small" for="col_no">No</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="date" id="col_date" checked>
+                                            <label class="form-check-label small" for="col_date">Tanggal Pertemuan</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="meeting" id="col_meeting" checked>
+                                            <label class="form-check-label small" for="col_meeting">Sesi Pertemuan</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="nis_nip" id="col_nis_nip" checked>
+                                            <label class="form-check-label small" for="col_nis_nip">NIS / NIP</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="name" id="col_name" checked>
+                                            <label class="form-check-label small" for="col_name">Nama Anggota</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="class" id="col_class" checked>
+                                            <label class="form-check-label small" for="col_class">Kelas / Departemen</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="role" id="col_role" checked>
+                                            <label class="form-check-label small" for="col_role">Role</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="status" id="col_status" checked>
+                                            <label class="form-check-label small" for="col_status">Status Presensi</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="method" id="col_method" checked>
+                                            <label class="form-check-label small" for="col_method">Metode Presensi</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="scan_time" id="col_scan_time" checked>
+                                            <label class="form-check-label small" for="col_scan_time">Waktu Scan</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-check">
+                                            <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="notes" id="col_notes" checked>
+                                            <label class="form-check-label small" for="col_notes">Catatan / Alasan</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-saas-dark" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success fw-bold">
+                        <i class="fa-solid fa-download me-2"></i> Download File Excel / CSV
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
     $(document).ready(function() {
+        // Initialize Select2 Searchable Dropdown inside Manual Attendance Modal
+        $('#manualAttendanceModal').on('shown.bs.modal', function () {
+            $('.select2-searchable').select2({
+                dropdownParent: $('#manualAttendanceModal'),
+                width: '100%',
+                placeholder: '-- Ketik Nama / NIS / Role Pengguna --',
+                allowClear: true
+            });
+        });
+
+        $('.select2-searchable').select2({
+            dropdownParent: $('#manualAttendanceModal'),
+            width: '100%',
+            placeholder: '-- Ketik Nama / NIS / Role Pengguna --',
+            allowClear: true
+        });
+
         $('#attendance-table').DataTable({
             language: {
                 search: "Cari Presensi:",
@@ -336,6 +524,13 @@
                     window.location.href = '<?= base_url("admin/attendance/delete") ?>/' + id;
                 }
             });
+        });
+        // Handle Check / Uncheck All Export Columns
+        $('#check-all-cols').on('click', function() {
+            $('.export-col-chk').prop('checked', true);
+        });
+        $('#uncheck-all-cols').on('click', function() {
+            $('.export-col-chk').prop('checked', false);
         });
     });
 </script>

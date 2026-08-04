@@ -52,16 +52,20 @@ $routes->group('admin/cms', ['filter' => ['auth', 'role:superadmin,pembina,bph']
     $routes->post('structure/update/(:num)', '\App\Modules\Cms\Controllers\OrgCmsController::update/$1');
     $routes->get('structure/delete/(:num)', '\App\Modules\Cms\Controllers\OrgCmsController::delete/$1');
 
-    // Contact Messages & Admin Chat Reply
-    $routes->get('messages', '\App\Modules\Cms\Controllers\CmsController::contactMessages');
-    $routes->get('messages/chat/(:num)', '\App\Modules\Cms\Controllers\CmsController::getChatThread/$1');
-    $routes->post('messages/reply/(:num)', '\App\Modules\Cms\Controllers\CmsController::replyMessage/$1');
-
+    // Contact Messages & Admin Chat Reply (Accessible by Admin and Member)
     // FAQ Management (CRUD)
     $routes->get('faqs', '\App\Modules\Cms\Controllers\FaqCmsController::index');
     $routes->post('faqs/store', '\App\Modules\Cms\Controllers\FaqCmsController::store');
     $routes->post('faqs/update/(:num)', '\App\Modules\Cms\Controllers\FaqCmsController::update/$1');
     $routes->get('faqs/delete/(:num)', '\App\Modules\Cms\Controllers\FaqCmsController::delete/$1');
+});
+
+// Feedback, Kritik & Saran, and Contact Messages (Accessible by Admin and Member)
+$routes->group('admin/cms', ['filter' => ['auth', 'role:superadmin,pembina,bph,member,anggota']], static function ($routes) {
+    $routes->get('messages', '\App\Modules\Cms\Controllers\CmsController::contactMessages');
+    $routes->get('messages/chat/(:num)', '\App\Modules\Cms\Controllers\CmsController::getChatThread/$1');
+    $routes->post('messages/reply/(:num)', '\App\Modules\Cms\Controllers\CmsController::replyMessage/$1');
+    $routes->post('messages/store', '\App\Modules\Cms\Controllers\CmsController::storeFeedback');
 });
 
 // Public Contact Form & Live Chat Submissions

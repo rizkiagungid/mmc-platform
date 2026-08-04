@@ -43,13 +43,17 @@ class UserModel extends Model
         );
     }
 
-    public function getUsersWithRole($roleId = null, ?string $keyword = null)
+    public function getUsersWithRole($roleId = null, ?string $keyword = null, bool $includeSuperAdmin = true)
     {
         $builder = $this->select('users.*, roles.name as role_name, roles.slug as role_slug')
                         ->join('roles', 'roles.id = users.role_id');
 
         if ($roleId) {
             $builder->where('users.role_id', $roleId);
+        }
+
+        if (!$includeSuperAdmin) {
+            $builder->where('roles.slug !=', 'superadmin');
         }
 
         if (!empty($keyword)) {

@@ -249,4 +249,92 @@ class UserService extends BaseService
             return $this->error('Gagal mengaktifkan akun: ' . $e->getMessage());
         }
     }
+
+    public function bulkUpdateUsers(array $userIds, array $data, ?int $operatorId = null): array
+    {
+        $userIds = array_filter(array_map('intval', $userIds));
+        if (empty($userIds)) {
+            return $this->error('Pilih minimal satu anggota untuk diubah secara massal.');
+        }
+
+        $updateData = [];
+
+        if (!empty($data['change_status']) && isset($data['status'])) {
+            $updateData['status'] = $data['status'];
+        }
+
+        if (!empty($data['change_role']) && isset($data['role_id'])) {
+            $updateData['role_id'] = (int)$data['role_id'];
+        }
+
+        if (!empty($data['change_class']) && isset($data['class_dept'])) {
+            $updateData['class_dept'] = trim($data['class_dept']);
+        }
+
+        if (empty($updateData)) {
+            return $this->error('Tentukan bidang yang ingin diubah (centang minimal satu bidang edit).');
+        }
+
+        $this->beginTransaction();
+
+        try {
+            $count = count($userIds);
+            $this->userModel->whereIn('id', $userIds)->set($updateData)->update();
+
+            $changedFields = implode(', ', array_keys($updateData));
+            $this->auditLogModel->recordLog($operatorId, 'BULK_USER_UPDATE', "Mengubah data massal ({$changedFields}) untuk {$count} anggota.");
+
+            $this->commitTransaction();
+            return $this->success("Berhasil memperbarui data secara massal untuk {$count} anggota terpilih!");
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal memperbarui data massal: ' . $e->getMessage());
+        }
+    }
+
+    public function bulkActionUsers(array $userIds, string $action, ?int $operatorId = null): array
+    {
+        $userIds = array_filter(array_map('intval', $userIds));
+        if (empty($userIds)) {
+            return $this->error('Pilih minimal satu anggota.');
+        }
+
+        $count = count($userIds);
+        $this->beginTransaction();
+
+        try {
+            if ($action === 'activate') {
+                $this->userModel->whereIn('id', $userIds)->set(['status' => 'active'])->update();
+                $msg = "Berhasil mengkonfirmasi dan mengaktifkan {$count} akun anggota!";
+                $this->auditLogModel->recordLog($operatorId, 'BULK_USER_ACTIVATE', "Mengaktifkan akun massal untuk {$count} anggota.");
+            } elseif ($action === 'regenerate_qr') {
+                $users = $this->userModel->whereIn('id', $userIds)->findAll();
+                $now   = date('Y-m-d H:i:s');
+                foreach ($users as $u) {
+                    $newUuid    = $this->userModel->generateUuid();
+                    $newVersion = ($u['qr_version'] ?? 1) + 1;
+                    $this->userModel->update($u['id'], [
+                        'member_uuid'   => $newUuid,
+                        'qr_version'    => $newVersion,
+                        'qr_updated_at' => $now,
+                    ]);
+                }
+                $msg = "Berhasil meregenerasi QR Code v baru untuk {$count} anggota terpilih!";
+                $this->auditLogModel->recordLog($operatorId, 'BULK_QR_REGENERATE', "Regenerasi Member QR massal untuk {$count} anggota.");
+            } elseif ($action === 'delete') {
+                $this->userModel->whereIn('id', $userIds)->delete();
+                $msg = "Berhasil menghapus {$count} anggota terpilih dari sistem.";
+                $this->auditLogModel->recordLog($operatorId, 'BULK_USER_DELETE', "Hapus massal {$count} anggota.");
+            } else {
+                $this->db->transRollback();
+                return $this->error('Aksi massal tidak dikenal.');
+            }
+
+            $this->commitTransaction();
+            return $this->success($msg);
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal memproses aksi massal: ' . $e->getMessage());
+        }
+    }
 }

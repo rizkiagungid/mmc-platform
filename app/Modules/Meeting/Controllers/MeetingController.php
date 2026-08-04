@@ -99,6 +99,17 @@ class MeetingController extends BaseController
         return redirect()->to('/admin/meetings')->with('success', $result['body']['message']);
     }
 
+    public function complete($id)
+    {
+        $result = $this->meetingService->completeMeeting((int)$id, session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->to('/admin/meetings')->with('success', $result['body']['message']);
+    }
+
     public function delete($id)
     {
         $result = $this->meetingService->deleteMeeting((int)$id, session()->get('user_id'));

@@ -24,8 +24,81 @@ class AttendanceService extends BaseService
         $this->auditLogModel   = new AuditLogModel();
     }
 
+    public function processAutoAlphaForExpiredMeetings(): void
+    {
+        $nowStr = date('Y-m-d H:i:s');
+        
+        // Clean up any attendance records belonging to superadmin
+        $superAdminUserIds = array_column(
+            $this->userModel->select('users.id')
+                            ->join('roles', 'roles.id = users.role_id')
+                            ->where('roles.slug', 'superadmin')
+                            ->findAll(),
+            'id'
+        );
+        if (!empty($superAdminUserIds)) {
+            $this->db->table('attendances')->whereIn('user_id', $superAdminUserIds)->delete();
+        }
+
+        $meetings = $this->meetingModel->where('deleted_at IS NULL')->findAll();
+        $allUsers = $this->userModel->select('users.*, roles.slug as role_slug')
+                                    ->join('roles', 'roles.id = users.role_id', 'left')
+                                    ->where('users.deleted_at IS NULL')
+                                    ->where('users.status', 'active')
+                                    ->where('roles.slug !=', 'superadmin')
+                                    ->findAll();
+
+        if (empty($meetings) || empty($allUsers)) {
+            return;
+        }
+
+        foreach ($meetings as $meeting) {
+            $meetingEnd = $meeting['meeting_date'] . ' ' . ($meeting['end_time'] ?? '23:59:59');
+            $isExpired  = strtotime($meetingEnd) <= time();
+
+            // If an active meeting has passed end_time, mark status as completed
+            if ($meeting['status'] === 'active' && $isExpired) {
+                $this->meetingModel->update($meeting['id'], ['status' => 'completed']);
+                $meeting['status'] = 'completed';
+            }
+
+            // If meeting is completed or expired active meeting, assign Alpha to unrecorded users
+            if ($meeting['status'] === 'completed' || ($meeting['status'] === 'active' && $isExpired)) {
+                $existingUserIds = array_column(
+                    $this->db->table('attendances')
+                             ->select('user_id')
+                             ->where('meeting_id', $meeting['id'])
+                             ->get()->getResultArray(),
+                    'user_id'
+                );
+
+                $inserts = [];
+                foreach ($allUsers as $user) {
+                    if (!in_array($user['id'], $existingUserIds)) {
+                        $inserts[] = [
+                            'meeting_id'          => $meeting['id'],
+                            'user_id'             => $user['id'],
+                            'method'              => 'system_auto',
+                            'scanned_by_admin_id' => null,
+                            'scan_time'           => $meetingEnd,
+                            'status'              => 'alpha',
+                            'notes'               => 'Otomatis Alpha (Tidak scan presensi hingga waktu berakhir)',
+                            'created_at'          => $nowStr,
+                            'updated_at'          => $nowStr,
+                        ];
+                    }
+                }
+
+                if (!empty($inserts)) {
+                    $this->db->table('attendances')->insertBatch($inserts);
+                }
+            }
+        }
+    }
+
     public function getActiveMeeting(): ?array
     {
+        $this->processAutoAlphaForExpiredMeetings();
         return $this->meetingModel->getActiveMeeting();
     }
 
@@ -36,18 +109,27 @@ class AttendanceService extends BaseService
 
     public function getAllMeetings(): array
     {
+        $this->processAutoAlphaForExpiredMeetings();
         return $this->meetingModel->orderBy('meeting_date', 'DESC')->findAll();
     }
 
     public function getAttendancesByMeeting(int $meetingId): array
     {
+        $this->processAutoAlphaForExpiredMeetings();
         return $this->attendanceModel->getAttendancesByMeeting($meetingId);
     }
 
     public function getAllAttendances($meetingId = null, ?int $userId = null): array
     {
+        $this->processAutoAlphaForExpiredMeetings();
         $mId = ($meetingId && $meetingId !== 'all') ? (int)$meetingId : null;
         return $this->attendanceModel->getAllAttendances($mId, $userId);
+    }
+
+    public function getFilteredAttendances(array $filters = []): array
+    {
+        $this->processAutoAlphaForExpiredMeetings();
+        return $this->attendanceModel->getFilteredAttendances($filters);
     }
 
     public function getUserAttendanceHistory(int $userId): array
@@ -73,6 +155,11 @@ class AttendanceService extends BaseService
                 return $this->error('QR Code Meeting tidak cocok atau sudah kadaluarsa.');
             }
 
+            $actorUser = $this->userModel->select('users.*, roles.slug as role_slug')->join('roles', 'roles.id = users.role_id')->find($actorUserId);
+            if ($actorUser && ($actorUser['role_slug'] ?? '') === 'superadmin') {
+                return $this->error('Pengguna dengan role Super Admin adalah pengelola web dan tidak diwajibkan mencatat presensi.');
+            }
+
             $targetUserId = $actorUserId;
             $adminId      = null;
             $method       = 'meeting_qr';
@@ -81,6 +168,10 @@ class AttendanceService extends BaseService
             $member = $this->userModel->getUserByUuid($qrCode);
             if (!$member) {
                 return $this->error('Permanent Member QR Code tidak ditemukan atau sudah diregenerasi.');
+            }
+
+            if (($member['role_slug'] ?? '') === 'superadmin') {
+                return $this->error('Anggota dengan role Super Admin adalah pengelola web dan tidak diwajibkan mengikuti presensi.');
             }
 
             if (($member['status'] ?? '') !== 'active') {
@@ -142,6 +233,11 @@ class AttendanceService extends BaseService
             return $this->error('4-Digit PIN wajib diisi.');
         }
 
+        $user = $this->userModel->select('users.*, roles.slug as role_slug')->join('roles', 'roles.id = users.role_id')->find($userId);
+        if ($user && ($user['role_slug'] ?? '') === 'superadmin') {
+            return $this->error('Pengguna dengan role Super Admin adalah pengelola web dan tidak diwajibkan mencatat presensi.');
+        }
+
         $activeMeeting = $this->meetingModel->getActiveMeeting();
         if (!$activeMeeting) {
             return $this->error('Tidak ada sesi pertemuan yang sedang aktif saat ini.');
@@ -195,6 +291,11 @@ class AttendanceService extends BaseService
 
         if ($meetingId <= 0 || $userId <= 0) {
             return $this->error('Sesi pertemuan dan anggota wajib dipilih.');
+        }
+
+        $targetUser = $this->userModel->select('users.*, roles.slug as role_slug')->join('roles', 'roles.id = users.role_id')->find($userId);
+        if ($targetUser && ($targetUser['role_slug'] ?? '') === 'superadmin') {
+            return $this->error('Anggota dengan role Super Admin adalah pengelola web dan tidak dapat dicatat presensinya.');
         }
 
         $this->db->transBegin();

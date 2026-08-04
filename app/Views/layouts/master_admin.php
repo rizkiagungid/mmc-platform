@@ -17,10 +17,55 @@
     <link rel="stylesheet" href="<?= base_url('assets/vendor/bootstrap-icons/bootstrap-icons.min.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/vendor/datatables/dataTables.bootstrap5.min.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/vendor/sweetalert2/dark.css') ?>">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/pwa-install-banner.css') ?>">
+
+    <style>
+        /* Select2 Dark Mode Custom Styling */
+        .select2-container--default .select2-selection--single {
+            background-color: #000 !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #fff !important;
+            height: 38px !important;
+            padding: 4px 6px !important;
+            border-radius: 0.375rem !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            color: #fff !important;
+            line-height: 28px !important;
+            padding-left: 4px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px !important;
+        }
+        .select2-dropdown {
+            background-color: #121218 !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #fff !important;
+            z-index: 1065 !important;
+        }
+        .select2-search__field {
+            background-color: #000 !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #fff !important;
+            border-radius: 0.25rem !important;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+        }
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background-color: rgba(220, 53, 69, 0.25) !important;
+            color: #fff !important;
+        }
+        .select2-results__option {
+            color: #e0e0e0 !important;
+            padding: 8px 12px !important;
+        }
+    </style>
 
     <!-- PWA Meta Tags -->
     <?php helper('pwa'); ?>
@@ -77,13 +122,15 @@
                         <i class="fa-solid fa-users-gear text-success me-1"></i> Manajemen Anggota
                     </a>
 
-                    <a href="<?= base_url('attendance/scan') ?>" class="sidebar-link <?= (url_is('attendance/scan*')) ? 'active' : '' ?>">
-                        <i class="fa-solid fa-camera text-danger me-1"></i> Presensi Saya (QR / PIN)
-                    </a>
+                    <?php if (session()->get('role_slug') !== 'superadmin'): ?>
+                        <a href="<?= base_url('attendance/scan') ?>" class="sidebar-link <?= (url_is('attendance/scan*')) ? 'active' : '' ?>">
+                            <i class="fa-solid fa-camera text-danger me-1"></i> Presensi Saya (QR / PIN)
+                        </a>
 
-                    <a href="<?= base_url('attendance/history') ?>" class="sidebar-link <?= (url_is('attendance/history*')) ? 'active' : '' ?>">
-                        <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Riwayat Presensi Saya
-                    </a>
+                        <a href="<?= base_url('attendance/history') ?>" class="sidebar-link <?= (url_is('attendance/history*')) ? 'active' : '' ?>">
+                            <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Riwayat Presensi Saya
+                        </a>
+                    <?php endif; ?>
 
                     <div class="px-2 mt-3 mb-2">
                         <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">WEBSITE CMS</span>
@@ -122,7 +169,7 @@
                     </a>
 
                     <a href="<?= base_url('admin/cms/messages') ?>" class="sidebar-link <?= (url_is('admin/cms/messages*')) ? 'active' : '' ?>">
-                        <i class="fa-solid fa-inbox text-info me-1"></i> Pesan Kontak
+                        <i class="fa-solid fa-comments text-info me-1"></i> Kritik & Saran
                     </a>
 
                     <?php if (in_array(session()->get('role_slug'), ['superadmin', 'pembina'])): ?>
@@ -155,6 +202,10 @@
 
                     <a href="<?= base_url('member/learning') ?>" class="sidebar-link <?= (url_is('member/learning*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-book-bookmark text-danger me-1"></i> Materi Pembelajaran
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/messages') ?>" class="sidebar-link <?= (url_is('admin/cms/messages*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-comments text-info me-1"></i> Kritik & Saran
                     </a>
                 <?php endif; ?>
 
@@ -256,6 +307,7 @@
     <script src="<?= base_url('assets/vendor/sweetalert2/sweetalert2.min.js') ?>"></script>
     <script src="<?= base_url('assets/vendor/qrious/qrious.min.js') ?>"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- SweetAlert2 Toast & Auto-Close Mobile Nav Handler -->
     <script>

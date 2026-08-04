@@ -190,6 +190,30 @@ class CmsService extends BaseService
         return $this->success('Pesan Anda telah terkirim ke Pengurus Multimedia Club. Terima kasih!');
     }
 
+    public function saveFeedbackMessage(array $data): array
+    {
+        $subject  = trim($data['subject'] ?? 'Kritik & Saran');
+        $category = trim($data['category'] ?? 'Kritik & Saran');
+        $message  = trim($data['message'] ?? '');
+
+        if (empty($message)) {
+            return $this->error('Isi kritik dan saran tidak boleh kosong.');
+        }
+
+        $this->db->table('contact_messages')->insert([
+            'sender_name'  => 'Anonim',
+            'sender_email' => 'anonymous@multimediaclub.org',
+            'subject'      => $subject ?: 'Kritik & Saran',
+            'category'     => $category ?: 'Kritik & Saran',
+            'message'      => $message,
+            'is_anonymous' => 1,
+            'status'       => 'unread',
+            'created_at'   => date('Y-m-d H:i:s'),
+        ]);
+
+        return $this->success('Kritik & Saran Anda berhasil dikirim secara anonim. Terima kasih atas masukannya!');
+    }
+
     public function getContactMessages(): array
     {
         return $this->db->table('contact_messages')

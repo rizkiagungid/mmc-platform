@@ -77,7 +77,7 @@ class CmsController extends BaseController
         }
 
         return view('App\Modules\Cms\Views\contact_messages', [
-            'title'    => 'Pesan & Live Chat Kontak Website',
+            'title'    => 'Kritik & Saran',
             'messages' => $messages,
         ]);
     }
@@ -108,10 +108,16 @@ class CmsController extends BaseController
             return redirect()->back()->with('error', 'Balasan pesan tidak boleh kosong.');
         }
 
+        $userRole = session()->get('role_slug');
+        $isAdmin = in_array($userRole, ['superadmin', 'pembina', 'bph']);
+
+        $senderType = $isAdmin ? 'admin' : 'member';
+        $senderName = $isAdmin ? (session()->get('full_name') ?: 'Pengurus MMC') : 'Anonim';
+
         $this->db->table('contact_replies')->insert([
             'contact_message_id' => $id,
-            'sender_type'        => 'admin',
-            'sender_name'        => session()->get('full_name') ?: 'Pengurus MMC',
+            'sender_type'        => $senderType,
+            'sender_name'        => $senderName,
             'message'            => $text,
             'created_at'         => date('Y-m-d H:i:s'),
         ]);
@@ -121,7 +127,22 @@ class CmsController extends BaseController
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
-        return redirect()->back()->with('success', 'Balasan berhasil dikirimkan ke pengunjung.');
+        return redirect()->back()->with('success', 'Balasan berhasil dikirimkan.');
+    }
+
+    public function storeFeedback()
+    {
+        $result = $this->cmsService->saveFeedbackMessage($this->request->getPost());
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON($result['body']);
+        }
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->withInput()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
     }
 
     public function submitContact()

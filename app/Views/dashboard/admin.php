@@ -71,9 +71,11 @@
             </div>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-            <a href="<?= base_url('attendance/scan') ?>" class="btn btn-warning px-3 fw-semibold">
-                <i class="fa-solid fa-qrcode me-1"></i> Absen Saya (QR / PIN)
-            </a>
+            <?php if (session()->get('role_slug') !== 'superadmin'): ?>
+                <a href="<?= base_url('attendance/scan') ?>" class="btn btn-warning px-3 fw-semibold">
+                    <i class="fa-solid fa-qrcode me-1"></i> Absen Saya (QR / PIN)
+                </a>
+            <?php endif; ?>
             <a href="<?= base_url('admin/meetings/qr/' . $activeMeeting['id']) ?>" class="btn btn-red px-3">
                 <i class="fa-solid fa-expand me-1"></i> Tampilkan QR Poster
             </a>

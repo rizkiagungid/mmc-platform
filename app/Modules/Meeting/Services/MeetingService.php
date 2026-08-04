@@ -130,6 +130,32 @@ class MeetingService extends BaseService
         }
     }
 
+    public function completeMeeting(int $id, ?int $operatorId = null): array
+    {
+        $meeting = $this->meetingModel->find($id);
+        if (!$meeting) {
+            return $this->error('Pertemuan tidak ditemukan.', null, 404);
+        }
+
+        $this->beginTransaction();
+
+        try {
+            $this->meetingModel->update($id, ['status' => 'completed']);
+            
+            // Run Auto Alpha
+            $attendanceService = new \App\Modules\Attendance\Services\AttendanceService();
+            $attendanceService->processAutoAlphaForExpiredMeetings();
+
+            $this->auditLogModel->recordLog($operatorId, 'MEETING_COMPLETE', "Selesai & Auto-Alpa pertemuan ID: {$id} ({$meeting['title']})");
+
+            $this->commitTransaction();
+            return $this->success("Sesi pertemuan '{$meeting['title']}' berhasil diselesaikan dan status Alpa telah otomatis diberikan kepada anggota yang tidak scan.");
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal menyelesaikan pertemuan: ' . $e->getMessage());
+        }
+    }
+
     public function deleteMeeting(int $id, ?int $operatorId = null): array
     {
         $meeting = $this->meetingModel->find($id);

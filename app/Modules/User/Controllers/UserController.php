@@ -190,4 +190,38 @@ class UserController extends BaseController
 
         return redirect()->back()->with('success', $result['body']['message']);
     }
+
+    public function bulkUpdate()
+    {
+        $userIds = $this->request->getPost('user_ids');
+        if (!is_array($userIds) || empty($userIds)) {
+            return redirect()->back()->with('error', 'Pilih minimal satu anggota untuk diubah.');
+        }
+
+        $result = $this->userService->bulkUpdateUsers($userIds, $this->request->getPost(), session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->to('/admin/users')->with('success', $result['body']['message']);
+    }
+
+    public function bulkAction()
+    {
+        $userIds = $this->request->getPost('user_ids');
+        $action  = $this->request->getPost('action');
+
+        if (!is_array($userIds) || empty($userIds)) {
+            return redirect()->back()->with('error', 'Pilih minimal satu anggota.');
+        }
+
+        $result = $this->userService->bulkActionUsers($userIds, (string)$action, session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->to('/admin/users')->with('success', $result['body']['message']);
+    }
 }

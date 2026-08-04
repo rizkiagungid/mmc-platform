@@ -46,11 +46,38 @@
     </form>
 </div>
 
+<!-- Floating Bulk Actions Bar -->
+<div id="bulk-actions-bar" class="saas-card p-3 mb-3 border border-warning border-opacity-50 bg-black bg-opacity-75 d-none animate__animated animate__fadeIn">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-warning text-dark fs-6 px-3 py-2 fw-bold" id="selected-count">0 Anggota Dipilih</span>
+            <small class="text-secondary">Pilih aksi massal yang ingin diterapkan pada anggota terpilih:</small>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#bulkEditModal">
+                <i class="fa-solid fa-pen-to-square me-1"></i> Edit Data Massal
+            </button>
+            <button type="button" class="btn btn-info btn-sm text-white fw-bold" id="btn-bulk-qr">
+                <i class="fa-solid fa-qrcode me-1"></i> Regenerasi QR Massal
+            </button>
+            <button type="button" class="btn btn-success btn-sm fw-bold" id="btn-bulk-activate">
+                <i class="fa-solid fa-user-check me-1"></i> Aktifkan Massal
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm fw-semibold" id="btn-bulk-delete">
+                <i class="fa-solid fa-trash me-1"></i> Hapus Massal
+            </button>
+        </div>
+    </div>
+</div>
+
 <div class="saas-card p-4">
     <div class="table-responsive">
         <table id="users-table" class="table table-dark-saas datatable-saas align-middle">
             <thead>
                 <tr>
+                    <th style="width: 40px;" class="text-center">
+                        <input type="checkbox" id="check-all-users" class="form-check-input">
+                    </th>
                     <th>Member Info</th>
                     <th>Role</th>
                     <th>NIS / NIP</th>
@@ -63,6 +90,9 @@
             <tbody>
                 <?php foreach ($users as $u): ?>
                     <tr>
+                        <td class="text-center">
+                            <input type="checkbox" value="<?= $u['id'] ?>" class="form-check-input user-select-chk">
+                        </td>
                         <td>
                             <div class="d-flex align-items-center gap-3">
                                 <?php if (!empty($u['avatar'])): ?>
@@ -156,12 +186,98 @@
     </div>
 </div>
 
+<!-- Modal Edit Massal Anggota -->
+<div class="modal fade" id="bulkEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-white border border-secondary border-opacity-25">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title font-heading">
+                    <i class="fa-solid fa-user-pen text-warning me-2"></i> Edit Data Anggota Secara Massal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="<?= base_url('admin/users/bulk-update') ?>" method="POST" id="bulkEditForm">
+                <?= csrf_field() ?>
+                <div id="bulk-edit-hidden-ids"></div>
+                
+                <div class="modal-body">
+                    <div class="alert alert-dark border border-secondary border-opacity-25 mb-4">
+                        <i class="fa-solid fa-circle-info text-info me-2"></i>
+                        Centang bidang data yang ingin Anda perbarui untuk <strong class="text-warning" id="bulk-edit-count-label">0 anggota</strong> terpilih. Bidang yang tidak dicentang tidak akan diubah.
+                    </div>
+
+                    <div class="row g-3">
+                        <!-- Option 1: Status Akun -->
+                        <div class="col-12">
+                            <div class="saas-card p-3 bg-black bg-opacity-25 border border-secondary border-opacity-25">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input bulk-field-chk" type="checkbox" name="change_status" value="1" id="chk_change_status" data-target="#select_bulk_status">
+                                    <label class="form-check-label fw-bold text-white" for="chk_change_status">
+                                        <i class="fa-solid fa-circle-notch text-warning me-1"></i> Ubah Status Akun Massal
+                                    </label>
+                                </div>
+                                <select name="status" id="select_bulk_status" class="form-select bg-dark text-white border-secondary border-opacity-50" disabled>
+                                    <option value="active">Aktif (Active)</option>
+                                    <option value="inactive">Menunggu Konfirmasi (Inactive)</option>
+                                    <option value="left">Keluar Ekskul (Left)</option>
+                                    <option value="suspended">Suspended (Ditangguhkan)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Option 2: Role / Jabatan -->
+                        <div class="col-12">
+                            <div class="saas-card p-3 bg-black bg-opacity-25 border border-secondary border-opacity-25">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input bulk-field-chk" type="checkbox" name="change_role" value="1" id="chk_change_role" data-target="#select_bulk_role">
+                                    <label class="form-check-label fw-bold text-white" for="chk_change_role">
+                                        <i class="fa-solid fa-user-shield text-info me-1"></i> Ubah Role / Jabatan Massal
+                                    </label>
+                                </div>
+                                <select name="role_id" id="select_bulk_role" class="form-select bg-dark text-white border-secondary border-opacity-50" disabled>
+                                    <?php foreach ($roles as $r): ?>
+                                        <option value="<?= $r['id'] ?>"><?= esc($r['name']) ?> (<?= esc($r['slug']) ?>)</option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Option 3: Kelas / Divisi -->
+                        <div class="col-12">
+                            <div class="saas-card p-3 bg-black bg-opacity-25 border border-secondary border-opacity-25">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input bulk-field-chk" type="checkbox" name="change_class" value="1" id="chk_change_class" data-target="#input_bulk_class">
+                                    <label class="form-check-label fw-bold text-white" for="chk_change_class">
+                                        <i class="fa-solid fa-graduation-cap text-success me-1"></i> Ubah Kelas / Divisi Massal
+                                    </label>
+                                </div>
+                                <input type="text" name="class_dept" id="input_bulk_class" class="form-control bg-dark text-white border-secondary border-opacity-50" placeholder="Contoh: XII Multimedia 1 / Divisi Videography" disabled>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-saas-dark" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning fw-bold">
+                        <i class="fa-solid fa-check-double me-1"></i> Simpan Perubahan Massal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
     $(document).ready(function() {
         const table = $('#users-table').DataTable({
+            order: [],
+            columnDefs: [
+                { orderable: false, targets: 0 }
+            ],
             language: {
                 search: "Cari Cepat:",
                 lengthMenu: "Tampilkan _MENU_ data",
@@ -173,6 +289,104 @@
 
         $('#custom-user-search').on('keyup input', function() {
             table.search(this.value).draw();
+        });
+
+        // Store selected user IDs
+        let selectedUserIds = [];
+
+        function updateSelectionUI() {
+            const count = selectedUserIds.length;
+            if (count > 0) {
+                $('#bulk-actions-bar').removeClass('d-none');
+                $('#selected-count').text(`${count} Anggota Dipilih`);
+                $('#bulk-edit-count-label').text(`${count} anggota`);
+            } else {
+                $('#bulk-actions-bar').addClass('d-none');
+                $('#check-all-users').prop('checked', false);
+            }
+        }
+
+        // Handle Check All
+        $('#check-all-users').on('change', function() {
+            const isChecked = $(this).is(':checked');
+            selectedUserIds = [];
+            $('.user-select-chk').each(function() {
+                $(this).prop('checked', isChecked);
+                if (isChecked) {
+                    selectedUserIds.push($(this).val());
+                }
+            });
+            updateSelectionUI();
+        });
+
+        // Handle Individual Checkbox
+        $(document).on('change', '.user-select-chk', function() {
+            const val = $(this).val();
+            if ($(this).is(':checked')) {
+                if (!selectedUserIds.includes(val)) {
+                    selectedUserIds.push(val);
+                }
+            } else {
+                selectedUserIds = selectedUserIds.filter(id => id !== val);
+            }
+            updateSelectionUI();
+        });
+
+        // Enable/Disable form inputs inside Bulk Edit Modal
+        $('.bulk-field-chk').on('change', function() {
+            const target = $(this).data('target');
+            $(target).prop('disabled', !$(this).is(':checked'));
+        });
+
+        // Populate hidden inputs when Bulk Edit Modal opens
+        $('#bulkEditModal').on('show.bs.modal', function() {
+            let hiddenContainer = $('#bulk-edit-hidden-ids');
+            hiddenContainer.empty();
+            selectedUserIds.forEach(id => {
+                hiddenContainer.append(`<input type="hidden" name="user_ids[]" value="${id}">`);
+            });
+        });
+
+        // Helper function to submit bulk actions
+        function submitBulkAction(action, confirmTitle, confirmText, confirmBtnText, btnColor) {
+            if (selectedUserIds.length === 0) return;
+
+            Swal.fire({
+                title: confirmTitle,
+                text: confirmText.replace('{count}', selectedUserIds.length),
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: btnColor,
+                cancelButtonColor: '#27272a',
+                confirmButtonText: confirmBtnText,
+                cancelButtonText: 'Batal',
+                background: '#121218',
+                color: '#fff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = $('<form action="<?= base_url("admin/users/bulk-action") ?>" method="POST"></form>');
+                    form.append('<?= csrf_field() ?>');
+                    form.append(`<input type="hidden" name="action" value="${action}">`);
+                    selectedUserIds.forEach(id => {
+                        form.append(`<input type="hidden" name="user_ids[]" value="${id}">`);
+                    });
+                    $('body').append(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // Bulk Action Handlers
+        $('#btn-bulk-activate').on('click', function() {
+            submitBulkAction('activate', 'Aktifkan Akun Massal?', 'Apakah Anda yakin ingin mengkonfirmasi dan mengaktifkan {count} akun anggota terpilih?', 'Ya, Aktifkan Semua', '#16a34a');
+        });
+
+        $('#btn-bulk-qr').on('click', function() {
+            submitBulkAction('regenerate_qr', 'Regenerasi QR Massal?', 'Regenerasi Member QR Code untuk {count} anggota akan membatalkan kartu QR lama mereka. Lanjutkan?', 'Ya, Regenerasi QR', '#0891b2');
+        });
+
+        $('#btn-bulk-delete').on('click', function() {
+            submitBulkAction('delete', 'Hapus Massal Anggota?', 'Apakah Anda yakin ingin menghapus {count} anggota terpilih dari sistem?', 'Ya, Hapus Semua', '#dc2626');
         });
     });
 </script>

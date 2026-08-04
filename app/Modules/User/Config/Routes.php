@@ -18,4 +18,6 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->get('users/delete/(:num)', '\App\Modules\User\Controllers\UserController::delete/$1');
     $routes->get('users/regenerate-qr/(:num)', '\App\Modules\User\Controllers\UserController::regenerateQr/$1');
     $routes->get('users/qr/(:segment)', '\App\Modules\User\Controllers\UserController::showQr/$1');
+    $routes->post('users/bulk-update', '\App\Modules\User\Controllers\UserController::bulkUpdate');
+    $routes->post('users/bulk-action', '\App\Modules\User\Controllers\UserController::bulkAction');
 });

@@ -12,5 +12,6 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->post('meetings/update/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::update/$1');
     $routes->get('meetings/delete/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::delete/$1');
     $routes->get('meetings/activate/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::activate/$1');
+    $routes->get('meetings/complete/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::complete/$1');
     $routes->get('meetings/qr/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::qrPoster/$1');
 });

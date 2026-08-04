@@ -57,3 +57,13 @@
 ## Phase 8
 - [x] Implement PWA (Progressive Web App) features (manifest.json, Service Worker) to allow offline access and "Add to Home Screen" installation.
 
+## Phase 9
+- [x] Implement AI Assistant (ChatGPT integration) for the website's "Hubungi Saya" chat feature.
+- [x] Allow public users to chat with the AI Assistant via the website.
+- [x] Enable admins to view and respond to AI-initiated conversations via the admin dashboard.
+- [x] Implement Select2 Searchable Dropdown inside Manual Attendance Modal
+
+## Phase 10
+- [x] batas presensi harus di fix
+- [x] export excell harus di fix
+

@@ -43,7 +43,7 @@ class AttendanceController extends BaseController
             }
         }
 
-        $allUsers = $this->userModel->getUsersWithRole();
+        $allUsers = $this->userModel->getUsersWithRole(null, null, false);
 
         return view('App\Modules\Attendance\Views\index', [
             'title'             => 'Rekap & Kelola Presensi - Admin CMS',
@@ -57,6 +57,10 @@ class AttendanceController extends BaseController
 
     public function scanMeetingQr()
     {
+        if (session()->get('role_slug') === 'superadmin') {
+            return redirect()->to('/dashboard')->with('info', 'Sebagai Super Admin (Pengelola Web), Anda tidak diwajibkan melakukan presensi.');
+        }
+
         $activeMeeting = $this->attendanceService->getActiveMeeting();
 
         return view('App\Modules\Attendance\Views\scan_meeting_qr', [
@@ -125,6 +129,10 @@ class AttendanceController extends BaseController
 
     public function history()
     {
+        if (session()->get('role_slug') === 'superadmin') {
+            return redirect()->to('/dashboard')->with('info', 'Sebagai Super Admin (Pengelola Web), Anda tidak diwajibkan memiliki riwayat presensi.');
+        }
+
         $userId      = session()->get('user_id');
         $attendances = $this->attendanceService->getUserAttendanceHistory($userId);
 
@@ -154,5 +162,112 @@ class AttendanceController extends BaseController
         }
 
         return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    public function export()
+    {
+        $filters = [
+            'meeting_id' => $this->request->getGetPost('meeting_id'),
+            'status'     => $this->request->getGetPost('status'),
+            'method'     => $this->request->getGetPost('method'),
+            'start_date' => $this->request->getGetPost('start_date'),
+            'end_date'   => $this->request->getGetPost('end_date'),
+        ];
+
+        $delimiter = $this->request->getGetPost('delimiter') ?: ';';
+        if (!in_array($delimiter, [';', ','])) {
+            $delimiter = ';';
+        }
+
+        $selectedCols = $this->request->getGetPost('columns');
+        if (!is_array($selectedCols) || empty($selectedCols)) {
+            $selectedCols = ['no', 'date', 'meeting', 'nis_nip', 'name', 'class', 'role', 'status', 'method', 'scan_time', 'notes'];
+        }
+
+        $attendances = $this->attendanceService->getFilteredAttendances($filters);
+
+        $filename = 'Rekap_Presensi_MMC_' . date('Y-m-d_H-i') . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        // Add UTF-8 BOM for Excel compatibility
+        fputs($output, "\xEF\xBB\xBF");
+        
+        // Add sep directive for Excel automatic column splitting
+        fputs($output, "sep={$delimiter}\n");
+
+        // Available headers map
+        $allHeaders = [
+            'no'        => 'No',
+            'date'      => 'Tanggal Pertemuan',
+            'meeting'   => 'Sesi Pertemuan',
+            'nis_nip'   => 'NIS / NIP',
+            'name'      => 'Nama Anggota',
+            'class'     => 'Kelas / Departemen',
+            'role'      => 'Role',
+            'status'    => 'Status Presensi',
+            'method'    => 'Metode Presensi',
+            'scan_time' => 'Waktu Scan',
+            'notes'     => 'Catatan',
+        ];
+
+        $headerRow = [];
+        foreach ($selectedCols as $colKey) {
+            if (isset($allHeaders[$colKey])) {
+                $headerRow[] = $allHeaders[$colKey];
+            }
+        }
+        fputcsv($output, $headerRow, $delimiter);
+
+        $no = 1;
+        foreach ($attendances as $row) {
+            $statusLabel = match($row['status'] ?? '') {
+                'present'   => 'Hadir (Present)',
+                'late'      => 'Terlambat (Late)',
+                'sick'      => 'Sakit (Sick)',
+                'permitted' => 'Izin (Permitted)',
+                'alpha'     => 'Alpa (Tanpa Keterangan)',
+                default     => strtoupper($row['status'] ?? '-')
+            };
+
+            $methodLabel = match($row['method'] ?? '') {
+                'meeting_qr'  => 'Scan QR Poster',
+                'member_qr'   => 'Scan QR Member',
+                'pin'         => '4-Digit PIN',
+                'manual'      => 'Manual Input Admin',
+                'system_auto' => 'Otomatis Sistem (Auto-Alpha)',
+                default       => ucfirst($row['method'] ?? '-')
+            };
+
+            $dataRowMap = [
+                'no'        => $no++,
+                'date'      => date('d/m/Y', strtotime($row['meeting_date'] ?? $row['created_at'] ?? date('Y-m-d'))),
+                'meeting'   => $row['meeting_title'] ?? '-',
+                'nis_nip'   => $row['nis_nip'] ?? '-',
+                'name'      => $row['full_name'] ?? '-',
+                'class'     => $row['class_dept'] ?? '-',
+                'role'      => strtoupper($row['role_slug'] ?? $row['role_name'] ?? 'MEMBER'),
+                'status'    => $statusLabel,
+                'method'    => $methodLabel,
+                'scan_time' => !empty($row['scan_time']) ? date('d/m/Y H:i:s', strtotime($row['scan_time'])) : '-',
+                'notes'     => $row['notes'] ?? '-'
+            ];
+
+            $line = [];
+            foreach ($selectedCols as $colKey) {
+                if (array_key_exists($colKey, $dataRowMap)) {
+                    $line[] = $dataRowMap[$colKey];
+                }
+            }
+            fputcsv($output, $line, $delimiter);
+        }
+
+        fclose($output);
+        exit;
     }
 }

@@ -53,6 +53,8 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->get('users/activate/(:num)', '\App\Modules\User\Controllers\UserController::activate/$1');
     $routes->get('users/regenerate-qr/(:num)', '\App\Modules\User\Controllers\UserController::regenerateQr/$1');
     $routes->get('users/qr/(:segment)', '\App\Modules\User\Controllers\UserController::showQr/$1');
+    $routes->post('users/bulk-update', '\App\Modules\User\Controllers\UserController::bulkUpdate');
+    $routes->post('users/bulk-action', '\App\Modules\User\Controllers\UserController::bulkAction');
 
     // Meeting Management (Modular Meeting)
     $routes->get('meetings', '\App\Modules\Meeting\Controllers\MeetingController::index');
@@ -62,15 +64,17 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->post('meetings/update/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::update/$1');
     $routes->get('meetings/delete/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::delete/$1');
     $routes->get('meetings/activate/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::activate/$1');
+    $routes->get('meetings/complete/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::complete/$1');
     $routes->get('meetings/qr/(:num)', '\App\Modules\Meeting\Controllers\MeetingController::qrPoster/$1');
 
     // Attendance Management & Operator Member QR Scanner (Modular Attendance)
     $routes->get('attendance', '\App\Modules\Attendance\Controllers\AttendanceController::index');
+    $routes->get('attendance/export', '\App\Modules\Attendance\Controllers\AttendanceController::export');
     $routes->get('attendance/scan-member', '\App\Modules\Attendance\Controllers\AttendanceController::scanMemberQr');
     $routes->post('attendance/manual', '\App\Modules\Attendance\Controllers\AttendanceController::manualStore');
     $routes->post('attendance/update/(:num)', '\App\Modules\Attendance\Controllers\AttendanceController::update/$1');
     $routes->get('attendance/delete/(:num)', '\App\Modules\Attendance\Controllers\AttendanceController::delete/$1');
-
+    
     // Task Management & Submissions Evaluation (Modular Task)
     $routes->get('tasks', '\App\Modules\Task\Controllers\TaskController::index');
     $routes->get('tasks/create', '\App\Modules\Task\Controllers\TaskController::create');
@@ -96,13 +100,12 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     });
 });
 
-// Load Modular CMS Routes
-if (file_exists(APPPATH . 'Modules/Cms/Config/Routes.php')) {
-    require APPPATH . 'Modules/Cms/Config/Routes.php';
-}
-
-// Load Modular Learning Routes
-if (file_exists(APPPATH . 'Modules/Learning/Config/Routes.php')) {
-    require APPPATH . 'Modules/Learning/Config/Routes.php';
+// Load Modular Routes
+$modules = ['Auth', 'User', 'Meeting', 'Attendance', 'Task', 'Cms', 'Learning', 'System'];
+foreach ($modules as $module) {
+    $routeFile = APPPATH . 'Modules/' . $module . '/Config/Routes.php';
+    if (file_exists($routeFile)) {
+        require_once $routeFile;
+    }
 }
 
