@@ -61,8 +61,9 @@
                     </a>
 
                     <a href="<?= base_url('admin/attendance') ?>" class="sidebar-link <?= (url_is('admin/attendance*')) ? 'active' : '' ?>">
-                        <i class="fa-solid fa-qrcode text-warning me-1"></i> Presensi Absensi
+                        <i class="fa-solid fa-qrcode text-warning me-1"></i> Rekap Presensi Absensi
                     </a>
+
 
                     <a href="<?= base_url('admin/tasks') ?>" class="sidebar-link <?= (url_is('admin/tasks*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-list-check text-primary me-1"></i> Tugas & Proyek
@@ -74,6 +75,14 @@
                     
                     <a href="<?= base_url('admin/users') ?>" class="sidebar-link <?= (url_is('admin/users*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-users-gear text-success me-1"></i> Manajemen Anggota
+                    </a>
+
+                    <a href="<?= base_url('attendance/scan') ?>" class="sidebar-link <?= (url_is('attendance/scan*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-camera text-danger me-1"></i> Presensi Saya (QR / PIN)
+                    </a>
+
+                    <a href="<?= base_url('attendance/history') ?>" class="sidebar-link <?= (url_is('attendance/history*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Riwayat Presensi Saya
                     </a>
 
                     <div class="px-2 mt-3 mb-2">

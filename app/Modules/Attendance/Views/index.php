@@ -8,7 +8,10 @@
         <p class="text-secondary small m-0">Monitor kehadiran anggota, scanner operator, dan presensi manual</p>
     </div>
 
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="<?= base_url('attendance/scan') ?>" class="btn btn-warning">
+            <i class="fa-solid fa-camera me-2"></i> Presensi Saya (QR / PIN)
+        </a>
         <a href="<?= base_url('admin/attendance/scan-member') ?>" class="btn btn-red">
             <i class="fa-solid fa-qrcode me-2"></i> Buka Scanner Operator (Member QR)
         </a>
@@ -196,11 +199,11 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-secondary small">Pilih Anggota MMC</label>
+                        <label class="form-label text-secondary small">Pilih Pengguna / Anggota (Semua Role)</label>
                         <select name="user_id" class="form-select" required>
-                            <option value="">-- Pilih Anggota --</option>
+                            <option value="">-- Pilih Pengguna / Anggota --</option>
                             <?php foreach ($allUsers as $u): ?>
-                                <option value="<?= $u['id'] ?>"><?= esc($u['full_name']) ?> (<?= esc($u['nis_nip'] ?: '-') ?>)</option>
+                                <option value="<?= $u['id'] ?>">[<?= esc(strtoupper($u['role_slug'] ?? 'MEMBER')) ?>] <?= esc($u['full_name']) ?> (<?= esc($u['nis_nip'] ?: '-') ?>)</option>
                             <?php endforeach; ?>
                         </select>
                     </div>

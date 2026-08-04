@@ -51,7 +51,7 @@
 
                             <div class="col-md-6">
                                 <label class="form-label text-secondary small fw-medium">Kelas - Divisi</label>
-                                <input type="text" name="class_dept" class="form-control" placeholder="Contoh: Rizki agung - X MIPA 2" value="<?= old('class_dept') ?>" required>
+                                <input type="text" name="class_dept" class="form-control" placeholder="Contoh: XI 2 - Programming" value="<?= old('class_dept') ?>" required>
                             </div>
 
                             <div class="col-md-6">
