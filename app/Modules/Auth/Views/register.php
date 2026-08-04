@@ -8,7 +8,9 @@
                 <div class="saas-card p-4 p-md-5 border border-danger border-opacity-25 shadow-lg">
 
                     <div class="text-center mb-4">
-                        <img src="<?= base_url('assets/logo-mm-2023.png') ?>" alt="MMC Logo" style="height: 54px;" class="rounded-3 p-1.5 bg-white mb-3 shadow">
+                        <div class="rounded-3 bg-danger bg-gradient d-inline-flex align-items-center justify-content-center mb-3" style="width: 48px; height: 48px;">
+                            <i class="fa-solid fa-user-plus text-white fs-4"></i>
+                        </div>
                         <h3 class="text-white font-heading mb-1">Pendaftaran Anggota Baru</h3>
                         <p class="text-secondary small">Bergabung dengan Multimedia Club SMAN 1 Tamansari</p>
                     </div>
@@ -48,8 +50,8 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-medium">Kelas / Jurusan / Devisi</label>
-                                <input type="text" name="class_dept" class="form-control" placeholder="Contoh: X MIPA 2" value="<?= old('class_dept') ?>" required>
+                                <label class="form-label text-secondary small fw-medium">Kelas - Divisi</label>
+                                <input type="text" name="class_dept" class="form-control" placeholder="Contoh: Rizki agung - X MIPA 2" value="<?= old('class_dept') ?>" required>
                             </div>
 
                             <div class="col-md-6">
