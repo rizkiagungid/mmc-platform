@@ -67,7 +67,7 @@
             </div>
 
             <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 text-secondary small">
-                <i class="fa-solid fa-circle-info text-info me-1"></i> Klik tombol **Evaluasi** di bawah untuk memberikan nilai dan feedback ulasan karya.
+                <i class="fa-solid fa-circle-info text-info me-1"></i> Klik tombol **Evaluasi** di bawah  untuk memberikan nilai dan feedback ulasan karya.
             </div>
         </div>
     </div>
