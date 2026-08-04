@@ -30,6 +30,7 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/pwa-install-banner.css') ?>">
 
     <!-- PWA Meta Tags -->
     <?= pwa_meta_tags() ?>
@@ -93,21 +94,29 @@
             <div class="row g-4">
                 <div class="col-lg-5">
                     <div class="d-flex align-items-center gap-2 mb-3">
-                        <img src="<?= base_url('assets/logo-mm-2023.png') ?>" alt="Multimedia Club Logo" style="height: 34px;" class="rounded-2 p-1 bg-white">
-                        <span class="fs-5 fw-bold text-white font-heading">MMC SMAN 1 Tamansari</span>
+                        <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="Multimedia Club Logo" style="height: 34px;" class="rounded-2 p-1 bg-white">
+                        <span class="fs-5 fw-bold text-white font-heading"><?= esc(get_setting('footer_brand_name', get_setting('site_title', 'MMC SMAN 1 Tamansari'))) ?></span>
                     </div>
                     <p class="text-secondary small pe-lg-5 mb-3">
-                        Wadah kreativitas siswa SMAN 1 Tamansari dalam bidang videografi, fotografi, desain grafis, pemrograman web, dan penyiaran media digital.
+                        <?= esc(get_setting('footer_about', 'Wadah kreativitas siswa SMAN 1 Tamansari dalam bidang videografi, fotografi, desain grafis, pemrograman web, dan penyiaran media digital.')) ?>
                     </p>
                     <div class="d-flex gap-3 text-secondary">
-                        <a href="#" class="text-secondary fs-5"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="text-secondary fs-5"><i class="fab fa-youtube"></i></a>
-                        <a href="#" class="text-secondary fs-5"><i class="fab fa-tiktok"></i></a>
-                        <a href="#" class="text-secondary fs-5"><i class="fab fa-github"></i></a>
+                        <?php if ($ig = get_setting('social_instagram', '#')): ?>
+                            <a href="<?= esc($ig) ?>" target="_blank" class="text-secondary fs-5" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <?php endif; ?>
+                        <?php if ($yt = get_setting('social_youtube', '#')): ?>
+                            <a href="<?= esc($yt) ?>" target="_blank" class="text-secondary fs-5" title="YouTube"><i class="fab fa-youtube"></i></a>
+                        <?php endif; ?>
+                        <?php if ($tt = get_setting('social_tiktok', '#')): ?>
+                            <a href="<?= esc($tt) ?>" target="_blank" class="text-secondary fs-5" title="TikTok"><i class="fab fa-tiktok"></i></a>
+                        <?php endif; ?>
+                        <?php if ($gh = get_setting('social_github', '#')): ?>
+                            <a href="<?= esc($gh) ?>" target="_blank" class="text-secondary fs-5" title="GitHub"><i class="fab fa-github"></i></a>
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="col-6 col-lg-3">
-                    <h6 class="text-white font-heading mb-3">Navigasi Cepat</h6>
+                    <h6 class="text-white font-heading mb-3"><?= esc(get_setting('footer_nav_title', 'Navigasi Cepat')) ?></h6>
                     <ul class="list-unstyled text-secondary small d-flex flex-column gap-2">
                         <li><a href="<?= base_url('about') ?>" class="text-secondary">Tentang Klub</a></li>
                         <li><a href="<?= base_url('learning-path') ?>" class="text-secondary">Divisi & Kurikulum</a></li>
@@ -117,14 +126,25 @@
                     </ul>
                 </div>
                 <div class="col-6 col-lg-4">
-                    <h6 class="text-white font-heading mb-3">Kontak & Lokasi</h6>
-                    <p class="text-secondary small mb-1"><i class="fa-solid fa-location-dot me-2 text-danger"></i> SMAN 1 Tamansari, Kab. Bogor</p>
-                    <p class="text-secondary small mb-1"><i class="fa-solid fa-envelope me-2 text-danger"></i> multimedia@sman1tamansari.sch.id</p>
-                    <p class="text-secondary small mb-0"><i class="fa-solid fa-phone me-2 text-danger"></i> +62 812-3456-7890</p>
+                    <h6 class="text-white font-heading mb-3"><?= esc(get_setting('footer_contact_title', 'Kontak & Lokasi')) ?></h6>
+                    <?php if ($addr = get_setting('footer_address', get_setting('school_address', 'SMAN 1 Tamansari, Kab. Bogor'))): ?>
+                        <p class="text-secondary small mb-1"><i class="fa-solid fa-location-dot me-2 text-danger"></i> <?= esc($addr) ?></p>
+                    <?php endif; ?>
+                    <?php if ($email = get_setting('footer_email', get_setting('contact_email', 'multimediasman1t@gmail.com'))): ?>
+                        <p class="text-secondary small mb-1"><i class="fa-solid fa-envelope me-2 text-danger"></i> <?= esc($email) ?></p>
+                    <?php endif; ?>
+                    <?php if ($phone = get_setting('footer_phone', get_setting('club_phone', '+62 812-3456-7890'))): ?>
+                        <p class="text-secondary small mb-0"><i class="fa-solid fa-phone me-2 text-danger"></i> <?= esc($phone) ?></p>
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="border-top border-secondary border-opacity-10 mt-4 pt-4 text-center text-secondary small">
-                &copy; <?= date('Y') ?> Multimedia Club SMAN 1 Tamansari. Built with CodeIgniter 4 & Dark SaaS UI.
+                <?php 
+                    $defaultCopy = '&copy; {year} Multimedia Club SMAN 1 Tamansari. Built with CodeIgniter 4 & Dark SaaS UI.';
+                    $copyrightText = get_setting('footer_copyright', $defaultCopy);
+                    $copyrightText = str_replace('{year}', date('Y'), $copyrightText);
+                ?>
+                <?= $copyrightText ?>
             </div>
         </div>
     </footer>
@@ -171,19 +191,27 @@
     
     <?= $this->renderSection('scripts') ?>
 
-    <!-- PWA Install Banner (Android / Chrome / Edge) -->
-    <div id="pwaInstallBanner" class="position-fixed bottom-0 start-50 translate-middle-x mb-3 p-3 rounded-3 bg-dark border border-danger shadow-lg text-white style-tiny z-3" style="display: none; max-width: 480px; width: 92%;">
-        <div class="d-flex align-items-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <img src="<?= base_url('assets/logo-mm-2023.png') ?>" alt="MMC Logo" style="height: 32px;" class="bg-white p-1 rounded-2">
-                <div>
-                    <div class="fw-bold">Install MMC Platform</div>
-                    <div class="text-secondary style-tiny">Akses cepat seperti aplikasi native di smartphone.</div>
+    <!-- Progressier-Style Top Floating PWA Install Banner -->
+    <div id="pwaProgressierBanner">
+        <div class="pwa-banner-container">
+            <div class="pwa-banner-brand">
+                <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="MMC Logo" class="pwa-banner-logo">
+                <div class="pwa-banner-info">
+                    <div class="pwa-banner-title"><?= esc(get_setting('site_title', 'Multimedia Club SMAN 1 Tamansari')) ?></div>
+                    <div class="pwa-banner-desc">Install aplikasi resmi agar akses lebih cepat & dapat digunakan secara offline.</div>
+                </div>
+                <div class="pwa-banner-benefits d-none d-lg-flex">
+                    <span class="pwa-benefit-chip"><i class="fa-solid fa-bolt text-warning"></i> Cepat</span>
+                    <span class="pwa-benefit-chip"><i class="fa-solid fa-wifi-slash text-danger"></i> Offline</span>
+                    <span class="pwa-benefit-chip"><i class="fa-solid fa-bell text-info"></i> Notifikasi</span>
+                    <span class="pwa-benefit-chip"><i class="fa-solid fa-expand text-success"></i> Fullscreen</span>
                 </div>
             </div>
-            <div class="d-flex gap-1 text-nowrap">
-                <button class="btn btn-sm btn-red px-3" onclick="triggerPwaInstall()">Install</button>
-                <button class="btn btn-sm btn-outline-light px-2" onclick="dismissPwaInstallBanner()">Nanti</button>
+            <div class="pwa-banner-actions">
+                <button class="btn-pwa-install" onclick="triggerPwaInstall()"><i class="fa-solid fa-download"></i> Install</button>
+                <button class="btn-pwa-secondary" onclick="showPwaLearnMore()"><i class="fa-solid fa-circle-info me-1"></i> Pelajari</button>
+                <button class="btn-pwa-secondary" onclick="postponePwaInstall()">Nanti</button>
+                <button class="btn-pwa-close" onclick="closePwaBanner()" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
             </div>
         </div>
     </div>
@@ -198,7 +226,7 @@
                     <div class="text-secondary style-tiny">Tekan tombol <i class="fa-solid fa-arrow-up-from-bracket text-info"></i> Share lalu pilih <strong>'Tambah ke Layar Utama'</strong>.</div>
                 </div>
             </div>
-            <button class="btn btn-sm btn-outline-light px-2 text-nowrap" onclick="dismissPwaInstallBanner()">Mengerti</button>
+            <button class="btn-pwa-secondary py-1 px-2" onclick="dismissPwaInstallBanner()">Mengerti</button>
         </div>
     </div>
 
@@ -213,10 +241,65 @@
         </div>
     </div>
 
+    <!-- PWA Benefits Learn More Modal -->
+    <div class="modal fade" id="pwaLearnMoreModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border border-secondary border-opacity-25 shadow-lg">
+                <div class="modal-header border-bottom border-secondary border-opacity-25">
+                    <h5 class="modal-title font-heading"><i class="fa-solid fa-mobile-screen-button text-danger me-2"></i> Keuntungan Install Aplikasi MMC</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <img src="<?= base_url('assets/logo-mm-2023.png') ?>" style="height: 54px;" class="bg-white p-1 rounded-3 mb-2">
+                        <h6 class="fw-bold text-white font-heading">Aplikasi MMC Platform Native</h6>
+                        <p class="text-secondary style-tiny m-0">Pengalaman belajar dan manajemen tugas yang lebih praktis di perangkat Anda.</p>
+                    </div>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="p-2 rounded bg-danger bg-opacity-25 text-danger"><i class="fa-solid fa-wifi-slash fs-5"></i></div>
+                            <div>
+                                <div class="fw-bold text-white small">Akses Offline Lengkap</div>
+                                <div class="text-secondary style-tiny">Modul materi dan halaman penting tetap dapat dibuka walau tanpa internet.</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="p-2 rounded bg-warning bg-opacity-25 text-warning"><i class="fa-solid fa-bolt fs-5"></i></div>
+                            <div>
+                                <div class="fw-bold text-white small">Waktu Muat Instan</div>
+                                <div class="text-secondary style-tiny">Aset disimpan secara lokal untuk pengoperasian yang sangat cepat.</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="p-2 rounded bg-info bg-opacity-25 text-info"><i class="fa-solid fa-bell fs-5"></i></div>
+                            <div>
+                                <div class="fw-bold text-white small">Pemberitahuan Langsung</div>
+                                <div class="text-secondary style-tiny">Dapatkan notifikasi tugas baru dan presensi langsung ke HP Anda.</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="p-2 rounded bg-success bg-opacity-25 text-success"><i class="fa-solid fa-expand fs-5"></i></div>
+                            <div>
+                                <div class="fw-bold text-white small">Tampilan Fullscreen Tanpa Bar Browser</div>
+                                <div class="text-secondary style-tiny">Merasa seperti menggunakan aplikasi Play Store / App Store native.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-red w-100" onclick="triggerPwaInstall()" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-download me-1"></i> Install Aplikasi Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Body Tags Injection -->
     <?= get_setting('custom_body_tags', '') ?>
 
     <!-- PWA Service Worker Registration & Scripts -->
     <?= pwa_sw_script() ?>
+    <script src="<?= base_url('assets/js/pwa-install-banner.js') ?>"></script>
 </body>
 </html>

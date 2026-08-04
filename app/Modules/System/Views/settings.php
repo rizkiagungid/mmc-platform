@@ -21,6 +21,11 @@
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link fw-semibold" id="footer-tab" data-bs-toggle="tab" data-bs-target="#footer-pane" type="button">
+                    <i class="fa-solid fa-window-maximize text-primary me-1"></i> Tampilan Footer & Sosmed
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link fw-semibold" id="seo-tab" data-bs-toggle="tab" data-bs-target="#seo-pane" type="button">
                     <i class="fa-solid fa-magnifying-glass text-info me-1"></i> Meta Tags & SEO
                 </button>
@@ -93,6 +98,80 @@
                                 <img src="<?= (strpos($settings['site_favicon'], 'http') === 0) ? esc($settings['site_favicon']) : base_url($settings['site_favicon']) ?>" style="height: 32px;" class="bg-white p-1 rounded">
                             </div>
                         <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Pengaturan Footer & Sosmed -->
+            <div class="tab-pane fade" id="footer-pane" role="tabpanel">
+                <h5 class="text-white font-heading mb-3"><i class="fa-solid fa-window-maximize text-primary me-2"></i> Pengaturan Konten Footer & Media Sosial</h5>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium">Nama Brand Footer</label>
+                        <input type="text" name="footer_brand_name" class="form-control" value="<?= esc($settings['footer_brand_name'] ?? 'MMC SMAN 1 Tamansari') ?>" placeholder="MMC SMAN 1 Tamansari">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium">Judul Kolom Navigasi</label>
+                        <input type="text" name="footer_nav_title" class="form-control" value="<?= esc($settings['footer_nav_title'] ?? 'Navigasi Cepat') ?>">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label text-secondary small fw-medium">Deskripsi Singkat Footer</label>
+                        <textarea name="footer_about" class="form-control" rows="3" placeholder="Wadah kreativitas siswa SMAN 1 Tamansari..."><?= esc($settings['footer_about'] ?? 'Wadah kreativitas siswa SMAN 1 Tamansari dalam bidang videografi, fotografi, desain grafis, pemrograman web, dan penyiaran media digital.') ?></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium">Judul Kolom Kontak</label>
+                        <input type="text" name="footer_contact_title" class="form-control" value="<?= esc($settings['footer_contact_title'] ?? 'Kontak & Lokasi') ?>">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium"><i class="fa-solid fa-location-dot text-danger me-1"></i> Teks Alamat / Lokasi Footer</label>
+                        <input type="text" name="footer_address" class="form-control" value="<?= esc($settings['footer_address'] ?? 'SMAN 1 Tamansari, Kab. Bogor') ?>">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium"><i class="fa-solid fa-envelope text-danger me-1"></i> Email Kontak Footer</label>
+                        <input type="email" name="footer_email" class="form-control" value="<?= esc($settings['footer_email'] ?? 'multimediasman1t@gmail.com') ?>">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium"><i class="fa-solid fa-phone text-danger me-1"></i> Telepon / WhatsApp Footer</label>
+                        <input type="text" name="footer_phone" class="form-control" value="<?= esc($settings['footer_phone'] ?? '+62 812-3456-7890') ?>">
+                    </div>
+
+                    <!-- Tautan Media Sosial -->
+                    <div class="col-12 pt-2">
+                        <h6 class="text-white small fw-bold mb-3 border-bottom border-secondary border-opacity-25 pb-2"><i class="fa-solid fa-share-nodes text-info me-2"></i> Tautan Akun Media Sosial</h6>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium"><i class="fab fa-instagram text-danger me-1"></i> URL Instagram</label>
+                        <input type="text" name="social_instagram" class="form-control font-monospace style-tiny" value="<?= esc($settings['social_instagram'] ?? '#') ?>" placeholder="https://instagram.com/multimedia_sman1t">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium"><i class="fab fa-youtube text-danger me-1"></i> URL YouTube</label>
+                        <input type="text" name="social_youtube" class="form-control font-monospace style-tiny" value="<?= esc($settings['social_youtube'] ?? '#') ?>" placeholder="https://youtube.com/@multimediasman1t">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium"><i class="fab fa-tiktok text-light me-1"></i> URL TikTok</label>
+                        <input type="text" name="social_tiktok" class="form-control font-monospace style-tiny" value="<?= esc($settings['social_tiktok'] ?? '#') ?>" placeholder="https://tiktok.com/@multimediasman1t">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label text-secondary small fw-medium"><i class="fab fa-github text-light me-1"></i> URL GitHub</label>
+                        <input type="text" name="social_github" class="form-control font-monospace style-tiny" value="<?= esc($settings['social_github'] ?? '#') ?>" placeholder="https://github.com/multimediasman1t">
+                    </div>
+
+                    <!-- Copyright Text -->
+                    <div class="col-12 pt-2">
+                        <label class="form-label text-secondary small fw-medium">Teks Hak Cipta / Copyright Footer</label>
+                        <input type="text" name="footer_copyright" class="form-control" value="<?= esc($settings['footer_copyright'] ?? '&copy; {year} Multimedia Club SMAN 1 Tamansari. Built with CodeIgniter 4 & Dark SaaS UI.') ?>">
+                        <div class="form-text text-secondary style-tiny">Gunakan kode <code>{year}</code> untuk secara otomatis menampilkan tahun saat ini secara dinamis.</div>
                     </div>
                 </div>
             </div>

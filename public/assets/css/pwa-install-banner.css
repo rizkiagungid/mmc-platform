@@ -1,0 +1,193 @@
+/* Progressier-Inspired Top Floating PWA Install Banner - Dark SaaS Theme */
+
+#pwaProgressierBanner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10050;
+  background: rgba(18, 18, 24, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(220, 38, 38, 0.15);
+  padding: 0.75rem 1rem;
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  color: #ffffff;
+  display: none;
+  transform: translateY(-100%);
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+
+#pwaProgressierBanner.show-banner {
+  display: block;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+#pwaProgressierBanner.hide-banner {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.pwa-banner-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pwa-banner-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.pwa-banner-logo {
+  height: 40px;
+  width: 40px;
+  object-fit: contain;
+  background: #ffffff;
+  padding: 3px;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.pwa-banner-info {
+  display: flex;
+  flex-column: column;
+}
+
+.pwa-banner-title {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.pwa-banner-desc {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.pwa-banner-benefits {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pwa-benefit-chip {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 2rem;
+  font-family: monospace;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.pwa-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-pwa-install {
+  background: #dc2626;
+  color: #ffffff;
+  border: 1px solid #991b1b;
+  font-weight: 600;
+  font-size: 0.85rem;
+  padding: 0.45rem 1.15rem;
+  border-radius: 0.5rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.35);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-pwa-install:hover {
+  background: #ef4444;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+}
+
+.btn-pwa-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-weight: 500;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.5rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.btn-pwa-secondary:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.btn-pwa-close {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.25rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pwa-close:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Responsive Layout */
+@media (max-width: 991.98px) {
+  .pwa-banner-benefits {
+    display: none;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .pwa-banner-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .pwa-banner-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .btn-pwa-install {
+    flex-fill: 1;
+    flex: 1;
+  }
+}

@@ -20,6 +20,7 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/pwa-install-banner.css') ?>">
 
     <!-- PWA Meta Tags -->
     <?php helper('pwa'); ?>
@@ -298,19 +299,27 @@
 
     <?= $this->renderSection('scripts') ?>
 
-    <!-- PWA Install Banner (Android / Chrome / Edge) -->
-    <div id="pwaInstallBanner" class="position-fixed bottom-0 start-50 translate-middle-x mb-3 p-3 rounded-3 bg-dark border border-danger shadow-lg text-white style-tiny z-3" style="display: none; max-width: 480px; width: 92%;">
-        <div class="d-flex align-items-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-2">
-                <img src="<?= base_url('assets/logo-mm-2023.png') ?>" alt="MMC Logo" style="height: 32px;" class="bg-white p-1 rounded-2">
-                <div>
-                    <div class="fw-bold">Install MMC Platform</div>
-                    <div class="text-secondary style-tiny">Akses cepat seperti aplikasi native di smartphone.</div>
+    <!-- Progressier-Style Top Floating PWA Install Banner -->
+    <div id="pwaProgressierBanner">
+        <div class="pwa-banner-container">
+            <div class="pwa-banner-brand">
+                <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="MMC Logo" class="pwa-banner-logo">
+                <div class="pwa-banner-info">
+                    <div class="pwa-banner-title"><?= esc(get_setting('site_title', 'Multimedia Club SMAN 1 Tamansari')) ?></div>
+                    <div class="pwa-banner-desc">Install aplikasi resmi agar akses lebih cepat & dapat digunakan secara offline.</div>
+                </div>
+                <div class="pwa-banner-benefits d-none d-lg-flex">
+                    <span class="pwa-benefit-chip"><i class="fa-solid fa-bolt text-warning"></i> Cepat</span>
+                    <span class="pwa-benefit-chip"><i class="fa-solid fa-wifi-slash text-danger"></i> Offline</span>
+                    <span class="pwa-benefit-chip"><i class="fa-solid fa-bell text-info"></i> Notifikasi</span>
+                    <span class="pwa-benefit-chip"><i class="fa-solid fa-expand text-success"></i> Fullscreen</span>
                 </div>
             </div>
-            <div class="d-flex gap-1 text-nowrap">
-                <button class="btn btn-sm btn-red px-3" onclick="triggerPwaInstall()">Install</button>
-                <button class="btn btn-sm btn-outline-light px-2" onclick="dismissPwaInstallBanner()">Nanti</button>
+            <div class="pwa-banner-actions">
+                <button class="btn-pwa-install" onclick="triggerPwaInstall()"><i class="fa-solid fa-download"></i> Install</button>
+                <button class="btn-pwa-secondary" onclick="showPwaLearnMore()"><i class="fa-solid fa-circle-info me-1"></i> Pelajari</button>
+                <button class="btn-pwa-secondary" onclick="postponePwaInstall()">Nanti</button>
+                <button class="btn-pwa-close" onclick="closePwaBanner()" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
             </div>
         </div>
     </div>
@@ -325,7 +334,7 @@
                     <div class="text-secondary style-tiny">Tekan tombol <i class="fa-solid fa-arrow-up-from-bracket text-info"></i> Share lalu pilih <strong>'Tambah ke Layar Utama'</strong>.</div>
                 </div>
             </div>
-            <button class="btn btn-sm btn-outline-light px-2 text-nowrap" onclick="dismissPwaInstallBanner()">Mengerti</button>
+            <button class="btn-pwa-secondary py-1 px-2" onclick="dismissPwaInstallBanner()">Mengerti</button>
         </div>
     </div>
 
@@ -340,7 +349,62 @@
         </div>
     </div>
 
+    <!-- PWA Benefits Learn More Modal -->
+    <div class="modal fade" id="pwaLearnMoreModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-dark text-white border border-secondary border-opacity-25 shadow-lg">
+                <div class="modal-header border-bottom border-secondary border-opacity-25">
+                    <h5 class="modal-title font-heading"><i class="fa-solid fa-mobile-screen-button text-danger me-2"></i> Keuntungan Install Aplikasi MMC</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <img src="<?= base_url('assets/logo-mm-2023.png') ?>" style="height: 54px;" class="bg-white p-1 rounded-3 mb-2">
+                        <h6 class="fw-bold text-white font-heading">Aplikasi MMC Platform Native</h6>
+                        <p class="text-secondary style-tiny m-0">Pengalaman belajar dan manajemen tugas yang lebih praktis di perangkat Anda.</p>
+                    </div>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="p-2 rounded bg-danger bg-opacity-25 text-danger"><i class="fa-solid fa-wifi-slash fs-5"></i></div>
+                            <div>
+                                <div class="fw-bold text-white small">Akses Offline Lengkap</div>
+                                <div class="text-secondary style-tiny">Modul materi dan halaman penting tetap dapat dibuka walau tanpa internet.</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="p-2 rounded bg-warning bg-opacity-25 text-warning"><i class="fa-solid fa-bolt fs-5"></i></div>
+                            <div>
+                                <div class="fw-bold text-white small">Waktu Muat Instan</div>
+                                <div class="text-secondary style-tiny">Aset disimpan secara lokal untuk pengoperasian yang sangat cepat.</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="p-2 rounded bg-info bg-opacity-25 text-info"><i class="fa-solid fa-bell fs-5"></i></div>
+                            <div>
+                                <div class="fw-bold text-white small">Pemberitahuan Langsung</div>
+                                <div class="text-secondary style-tiny">Dapatkan notifikasi tugas baru dan presensi langsung ke HP Anda.</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 align-items-start">
+                            <div class="p-2 rounded bg-success bg-opacity-25 text-success"><i class="fa-solid fa-expand fs-5"></i></div>
+                            <div>
+                                <div class="fw-bold text-white small">Tampilan Fullscreen Tanpa Bar Browser</div>
+                                <div class="text-secondary style-tiny">Merasa seperti menggunakan aplikasi Play Store / App Store native.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-red w-100" onclick="triggerPwaInstall()" data-bs-dismiss="modal">
+                        <i class="fa-solid fa-download me-1"></i> Install Aplikasi Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- PWA Service Worker Registration & Scripts -->
     <?= pwa_sw_script() ?>
+    <script src="<?= base_url('assets/js/pwa-install-banner.js') ?>"></script>
 </body>
 </html>
