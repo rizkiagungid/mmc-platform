@@ -67,46 +67,41 @@ class AttendanceService extends BaseService
             return $this->error('Tidak ada sesi pertemuan yang sedang aktif saat ini.');
         }
 
-        $this->beginTransaction();
+        if ($scanType === 'meeting_qr') {
+            // Member scanned Meeting QR Poster
+            if (($activeMeeting['qr_token'] ?? '') !== $qrCode) {
+                return $this->error('QR Code Meeting tidak cocok atau sudah kadaluarsa.');
+            }
+
+            $targetUserId = $actorUserId;
+            $adminId      = null;
+            $method       = 'meeting_qr';
+        } elseif ($scanType === 'member_qr') {
+            // Operator scanned Member Permanent QR
+            $member = $this->userModel->getUserByUuid($qrCode);
+            if (!$member) {
+                return $this->error('Permanent Member QR Code tidak ditemukan atau sudah diregenerasi.');
+            }
+
+            if (($member['status'] ?? '') !== 'active') {
+                return $this->error("Status anggota {$member['full_name']} dalam kondisi {$member['status']}.");
+            }
+
+            $targetUserId = (int)$member['id'];
+            $adminId      = $actorUserId;
+            $method       = 'member_qr';
+        } else {
+            return $this->error('Tipe scanner presensi tidak valid.');
+        }
+
+        // Check duplicate attendance
+        if ($this->attendanceModel->isAlreadyAttended((int)$activeMeeting['id'], $targetUserId)) {
+            return $this->warning('Anggota ini sudah mencatatkan presensi pada sesi pertemuan ini.');
+        }
+
+        $this->db->transBegin();
 
         try {
-            if ($scanType === 'meeting_qr') {
-                // Member scanned Meeting QR Poster
-                if ($activeMeeting['qr_token'] !== $qrCode) {
-                    $this->db->transRollback();
-                    return $this->error('QR Code Meeting tidak cocok atau sudah kadaluarsa.');
-                }
-
-                $targetUserId = $actorUserId;
-                $adminId      = null;
-                $method       = 'meeting_qr';
-            } elseif ($scanType === 'member_qr') {
-                // Operator scanned Member Permanent QR
-                $member = $this->userModel->getUserByUuid($qrCode);
-                if (!$member) {
-                    $this->db->transRollback();
-                    return $this->error('Permanent Member QR Code tidak ditemukan atau sudah diregenerasi.');
-                }
-
-                if ($member['status'] !== 'active') {
-                    $this->db->transRollback();
-                    return $this->error("Status anggota {$member['full_name']} dalam kondisi {$member['status']}.");
-                }
-
-                $targetUserId = $member['id'];
-                $adminId      = $actorUserId;
-                $method       = 'member_qr';
-            } else {
-                $this->db->transRollback();
-                return $this->error('Tipe scanner presensi tidak valid.');
-            }
-
-            // Check duplicate attendance
-            if ($this->attendanceModel->isAlreadyAttended($activeMeeting['id'], $targetUserId)) {
-                $this->db->transRollback();
-                return $this->warning('Anggota ini sudah mencatatkan presensi pada sesi pertemuan ini.');
-            }
-
             // Record attendance
             $this->attendanceModel->insert([
                 'meeting_id'          => $activeMeeting['id'],
@@ -120,11 +115,17 @@ class AttendanceService extends BaseService
             ]);
 
             $user = $this->userModel->find($targetUserId);
-            $this->auditLogModel->recordLog($actorUserId, 'ATTENDANCE_SUCCESS', "Presensi berhasil tercatat via {$method} untuk: {$user['full_name']}");
+            $userName = $user['full_name'] ?? 'Anggota';
+            $this->auditLogModel->recordLog($actorUserId, 'ATTENDANCE_SUCCESS', "Presensi berhasil tercatat via {$method} untuk: {$userName}");
 
-            $this->commitTransaction();
-            return $this->success("Presensi Berhasil! Selamat datang {$user['full_name']}.", [
-                'user'    => $user['full_name'],
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return $this->error('Gagal memproses transaksi presensi ke database.');
+            }
+
+            $this->db->transCommit();
+            return $this->success("Presensi Berhasil! Selamat datang {$userName}.", [
+                'user'    => $userName,
                 'meeting' => $activeMeeting['title'],
                 'time'    => date('H:i:s'),
             ]);
@@ -146,18 +147,17 @@ class AttendanceService extends BaseService
             return $this->error('Tidak ada sesi pertemuan yang sedang aktif saat ini.');
         }
 
-        if ($activeMeeting['pin_code'] !== $pinCode) {
+        if (($activeMeeting['pin_code'] ?? '') !== $pinCode) {
             return $this->error('Kode PIN 4-Digit tidak sesuai.');
         }
 
-        $this->beginTransaction();
+        if ($this->attendanceModel->isAlreadyAttended((int)$activeMeeting['id'], $userId)) {
+            return $this->warning('Anda sudah mencatatkan presensi pada sesi pertemuan ini.');
+        }
+
+        $this->db->transBegin();
 
         try {
-            if ($this->attendanceModel->isAlreadyAttended($activeMeeting['id'], $userId)) {
-                $this->db->transRollback();
-                return $this->warning('Anda sudah mencatatkan presensi pada sesi pertemuan ini.');
-            }
-
             $this->attendanceModel->insert([
                 'meeting_id'          => $activeMeeting['id'],
                 'user_id'             => $userId,
@@ -170,9 +170,15 @@ class AttendanceService extends BaseService
             ]);
 
             $user = $this->userModel->find($userId);
-            $this->auditLogModel->recordLog($userId, 'ATTENDANCE_PIN_SUCCESS', "Presensi via 4-digit PIN berhasil untuk: {$user['full_name']}");
+            $userName = $user['full_name'] ?? 'Anggota';
+            $this->auditLogModel->recordLog($userId, 'ATTENDANCE_PIN_SUCCESS', "Presensi via 4-digit PIN berhasil untuk: {$userName}");
 
-            $this->commitTransaction();
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return $this->error('Gagal memproses transaksi PIN presensi ke database.');
+            }
+
+            $this->db->transCommit();
             return $this->success("Presensi via PIN Berhasil! Selamat mengikuti sesi '{$activeMeeting['title']}'.");
         } catch (\Throwable $e) {
             $this->db->transRollback();
@@ -182,12 +188,16 @@ class AttendanceService extends BaseService
 
     public function recordManual(array $data, int $operatorId): array
     {
-        $meetingId = (int)$data['meeting_id'];
-        $userId    = (int)$data['user_id'];
+        $meetingId = (int)($data['meeting_id'] ?? 0);
+        $userId    = (int)($data['user_id'] ?? 0);
         $status    = $data['status'] ?? 'present';
         $notes     = trim($data['notes'] ?? '');
 
-        $this->beginTransaction();
+        if ($meetingId <= 0 || $userId <= 0) {
+            return $this->error('Sesi pertemuan dan anggota wajib dipilih.');
+        }
+
+        $this->db->transBegin();
 
         try {
             if ($this->attendanceModel->isAlreadyAttended($meetingId, $userId)) {
@@ -212,13 +222,84 @@ class AttendanceService extends BaseService
             }
 
             $user = $this->userModel->find($userId);
-            $this->auditLogModel->recordLog($operatorId, 'ATTENDANCE_MANUAL', "Presensi manual ({$status}) dicatat untuk: {$user['full_name']}");
+            $userName = $user['full_name'] ?? 'Anggota';
+            $this->auditLogModel->recordLog($operatorId, 'ATTENDANCE_MANUAL', "Presensi manual ({$status}) dicatat untuk: {$userName}");
 
-            $this->commitTransaction();
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return $this->error('Gagal mencatat presensi manual di database.');
+            }
+
+            $this->db->transCommit();
             return $this->success($msg);
         } catch (\Throwable $e) {
             $this->db->transRollback();
             return $this->error('Gagal mencatat presensi manual: ' . $e->getMessage());
+        }
+    }
+
+    public function updateAttendance(int $attendanceId, array $data, int $operatorId): array
+    {
+        $attendance = $this->attendanceModel->find($attendanceId);
+        if (!$attendance) {
+            return $this->error('Data presensi tidak ditemukan.');
+        }
+
+        $status = $data['status'] ?? $attendance['status'];
+        $notes  = trim($data['notes'] ?? '');
+
+        $this->db->transBegin();
+
+        try {
+            $this->attendanceModel->update($attendanceId, [
+                'status'              => $status,
+                'notes'               => $notes,
+                'scanned_by_admin_id' => $operatorId,
+            ]);
+
+            $user = $this->userModel->find($attendance['user_id']);
+            $userName = $user['full_name'] ?? 'Anggota';
+            $this->auditLogModel->recordLog($operatorId, 'ATTENDANCE_UPDATE', "Status presensi diperbarui menjadi '{$status}' untuk: {$userName}");
+
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return $this->error('Gagal memperbarui presensi di database.');
+            }
+
+            $this->db->transCommit();
+            return $this->success('Data presensi berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal memperbarui presensi: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteAttendance(int $attendanceId, int $operatorId): array
+    {
+        $attendance = $this->attendanceModel->find($attendanceId);
+        if (!$attendance) {
+            return $this->error('Data presensi tidak ditemukan.');
+        }
+
+        $this->db->transBegin();
+
+        try {
+            $user = $this->userModel->find($attendance['user_id']);
+            $userName = $user['full_name'] ?? 'Anggota';
+
+            $this->attendanceModel->delete($attendanceId);
+            $this->auditLogModel->recordLog($operatorId, 'ATTENDANCE_DELETE', "Data presensi dihapus untuk: {$userName}");
+
+            if ($this->db->transStatus() === false) {
+                $this->db->transRollback();
+                return $this->error('Gagal menghapus presensi di database.');
+            }
+
+            $this->db->transCommit();
+            return $this->success('Data presensi berhasil dihapus.');
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal menghapus presensi: ' . $e->getMessage());
         }
     }
 }

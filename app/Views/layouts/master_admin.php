@@ -35,7 +35,7 @@
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#adminSidebar" aria-label="Close"></button>
         </div>
 
-        <a href="<?= base_url('dashboard') ?>" class="d-flex align-items-center gap-2 mb-4 text-white text-decoration-none px-2 font-heading">
+        <a href="<?= base_url('dashboard') ?>" class="d-flex align-items-center gap-2 mb-3 text-white text-decoration-none px-2 font-heading flex-shrink-0">
             <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="MMC Logo" style="height: 38px;" class="rounded-2 p-1 bg-white">
             <div class="d-flex flex-column">
                 <span class="fs-6 fw-bold lh-1 text-white">MMC <span class="text-danger">Platform</span></span>
@@ -43,127 +43,128 @@
             </div>
         </a>
 
-        <div class="px-2 mb-2">
-            <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">MENU UTAMA</span>
-        </div>
+        <!-- Scrollable Navigation Items -->
+        <div class="sidebar-nav-scroll pe-1 my-2">
+            <div class="px-2 mb-2">
+                <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">MENU UTAMA</span>
+            </div>
 
-        <nav class="nav flex-column mb-auto">
-            <a href="<?= base_url('dashboard') ?>" class="sidebar-link <?= (url_is('dashboard*')) ? 'active' : '' ?>">
-                <i class="fa-solid fa-gauge text-danger me-1"></i> Dashboard
-            </a>
-
-            <?php if (in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph'])): ?>
-                <!-- Admin CMS Links -->
-                <a href="<?= base_url('admin/meetings') ?>" class="sidebar-link <?= (url_is('admin/meetings*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-calendar-check text-info me-1"></i> Pertemuan
+            <nav class="nav flex-column">
+                <a href="<?= base_url('dashboard') ?>" class="sidebar-link <?= (url_is('dashboard*')) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-gauge text-danger me-1"></i> Dashboard
                 </a>
 
-                <a href="<?= base_url('admin/attendance') ?>" class="sidebar-link <?= (url_is('admin/attendance*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-qrcode text-warning me-1"></i> Presensi Absensi
-                </a>
-
-                <a href="<?= base_url('admin/tasks') ?>" class="sidebar-link <?= (url_is('admin/tasks*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-list-check text-primary me-1"></i> Tugas & Proyek
-                </a>
-
-                  <a href="<?= base_url('admin/learning') ?>" class="sidebar-link <?= (url_is('admin/learning*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-book-bookmark text-danger me-1"></i> Materi Pembelajaran
-                </a>
-                
-                <a href="<?= base_url('admin/users') ?>" class="sidebar-link <?= (url_is('admin/users*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-users-gear text-success me-1"></i> Manajemen Anggota
-                </a>
-
-                
-
-                <div class="px-2 mt-3 mb-2">
-                    <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">WEBSITE CMS</span>
-                </div>
-
-                <a href="<?= base_url('admin/cms/builder') ?>" class="sidebar-link <?= (url_is('admin/cms/builder*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-layer-group text-danger me-1"></i> Homepage Builder
-                </a>
-
-                <a href="<?= base_url('admin/cms/media') ?>" class="sidebar-link <?= (url_is('admin/cms/media*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-photo-film text-warning me-1"></i> Media Library
-                </a>
-
-                <a href="<?= base_url('admin/cms/divisions') ?>" class="sidebar-link <?= (url_is('admin/cms/divisions*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-graduation-cap text-info me-1"></i> Divisi & Silabus
-                </a>
-
-                <a href="<?= base_url('admin/cms/portfolios') ?>" class="sidebar-link <?= (url_is('admin/cms/portfolios*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-film text-primary me-1"></i> Portofolio Karya
-                </a>
-
-                <a href="<?= base_url('admin/cms/achievements') ?>" class="sidebar-link <?= (url_is('admin/cms/achievements*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-trophy text-warning me-1"></i> Prestasi Juara
-                </a>
-
-                <a href="<?= base_url('admin/cms/history') ?>" class="sidebar-link <?= (url_is('admin/cms/history*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-timeline text-success me-1"></i> Sejarah
-                </a>
-
-                <a href="<?= base_url('admin/cms/structure') ?>" class="sidebar-link <?= (url_is('admin/cms/structure*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-sitemap text-danger me-1"></i> Bagan Pengurus
-                </a>
-
-                <a href="<?= base_url('admin/cms/faqs') ?>" class="sidebar-link <?= (url_is('admin/cms/faqs*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-circle-question text-warning me-1"></i> Kelola FAQ
-                </a>
-
-                <a href="<?= base_url('admin/cms/messages') ?>" class="sidebar-link <?= (url_is('admin/cms/messages*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-inbox text-info me-1"></i> Pesan Kontak
-                </a>
-
-                <?php if (in_array(session()->get('role_slug'), ['superadmin', 'pembina'])): ?>
-                    <div class="px-2 mt-3 mb-2">
-                        <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">SISTEM</span>
-                    </div>
-
-                    <a href="<?= base_url('admin/audit-logs') ?>" class="sidebar-link <?= (url_is('admin/audit-logs*')) ? 'active' : '' ?>">
-                        <i class="fa-solid fa-shield-halved text-danger me-1"></i> Audit Logs
+                <?php if (in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph'])): ?>
+                    <!-- Admin CMS Links -->
+                    <a href="<?= base_url('admin/meetings') ?>" class="sidebar-link <?= (url_is('admin/meetings*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-calendar-check text-info me-1"></i> Pertemuan
                     </a>
 
-                    <a href="<?= base_url('admin/settings') ?>" class="sidebar-link <?= (url_is('admin/settings*')) ? 'active' : '' ?>">
-                        <i class="fa-solid fa-sliders text-secondary me-1"></i> Pengaturan
+                    <a href="<?= base_url('admin/attendance') ?>" class="sidebar-link <?= (url_is('admin/attendance*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-qrcode text-warning me-1"></i> Presensi Absensi
+                    </a>
+
+                    <a href="<?= base_url('admin/tasks') ?>" class="sidebar-link <?= (url_is('admin/tasks*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-list-check text-primary me-1"></i> Tugas & Proyek
+                    </a>
+
+                    <a href="<?= base_url('admin/learning') ?>" class="sidebar-link <?= (url_is('admin/learning*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-book-bookmark text-danger me-1"></i> Materi Pembelajaran
+                    </a>
+                    
+                    <a href="<?= base_url('admin/users') ?>" class="sidebar-link <?= (url_is('admin/users*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-users-gear text-success me-1"></i> Manajemen Anggota
+                    </a>
+
+                    <div class="px-2 mt-3 mb-2">
+                        <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">WEBSITE CMS</span>
+                    </div>
+
+                    <a href="<?= base_url('admin/cms/builder') ?>" class="sidebar-link <?= (url_is('admin/cms/builder*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-layer-group text-danger me-1"></i> Homepage Builder
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/media') ?>" class="sidebar-link <?= (url_is('admin/cms/media*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-photo-film text-warning me-1"></i> Media Library
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/divisions') ?>" class="sidebar-link <?= (url_is('admin/cms/divisions*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-graduation-cap text-info me-1"></i> Divisi & Silabus
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/portfolios') ?>" class="sidebar-link <?= (url_is('admin/cms/portfolios*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-film text-primary me-1"></i> Portofolio Karya
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/achievements') ?>" class="sidebar-link <?= (url_is('admin/cms/achievements*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-trophy text-warning me-1"></i> Prestasi Juara
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/history') ?>" class="sidebar-link <?= (url_is('admin/cms/history*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-timeline text-success me-1"></i> Sejarah
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/structure') ?>" class="sidebar-link <?= (url_is('admin/cms/structure*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-sitemap text-danger me-1"></i> Bagan Pengurus
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/faqs') ?>" class="sidebar-link <?= (url_is('admin/cms/faqs*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-circle-question text-warning me-1"></i> Kelola FAQ
+                    </a>
+
+                    <a href="<?= base_url('admin/cms/messages') ?>" class="sidebar-link <?= (url_is('admin/cms/messages*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-inbox text-info me-1"></i> Pesan Kontak
+                    </a>
+
+                    <?php if (in_array(session()->get('role_slug'), ['superadmin', 'pembina'])): ?>
+                        <div class="px-2 mt-3 mb-2">
+                            <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">SISTEM</span>
+                        </div>
+
+                        <a href="<?= base_url('admin/audit-logs') ?>" class="sidebar-link <?= (url_is('admin/audit-logs*')) ? 'active' : '' ?>">
+                            <i class="fa-solid fa-shield-halved text-danger me-1"></i> Audit Logs
+                        </a>
+
+                        <a href="<?= base_url('admin/settings') ?>" class="sidebar-link <?= (url_is('admin/settings*')) ? 'active' : '' ?>">
+                            <i class="fa-solid fa-sliders text-secondary me-1"></i> Pengaturan
+                        </a>
+                    <?php endif; ?>
+
+                <?php else: ?>
+                    <!-- Member Links -->
+                    <a href="<?= base_url('attendance/scan') ?>" class="sidebar-link <?= (url_is('attendance/scan*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-qrcode text-danger me-1"></i> Presensi QR / PIN
+                    </a>
+
+                    <a href="<?= base_url('attendance/history') ?>" class="sidebar-link <?= (url_is('attendance/history*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Riwayat Presensi
+                    </a>
+
+                    <a href="<?= base_url('member/tasks') ?>" class="sidebar-link <?= (url_is('member/tasks*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-file-arrow-up text-info me-1"></i> Tugas Saya
+                    </a>
+
+                    <a href="<?= base_url('member/learning') ?>" class="sidebar-link <?= (url_is('member/learning*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-book-bookmark text-danger me-1"></i> Materi Pembelajaran
                     </a>
                 <?php endif; ?>
 
-            <?php else: ?>
-                <!-- Member Links -->
-                <a href="<?= base_url('attendance/scan') ?>" class="sidebar-link <?= (url_is('attendance/scan*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-qrcode text-danger me-1"></i> Presensi QR / PIN
+                <div class="px-2 mt-3 mb-2">
+                    <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">AKUN</span>
+                </div>
+
+                <a href="<?= base_url('profile') ?>" class="sidebar-link <?= (url_is('profile*')) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-id-card text-light me-1"></i> Profil & QR Member
                 </a>
 
-                <a href="<?= base_url('attendance/history') ?>" class="sidebar-link <?= (url_is('attendance/history*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Riwayat Presensi
+                <a href="<?= base_url('/') ?>" target="_blank" class="sidebar-link">
+                    <i class="fa-solid fa-globe text-secondary me-1"></i> Website Publik <i class="fa-solid fa-arrow-up-right-from-square ms-auto small"></i>
                 </a>
-
-                <a href="<?= base_url('member/tasks') ?>" class="sidebar-link <?= (url_is('member/tasks*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-file-arrow-up text-info me-1"></i> Tugas Saya
-                </a>
-
-                <a href="<?= base_url('member/learning') ?>" class="sidebar-link <?= (url_is('member/learning*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-book-bookmark text-danger me-1"></i> Materi Pembelajaran
-                </a>
-            <?php endif; ?>
-
-            <div class="px-2 mt-3 mb-2">
-                <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">AKUN</span>
-            </div>
-
-            <a href="<?= base_url('profile') ?>" class="sidebar-link <?= (url_is('profile*')) ? 'active' : '' ?>">
-                <i class="fa-solid fa-id-card text-light me-1"></i> Profil & QR Member
-            </a>
-
-            <a href="<?= base_url('/') ?>" target="_blank" class="sidebar-link">
-                <i class="fa-solid fa-globe text-secondary me-1"></i> Website Publik <i class="fa-solid fa-arrow-up-right-from-square ms-auto small"></i>
-            </a>
-        </nav>
+            </nav>
+        </div>
 
         <!-- User Profile Card Sidebar Footer -->
-        <div class="pt-3 mt-auto border-top border-secondary border-opacity-25">
+        <div class="pt-3 mt-auto border-top border-secondary border-opacity-25 flex-shrink-0">
             <div class="d-flex align-items-center gap-2 p-2 rounded-3 bg-dark">
                 <?php if (session()->get('avatar')): ?>
                     <img src="<?= base_url(session()->get('avatar')) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 36px; height: 36px; min-width: 36px;">

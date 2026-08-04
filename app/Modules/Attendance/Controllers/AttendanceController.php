@@ -84,7 +84,7 @@ class AttendanceController extends BaseController
 
         $result = $this->attendanceService->processScanApi($scanType, $qrCode, session()->get('user_id'), $device, $ip);
 
-        return $this->response->setStatusCode($result['status_code'])->setJSON($result['body']);
+        return $this->response->setJSON($result['body']);
     }
 
     public function processPinApi()
@@ -132,5 +132,27 @@ class AttendanceController extends BaseController
             'title'       => 'Riwayat Presensi Saya',
             'attendances' => $attendances,
         ]);
+    }
+
+    public function update(int $id)
+    {
+        $result = $this->attendanceService->updateAttendance($id, $this->request->getPost(), session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->withInput()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    public function delete(int $id)
+    {
+        $result = $this->attendanceService->deleteAttendance($id, session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
     }
 }
