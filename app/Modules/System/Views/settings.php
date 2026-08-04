@@ -233,16 +233,97 @@
                 <div class="form-check form-switch p-3 rounded-3 bg-dark border border-danger border-opacity-50 mb-3">
                     <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_mode" id="maintenance_mode" value="1" <?= ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' ?>>
                     <label class="form-check-label text-white fw-bold" for="maintenance_mode">
-                        Situs web user dalam pemeliharaan (Maintenance Mode ON)
+                        Situs web user dalam pemeliharaan (Global Maintenance Mode ON)
                         <span class="d-block text-secondary small fw-normal mt-1">
                             Ketika switch ini diaktifkan (ON), seluruh pengunjung website publik akan secara otomatis diarahkan ke halaman <strong>Situs Dalam Pemeliharaan</strong>.
                         </span>
                     </label>
                 </div>
 
-                <div class="mb-3">
+                <div class="mb-4">
                     <label class="form-label text-secondary small fw-medium">Pesan Pemeliharaan Situs untuk Pengunjung</label>
                     <textarea name="maintenance_message" class="form-control" rows="3" placeholder="Pesan pemberitahuan untuk pengunjung..."><?= esc($settings['maintenance_message'] ?? 'Situs web Multimedia Club SMAN 1 Tamansari saat ini sedang dalam pemeliharaan sistem. Silakan kembali beberapa saat lagi.') ?></textarea>
+                </div>
+
+                <!-- Maintenance Per-Halaman Publik -->
+                <?php
+                    $savedPages = json_decode($settings['maintenance_pages'] ?? '[]', true) ?: [];
+                ?>
+                <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+                    <h6 class="text-white font-heading mb-2"><i class="fa-solid fa-list-check text-warning me-2"></i> Pemeliharaan Per-Halaman Publik (Page-Specific Maintenance)</h6>
+                    <p class="text-secondary style-tiny mb-3">Aktifkan status pemeliharaan hanya pada halaman publik tertentu tanpa mengunci seluruh situs.</p>
+
+                    <div class="row g-3">
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_pages[]" value="home" id="m_page_home" <?= in_array('home', $savedPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold" for="m_page_home">
+                                    Halaman Beranda (Home /)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman utama website publik.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_pages[]" value="about" id="m_page_about" <?= in_array('about', $savedPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold" for="m_page_about">
+                                    Tentang MMC (/about)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman profil & tentang klub.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_pages[]" value="learning-path" id="m_page_learning" <?= in_array('learning-path', $savedPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold" for="m_page_learning">
+                                    Materi & Silabus (/learning-path)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman kurikulum pembelajaran.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_pages[]" value="portfolio" id="m_page_portfolio" <?= in_array('portfolio', $savedPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold" for="m_page_portfolio">
+                                    Portofolio Karya (/portfolio)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman galeri karya anggota.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_pages[]" value="gallery" id="m_page_gallery" <?= in_array('gallery', $savedPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold" for="m_page_gallery">
+                                    Galeri Kegiatan (/gallery)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman dokumentasi foto & video.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_pages[]" value="faq" id="m_page_faq" <?= in_array('faq', $savedPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold" for="m_page_faq">
+                                    Halaman FAQ (/faq)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman tanya jawab.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_pages[]" value="achievements" id="m_page_achievements" <?= in_array('achievements', $savedPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold" for="m_page_achievements">
+                                    Prestasi Juara (/achievements)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman penghargaan & kejuaraan.</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -260,6 +341,9 @@
                     </label>
                 </div>
 
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-medium">Durasi Masa Berlaku Token QR Pertemuan (Menit)</label>
+                    <input type="number" name="qr_expiry_minutes" class="form-control" value="<?= esc($settings['qr_expiry_minutes'] ?? 15) ?>" min="1" max="120" required>
                 </div>
             </div>
 
@@ -280,12 +364,11 @@
                                 <h3 class="text-white font-heading mb-1"><?= esc($cacheStats['formatted_size'] ?? '0 B') ?></h3>
                                 <p class="text-secondary style-tiny m-0"><?= esc($cacheStats['file_count'] ?? 0) ?> File Cache fisik terdeteksi</p>
                             </div>
-                            <form action="<?= base_url('admin/system/clear-cache') ?>" method="POST" class="mt-3 form-clear-confirm" data-title="Bersihkan Cache Sistem?" data-text="Aksi ini akan menghapus file cache sementara aplikasi CodeIgniter.">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-outline-warning w-100 btn-sm font-monospace">
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-outline-warning w-100 btn-sm font-monospace btn-storage-action" data-form="form-clear-cache" data-title="Bersihkan Cache Sistem?" data-text="Aksi ini akan menghapus file cache sementara aplikasi CodeIgniter.">
                                     <i class="fa-solid fa-broom me-1"></i> Bersihkan Cache
                                 </button>
-                            </form>
+                            </div>
                         </div>
                     </div>
 
@@ -300,12 +383,11 @@
                                 <h3 class="text-white font-heading mb-1"><?= esc($logStats['formatted_size'] ?? '0 B') ?></h3>
                                 <p class="text-secondary style-tiny m-0"><?= esc($logStats['file_count'] ?? 0) ?> File Log terdeteksi</p>
                             </div>
-                            <form action="<?= base_url('admin/system/clear-logs') ?>" method="POST" class="mt-3 form-clear-confirm" data-title="Hapus File Logs System?" data-text="Aksi ini akan menghapus seluruh catatan log aktivitas error/system di folder writable/logs.">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-outline-info w-100 btn-sm font-monospace">
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-outline-info w-100 btn-sm font-monospace btn-storage-action" data-form="form-clear-logs" data-title="Hapus File Logs System?" data-text="Aksi ini akan menghapus seluruh catatan log aktivitas error/system di folder writable/logs.">
                                     <i class="fa-solid fa-trash-can me-1"></i> Hapus File Logs
                                 </button>
-                            </form>
+                            </div>
                         </div>
                     </div>
 
@@ -320,12 +402,11 @@
                                 <h3 class="text-white font-heading mb-1"><?= esc($totalStats['formatted_size'] ?? '0 B') ?></h3>
                                 <p class="text-secondary style-tiny m-0"><?= esc($totalStats['file_count'] ?? 0) ?> Total File Temp (Cache + Logs)</p>
                             </div>
-                            <form action="<?= base_url('admin/system/clear-all-storage') ?>" method="POST" class="mt-3 form-clear-confirm" data-title="Pembersihan Total Storage Temp?" data-text="Aksi ini akan menghapus sekaligus seluruh file cache dan log sistem.">
-                                <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-red w-100 btn-sm font-monospace">
+                            <div class="mt-3">
+                                <button type="button" class="btn btn-red w-100 btn-sm font-monospace btn-storage-action" data-form="form-clear-all" data-title="Pembersihan Total Storage Temp?" data-text="Aksi ini akan menghapus sekaligus seluruh file cache dan log sistem.">
                                     <i class="fa-solid fa-dumpster-fire me-1"></i> Bersihkan Seluruh Temp
                                 </button>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -345,16 +426,21 @@
     </form>
 </div>
 
+<!-- Standalone Hidden Forms for Storage Cleanup Actions -->
+<form id="form-clear-cache" action="<?= base_url('admin/system/clear-cache') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
+<form id="form-clear-logs" action="<?= base_url('admin/system/clear-logs') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
+<form id="form-clear-all" action="<?= base_url('admin/system/clear-all-storage') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
 <script>
     $(document).ready(function() {
-        $('.form-clear-confirm').on('submit', function(e) {
+        $('.btn-storage-action').on('click', function(e) {
             e.preventDefault();
-            const form = this;
-            const title = $(form).data('title') || 'Bersihkan Storage?';
-            const text = $(form).data('text') || 'Apakah Anda yakin ingin melanjutkan?';
+            const targetFormId = $(this).data('form');
+            const title = $(this).data('title') || 'Bersihkan Storage?';
+            const text = $(this).data('text') || 'Apakah Anda yakin ingin melanjutkan?';
 
             Swal.fire({
                 title: title,
@@ -369,7 +455,7 @@
                 color: '#fff'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    form.submit();
+                    $('#' + targetFormId).submit();
                 }
             });
         });

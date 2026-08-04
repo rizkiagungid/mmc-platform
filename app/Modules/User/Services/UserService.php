@@ -225,4 +225,28 @@ class UserService extends BaseService
             return $this->error('Gagal memperbarui profil: ' . $e->getMessage());
         }
     }
+
+    public function activateUser(int $id, int $adminId): array
+    {
+        $user = $this->userModel->find($id);
+        if (!$user) {
+            return $this->error('Pengguna tidak ditemukan.', null, 404);
+        }
+
+        $this->beginTransaction();
+
+        try {
+            $this->userModel->update($id, [
+                'status' => 'active',
+            ]);
+
+            $this->auditLogModel->recordLog($adminId, 'USER_ACTIVATED', "Mengkonfirmasi & mengaktifkan akun pendaftar anggota: {$user['full_name']} (@{$user['username']})");
+
+            $this->commitTransaction();
+            return $this->success("Akun {$user['full_name']} (@{$user['username']}) telah berhasil dikonfirmasi dan diaktifkan!");
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal mengaktifkan akun: ' . $e->getMessage());
+        }
+    }
 }

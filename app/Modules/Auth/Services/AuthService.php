@@ -44,6 +44,9 @@ class AuthService extends BaseService
 
         if ($user['status'] !== 'active') {
             $this->auditLogModel->recordLog($user['id'], 'LOGIN_BLOCKED', "Akun dalam status {$user['status']}");
+            if ($user['status'] === 'inactive') {
+                return $this->error('Akun Anda belum diaktifkan oleh Pembina / Admin. Silakan tunggu konfirmasi aktivasi agar akun Anda dapat digunakan untuk masuk.');
+            }
             if ($user['status'] === 'left' || $user['status'] === 'keluar') {
                 return $this->error('Anda keluar ekskul multimedia.');
             }
@@ -95,13 +98,13 @@ class AuthService extends BaseService
                 'phone'         => trim($data['phone']),
                 'qr_version'    => 1,
                 'qr_updated_at' => date('Y-m-d H:i:s'),
-                'status'        => 'active',
+                'status'        => 'inactive',
             ]);
 
-            $this->auditLogModel->recordLog($userId, 'REGISTER_SUCCESS', "Anggota baru {$data['full_name']} mendaftar akun");
+            $this->auditLogModel->recordLog($userId, 'REGISTER_SUCCESS', "Anggota baru {$data['full_name']} mendaftar akun (menunggu konfirmasi admin)");
 
             $this->commitTransaction();
-            return $this->success('Pendaftaran berhasil! Silakan login menggunakan akun baru Anda.');
+            return $this->success('Pendaftaran berhasil! Akun Anda saat ini dalam proses peninjauan dan menunggu konfirmasi/aktivasi dari Pembina/Admin.');
         } catch (\Throwable $e) {
             $this->db->transRollback();
             return $this->error('Gagal memproses pendaftaran: ' . $e->getMessage());

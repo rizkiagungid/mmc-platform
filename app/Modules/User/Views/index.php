@@ -113,9 +113,11 @@
                         </td>
                         <td>
                             <?php if ($u['status'] === 'active'): ?>
-                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25">AKTIF</span>
+                                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25"><i class="fa-solid fa-circle-check me-1"></i> AKTIF</span>
+                            <?php elseif ($u['status'] === 'inactive'): ?>
+                                <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50"><i class="fa-solid fa-clock me-1"></i> MENUNGGU KONFIRMASI</span>
                             <?php elseif ($u['status'] === 'left' || $u['status'] === 'keluar'): ?>
-                                <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25">KELUAR EKSKUL</span>
+                                <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25">KELUAR EKSKUL</span>
                             <?php elseif ($u['status'] === 'suspended'): ?>
                                 <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25">SUSPENDED</span>
                             <?php else: ?>
@@ -123,17 +125,28 @@
                             <?php endif; ?>
                         </td>
                         <td class="text-end">
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-saas-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    Pilihan
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="<?= base_url('admin/users/qr/' . $u['member_uuid']) ?>"><i class="fa-solid fa-qrcode me-2 text-warning"></i> Lihat ID Card & QR</a></li>
-                                    <li><a class="dropdown-item" href="<?= base_url('admin/users/regenerate-qr/' . $u['id']) ?>" onclick="return confirm('Regenerasi QR akan membatalkan QR lama. Lanjutkan?')"><i class="fa-solid fa-arrows-rotate me-2 text-info"></i> Regenerasi Member QR</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="<?= base_url('admin/users/edit/' . $u['id']) ?>"><i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit Profile</a></li>
-                                    <li><a class="dropdown-item text-danger" href="<?= base_url('admin/users/delete/' . $u['id']) ?>" onclick="return confirm('Hapus pengguna ini?')"><i class="fa-solid fa-trash me-2"></i> Hapus</a></li>
-                                </ul>
+                            <div class="d-flex justify-content-end align-items-center gap-1">
+                                <?php if ($u['status'] === 'inactive'): ?>
+                                    <a href="<?= base_url('admin/users/activate/' . $u['id']) ?>" class="btn btn-sm btn-success px-2 py-1 style-tiny font-monospace" onclick="return confirm('Konfirmasi dan aktifkan akun pendaftar <?= esc($u['full_name']) ?>?')" title="Konfirmasi & Aktifkan Akun">
+                                        <i class="fa-solid fa-user-check me-1"></i> Aktifkan
+                                    </a>
+                                <?php endif; ?>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-saas-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Pilihan
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <?php if ($u['status'] === 'inactive'): ?>
+                                            <li><a class="dropdown-item text-success fw-bold" href="<?= base_url('admin/users/activate/' . $u['id']) ?>" onclick="return confirm('Konfirmasi dan aktifkan akun pendaftar <?= esc($u['full_name']) ?>?')"><i class="fa-solid fa-user-check me-2"></i> Konfirmasi & Aktifkan Akun</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        <?php endif; ?>
+                                        <li><a class="dropdown-item" href="<?= base_url('admin/users/qr/' . $u['member_uuid']) ?>"><i class="fa-solid fa-qrcode me-2 text-warning"></i> Lihat ID Card & QR</a></li>
+                                        <li><a class="dropdown-item" href="<?= base_url('admin/users/regenerate-qr/' . $u['id']) ?>" onclick="return confirm('Regenerasi QR akan membatalkan QR lama. Lanjutkan?')"><i class="fa-solid fa-arrows-rotate me-2 text-info"></i> Regenerasi Member QR</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="<?= base_url('admin/users/edit/' . $u['id']) ?>"><i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit Profile</a></li>
+                                        <li><a class="dropdown-item text-danger" href="<?= base_url('admin/users/delete/' . $u['id']) ?>" onclick="return confirm('Hapus pengguna ini?')"><i class="fa-solid fa-trash me-2"></i> Hapus</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </td>
                     </tr>

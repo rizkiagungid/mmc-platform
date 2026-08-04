@@ -62,11 +62,14 @@ class SystemController extends BaseController
         $posts = $this->request->getPost();
 
         // Handle switch checkboxes
-        if (!isset($posts['enable_registration'])) {
-            $posts['enable_registration'] = '0';
-        }
-        if (!isset($posts['maintenance_mode'])) {
-            $posts['maintenance_mode'] = '0';
+        $posts['enable_registration'] = isset($posts['enable_registration']) ? '1' : '0';
+        $posts['maintenance_mode']    = isset($posts['maintenance_mode']) ? '1' : '0';
+
+        // Handle maintenance_pages array
+        if (isset($posts['maintenance_pages']) && is_array($posts['maintenance_pages'])) {
+            $posts['maintenance_pages'] = json_encode(array_values($posts['maintenance_pages']));
+        } else {
+            $posts['maintenance_pages'] = '[]';
         }
 
         // Handle Logo file upload
@@ -98,7 +101,7 @@ class SystemController extends BaseController
             $this->settingModel->setSetting($key, is_array($val) ? json_encode($val) : trim((string)$val));
         }
 
-        $this->auditLogModel->recordLog(session()->get('user_id'), 'SYSTEM_SETTINGS_UPDATE', 'Memperbarui pengaturan umum, SEO, & status pemeliharaan platform.');
+        $this->auditLogModel->recordLog(session()->get('user_id'), 'SYSTEM_SETTINGS_UPDATE', 'Memperbarui pengaturan umum, SEO, maintenance mode, & status pemeliharaan per-halaman.');
 
         return redirect()->to('/admin/settings')->with('success', 'Pengaturan sistem berhasil diperbarui.');
     }

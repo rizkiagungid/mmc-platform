@@ -120,6 +120,17 @@ class UserController extends BaseController
         return redirect()->to('/admin/users')->with('success', $result['body']['message']);
     }
 
+    public function activate($id)
+    {
+        $result = $this->userService->activateUser((int)$id, session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
     public function regenerateQr($id)
     {
         $result = $this->userService->regenerateMemberQr((int)$id, session()->get('user_id'));
