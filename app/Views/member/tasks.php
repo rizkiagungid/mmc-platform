@@ -69,7 +69,7 @@
             <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
                 <div>
                     <span class="badge me-1" style="background-color: <?= $t['priority_color'] ?>;"><?= esc($t['priority_name']) ?></span>
-                    <span class="badge me-1" style="background-color: <?= $t['my_status_color'] ?? '#3b82f6' ?>;">Status Saya: <?= esc($t['my_status_name'] ?? 'Todo') ?></span>
+                    <span class="badge me-1" style="background-color: <?= $t['my_status_color'] ?? '#6c757d' ?>;">Status Saya: <?= esc($t['my_status_name'] ?? 'Belum dikerjakan') ?></span>
                     <?php if (!empty($t['my_submission']) || !empty($t['is_submitted'])): ?>
                         <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2 py-1"><i class="fa-solid fa-circle-check me-1"></i> sudah dikirim</span>
                     <?php else: ?>

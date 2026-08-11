@@ -9,7 +9,7 @@
     <h4 class="text-white font-heading m-0">Edit Pengguna: <?= esc($user['full_name']) ?></h4>
 </div>
 
-<div class="saas-card p-4 col-lg-8">
+<div class="saas-card p-4 col-lg-10">
     <?php if (session()->getFlashdata('errors')): ?>
         <div class="alert alert-danger border-0 bg-danger bg-opacity-25 text-danger small p-3 mb-4 rounded-3">
             <ul class="mb-0 ps-3">
@@ -24,53 +24,170 @@
         <?= csrf_field() ?>
 
         <div class="row g-3">
+            <!-- Informasi Utama -->
+            <div class="col-12">
+                <h6 class="text-white font-heading border-bottom border-secondary border-opacity-25 pb-2 mb-1">
+                    <i class="fa-solid fa-user-gear me-2 text-red"></i>Informasi Utama Akun
+                </h6>
+            </div>
+
             <div class="col-md-6">
-                <label class="form-label text-secondary small fw-medium">Role Hak Akses</label>
+                <label class="form-label text-secondary small fw-medium">Role Hak Akses <span class="text-danger">*</span></label>
                 <select name="role_id" class="form-select" required>
                     <?php foreach ($roles as $r): ?>
-                        <option value="<?= $r['id'] ?>" <?= $user['role_id'] == $r['id'] ? 'selected' : '' ?>><?= esc($r['name']) ?></option>
+                        <?php if (session()->get('role_slug') !== 'superadmin' && $r['id'] == 1) continue; ?>
+                        <?php if (session()->get('role_slug') === 'bph' && $r['id'] == 2) continue; ?>
+                        <option value="<?= $r['id'] ?>" <?= (old('role_id', $user['role_id']) == $r['id']) ? 'selected' : '' ?>><?= esc($r['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
             <div class="col-md-6">
-                <label class="form-label text-secondary small fw-medium">Status Akun</label>
+                <label class="form-label text-secondary small fw-medium">Status Akun <span class="text-danger">*</span></label>
                 <select name="status" class="form-select" required>
-                    <option value="active" <?= $user['status'] === 'active' ? 'selected' : '' ?>>Aktif (Active)</option>
-                    <option value="inactive" <?= $user['status'] === 'inactive' ? 'selected' : '' ?>>Non-Aktif (Inactive)</option>
-                    <option value="suspended" <?= $user['status'] === 'suspended' ? 'selected' : '' ?>>Ditangguhkan (Suspended)</option>
-                    <option value="left" <?= ($user['status'] === 'left' || $user['status'] === 'keluar') ? 'selected' : '' ?>>Keluar Ekskul</option>
+                    <option value="active" <?= old('status', $user['status']) === 'active' ? 'selected' : '' ?>>Aktif (Active)</option>
+                    <option value="inactive" <?= old('status', $user['status']) === 'inactive' ? 'selected' : '' ?>>Non-Aktif (Inactive)</option>
+                    <option value="suspended" <?= old('status', $user['status']) === 'suspended' ? 'selected' : '' ?>>Ditangguhkan (Suspended)</option>
+                    <option value="left" <?= (old('status', $user['status']) === 'left' || old('status', $user['status']) === 'keluar') ? 'selected' : '' ?>>Keluar Ekskul</option>
                 </select>
             </div>
 
             <div class="col-md-6">
-                <label class="form-label text-secondary small fw-medium">Nama Lengkap</label>
-                <input type="text" name="full_name" class="form-control" value="<?= esc($user['full_name']) ?>" required>
+                <label class="form-label text-secondary small fw-medium">Nama Lengkap <span class="text-danger">*</span></label>
+                <input type="text" name="full_name" class="form-control" value="<?= esc(old('full_name', $user['full_name'])) ?>" required>
             </div>
 
             <div class="col-md-6">
-                <label class="form-label text-secondary small fw-medium">Username</label>
-                <input type="text" name="username" class="form-control" value="<?= esc($user['username']) ?>" required>
+                <label class="form-label text-secondary small fw-medium">Username <span class="text-danger">*</span></label>
+                <input type="text" name="username" class="form-control" value="<?= esc(old('username', $user['username'])) ?>" required>
             </div>
 
             <div class="col-md-6">
-                <label class="form-label text-secondary small fw-medium">Email</label>
-                <input type="email" name="email" class="form-control" value="<?= esc($user['email']) ?>" required>
+                <label class="form-label text-secondary small fw-medium">Email <span class="text-danger">*</span></label>
+                <input type="email" name="email" class="form-control" value="<?= esc(old('email', $user['email'])) ?>" required>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-3">
                 <label class="form-label text-secondary small fw-medium">NIS / NIP</label>
-                <input type="text" name="nis_nip" class="form-control" value="<?= esc($user['nis_nip']) ?>">
+                <input type="text" name="nis_nip" class="form-control" value="<?= esc(old('nis_nip', $user['nis_nip'] ?? '')) ?>">
             </div>
 
-            <div class="col-md-6">
-                <label class="form-label text-secondary small fw-medium">Kelas / Divisi</label>
-                <input type="text" name="class_dept" class="form-control" value="<?= esc($user['class_dept']) ?>">
-            </div>
-
-            <div class="col-md-6">
+            <div class="col-md-3">
                 <label class="form-label text-secondary small fw-medium">Phone / WhatsApp</label>
-                <input type="text" name="phone" class="form-control" value="<?= esc($user['phone']) ?>">
+                <input type="text" name="phone" class="form-control" value="<?= esc(old('phone', $user['phone'] ?? '')) ?>">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-medium">Tanggal Lahir</label>
+                <input type="date" name="birth_date" class="form-control" value="<?= esc(old('birth_date', $user['birth_date'] ?? '')) ?>">
+            </div>
+
+            <?php
+            $parsedGrade = '';
+            $parsedRoom = '';
+            $parsedDivision = '';
+            $classDeptVal = $user['class_dept'] ?? '';
+            if (!empty($classDeptVal)) {
+                if (preg_match('/^(X|XI|XII)\s+([1-9]|10)\s*[-|\/]?\s*(Broadcasting|Programming)$/i', trim($classDeptVal), $m)) {
+                    $parsedGrade = strtoupper($m[1]);
+                    $parsedRoom = $m[2];
+                    $parsedDivision = (strtolower($m[3]) === 'broadcasting') ? 'Broadcasting' : 'Programming';
+                }
+            }
+            $selectedGrade = old('class_grade', $parsedGrade);
+            $selectedRoom = old('class_room', $parsedRoom);
+            $selectedDivision = old('division', $parsedDivision);
+            ?>
+
+            <div class="col-md-8">
+                <label class="form-label text-secondary small fw-medium">Kelas, Ruang & Divisi</label>
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <select name="class_grade" class="form-select">
+                            <option value="">-- Pilih Kelas --</option>
+                            <?php foreach (['X', 'XI', 'XII'] as $grade): ?>
+                                <option value="<?= $grade ?>" <?= $selectedGrade === $grade ? 'selected' : '' ?>>Kelas <?= $grade ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="class_room" class="form-select">
+                            <option value="">-- Pilih Ruang --</option>
+                            <?php for ($r = 1; $r <= 10; $r++): ?>
+                                <option value="<?= $r ?>" <?= $selectedRoom == $r ? 'selected' : '' ?>>Ruang <?= $r ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select name="division" class="form-select">
+                            <option value="">-- Pilih Divisi --</option>
+                            <?php foreach (['Broadcasting', 'Programming'] as $div): ?>
+                                <option value="<?= $div ?>" <?= $selectedDivision === $div ? 'selected' : '' ?>><?= $div ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alamat Lengkap -->
+            <div class="col-12 mt-4">
+                <h6 class="text-white font-heading border-bottom border-secondary border-opacity-25 pb-2 mb-1">
+                    <i class="fa-solid fa-map-location-dot me-2 text-red"></i>Alamat Tempat Tinggal
+                </h6>
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label text-secondary small fw-medium">Alamat Lengkap</label>
+                <textarea name="address" class="form-control" rows="3" placeholder="Masukkan alamat lengkap rumah / tempat tinggal"><?= esc(old('address', $user['address'] ?? '')) ?></textarea>
+            </div>
+
+            <!-- Social Media -->
+            <div class="col-12 mt-4">
+                <h6 class="text-white font-heading border-bottom border-secondary border-opacity-25 pb-2 mb-1">
+                    <i class="fa-solid fa-share-nodes me-2 text-red"></i>Akun Media Sosial (Opsional)
+                </h6>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-medium">
+                    <i class="fa-brands fa-instagram text-danger me-1"></i> Instagram
+                </label>
+                <input type="text" name="social_instagram" class="form-control" value="<?= esc(old('social_instagram', $user['social_instagram'] ?? '')) ?>" placeholder="@username atau URL">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-medium">
+                    <i class="fa-brands fa-tiktok text-white me-1"></i> TikTok
+                </label>
+                <input type="text" name="social_tiktok" class="form-control" value="<?= esc(old('social_tiktok', $user['social_tiktok'] ?? '')) ?>" placeholder="@username atau URL">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-secondary small fw-medium">
+                    <i class="fa-brands fa-facebook text-primary me-1"></i> Facebook
+                </label>
+                <input type="text" name="social_facebook" class="form-control" value="<?= esc(old('social_facebook', $user['social_facebook'] ?? '')) ?>" placeholder="Username atau URL">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-secondary small fw-medium">
+                    <i class="fa-brands fa-linkedin text-info me-1"></i> LinkedIn
+                </label>
+                <input type="text" name="social_linkedin" class="form-control" value="<?= esc(old('social_linkedin', $user['social_linkedin'] ?? '')) ?>" placeholder="Username atau URL">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label text-secondary small fw-medium">
+                    <i class="fa-brands fa-github text-white me-1"></i> GitHub
+                </label>
+                <input type="text" name="social_github" class="form-control" value="<?= esc(old('social_github', $user['social_github'] ?? '')) ?>" placeholder="Username atau URL">
+            </div>
+
+            <!-- Password -->
+            <div class="col-12 mt-4">
+                <h6 class="text-white font-heading border-bottom border-secondary border-opacity-25 pb-2 mb-1">
+                    <i class="fa-solid fa-lock me-2 text-red"></i>Keamanan Akun
+                </h6>
             </div>
 
             <div class="col-md-12">

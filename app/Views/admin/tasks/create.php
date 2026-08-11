@@ -59,15 +59,58 @@
 
             <!-- Multi Assignee Select -->
             <div class="col-md-12">
-                <label class="form-label text-secondary small fw-medium d-block">Tugaskan Kepada Anggota (Bisa Pilih Banyak)</label>
-                <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25" style="max-height: 180px; overflow-y: auto;">
+                <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                    <label class="form-label text-secondary small fw-medium m-0">Tugaskan Kepada Anggota (Bisa Pilih Banyak)</label>
+
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 btn-filter-division" data-division="programming" style="font-size: 0.75rem;">
+                                <i class="fa-solid fa-code me-1"></i> + Assign Divisi Programming
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 btn-filter-division" data-division="broadcasting" style="font-size: 0.75rem;">
+                                <i class="fa-solid fa-tower-cell me-1"></i> + Assign Divisi Broadcasting
+                            </button>
+                        </div>
+
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" id="btn-select-all" class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.75rem;">
+                                Pilih Semua
+                            </button>
+                            <button type="button" id="btn-deselect-all" class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.75rem;">
+                                Hapus Pilihan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25" style="max-height: 250px; overflow-y: auto;">
                     <div class="row g-2">
                         <?php foreach ($members as $m): ?>
-                            <div class="col-md-6">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" name="assignees[]" value="<?= $m['id'] ?>" id="asgn_<?= $m['id'] ?>">
-                                    <label class="form-check-label text-white small" for="asgn_<?= $m['id'] ?>">
-                                        <?= esc($m['full_name']) ?> <span class="text-secondary font-monospace"> (<?= esc($m['class_dept'] ?: $m['username']) ?>)</span>
+                            <?php
+                                $classDept = strtolower($m['class_dept'] ?? '');
+                                $division = 'other';
+                                $divisionBadge = 'Anggota';
+                                $badgeClass = 'bg-secondary bg-opacity-50 text-light';
+
+                                if (str_contains($classDept, 'programming')) {
+                                    $division = 'programming';
+                                    $divisionBadge = 'Programming';
+                                    $badgeClass = 'bg-primary bg-opacity-25 text-primary border border-primary border-opacity-25';
+                                } elseif (str_contains($classDept, 'broadcasting')) {
+                                    $division = 'broadcasting';
+                                    $divisionBadge = 'Broadcasting';
+                                    $badgeClass = 'bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25';
+                                }
+                            ?>
+                            <div class="col-md-6 assignee-item" data-division="<?= $division ?>">
+                                <div class="form-check p-2 rounded-2 border border-secondary border-opacity-10 bg-black h-100">
+                                    <input class="form-check-input ms-1 assignee-checkbox" type="checkbox" name="assignees[]" value="<?= $m['id'] ?>" id="asgn_<?= $m['id'] ?>">
+                                    <label class="form-check-label text-white small ms-2 cursor-pointer w-100 pe-1" for="asgn_<?= $m['id'] ?>">
+                                        <div class="d-flex align-items-center justify-content-between me-1 mb-1">
+                                            <strong class="text-truncate me-1"><?= esc($m['full_name']) ?></strong>
+                                            <span class="badge <?= $badgeClass ?> font-monospace style-tiny"><?= esc($divisionBadge) ?></span>
+                                        </div>
+                                        <div class="text-secondary style-tiny text-truncate"><?= esc($m['class_dept'] ?: $m['username']) ?></div>
                                     </label>
                                 </div>
                             </div>
@@ -99,4 +142,23 @@
     </form>
 </div>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+    $(document).ready(function() {
+        $('.btn-filter-division').on('click', function() {
+            const targetDivision = $(this).data('division');
+            $(`.assignee-item[data-division="${targetDivision}"] .assignee-checkbox`).prop('checked', true);
+        });
+
+        $('#btn-select-all').on('click', function() {
+            $('.assignee-checkbox').prop('checked', true);
+        });
+
+        $('#btn-deselect-all').on('click', function() {
+            $('.assignee-checkbox').prop('checked', false);
+        });
+    });
+</script>
 <?= $this->endSection() ?>

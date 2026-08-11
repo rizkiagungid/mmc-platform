@@ -21,8 +21,8 @@
                 <span class="badge" style="background-color: <?= $task['priority_color'] ?>;">
                     Prioritas: <?= esc($task['priority_name']) ?>
                 </span>
-                <span class="badge" style="background-color: <?= $myStatusColor ?? '#3b82f6' ?>;">
-                    Status Saya: <?= esc($myStatusName ?? 'Todo') ?>
+                <span class="badge" style="background-color: <?= $myStatusColor ?? '#6c757d' ?>;">
+                    Status Saya: <?= esc($myStatusName ?? 'Belum dikerjakan') ?>
                 </span>
             </div>
 
@@ -59,12 +59,14 @@
                     </label>
                     <select name="my_status_id" class="form-select bg-dark text-white border-secondary border-opacity-50">
                         <?php foreach ($statuses as $s): ?>
-                            <option value="<?= $s['id'] ?>" <?= (isset($myStatusId) && $myStatusId == $s['id']) ? 'selected' : '' ?>>
-                                Status: <?= esc($s['name']) ?>
-                            </option>
+                            <?php if ($s['id'] <= 3 || in_array(session()->get('role_slug'), ['superadmin', 'bph', 'pembina'])): ?>
+                                <option value="<?= $s['id'] ?>" <?= ((isset($myStatusId) && $myStatusId == $s['id']) || (!isset($myStatusId) && $s['id'] == 3)) ? 'selected' : '' ?>>
+                                    Status: <?= esc($s['name']) ?>
+                                </option>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                     </select>
-                    <div class="form-text text-secondary style-tiny">Ubah status pengerjaan Anda sendiri sesuai progres pengerjaan Anda.</div>
+                    <div class="form-text text-secondary style-tiny">Status 'Revisi' & 'Selesai' ditentukan langsung oleh Admin, BPH, atau Pembina.</div>
                 </div>
 
                 <div class="mb-3">

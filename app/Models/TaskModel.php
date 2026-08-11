@@ -106,8 +106,8 @@ class TaskModel extends Model
                 });
                 if (!empty($myAssignee)) {
                     $myAss = reset($myAssignee);
-                    $task['my_status_name']  = $myAss['status_name'] ?? 'Todo';
-                    $task['my_status_color'] = $myAss['status_color'] ?? '#3b82f6';
+                    $task['my_status_name']  = $myAss['status_name'] ?? 'Belum dikerjakan';
+                    $task['my_status_color'] = $myAss['status_color'] ?? '#6c757d';
                     $task['my_status_id']    = $myAss['status_id'] ?? 1;
                 }
             } else {
@@ -130,8 +130,9 @@ class TaskModel extends Model
 
         if ($task) {
             $task['assignees'] = $this->db->table('task_assignees')
-                                         ->select('users.id, users.full_name, users.username, users.avatar, users.nis_nip, users.class_dept, task_assignees.status_id, task_statuses.name as status_name, task_statuses.color as status_color')
+                                         ->select('users.id, users.full_name, users.username, users.avatar, users.nis_nip, users.class_dept, users.email, users.phone, users.status, users.member_uuid, roles.name as role_name, task_assignees.status_id, task_statuses.name as status_name, task_statuses.color as status_color')
                                          ->join('users', 'users.id = task_assignees.user_id')
+                                         ->join('roles', 'roles.id = users.role_id', 'left')
                                          ->join('task_statuses', 'task_statuses.id = task_assignees.status_id', 'left')
                                          ->where('task_assignees.task_id', $task['id'])
                                          ->get()->getResultArray();

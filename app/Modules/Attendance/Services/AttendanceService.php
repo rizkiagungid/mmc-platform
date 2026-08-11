@@ -53,17 +53,37 @@ class AttendanceService extends BaseService
         }
 
         foreach ($meetings as $meeting) {
-            $meetingEnd = $meeting['meeting_date'] . ' ' . ($meeting['end_time'] ?? '23:59:59');
-            $isExpired  = strtotime($meetingEnd) <= time();
+            $date      = $meeting['meeting_date'];
+            $startTime = !empty($meeting['start_time']) ? $meeting['start_time'] : '00:00:00';
+            $endTime   = !empty($meeting['end_time']) ? $meeting['end_time'] : '23:59:59';
 
-            // If an active meeting has passed end_time, mark status as completed
+            // Calculate correct end timestamp (accounting for overnight meetings like 23:00 to 00:30)
+            if ($endTime !== '23:59:59' && strtotime($endTime) <= strtotime($startTime)) {
+                $endTimestamp = strtotime("{$date} {$endTime} +1 day");
+            } else {
+                $endTimestamp = strtotime("{$date} {$endTime}");
+            }
+
+            $meetingEnd = date('Y-m-d H:i:s', $endTimestamp);
+            $isExpired  = $endTimestamp <= time();
+
+            // If an active meeting has passed end_time, check if it was recently activated by an admin
+            if ($meeting['status'] === 'active' && $isExpired) {
+                $updatedAt = !empty($meeting['updated_at']) ? strtotime($meeting['updated_at']) : 0;
+                // If activated within the last 4 hours (manually turned ON by admin/operator), do NOT auto-expire
+                if ($updatedAt > 0 && (time() - $updatedAt) < 14400) {
+                    $isExpired = false;
+                }
+            }
+
+            // If an active meeting is genuinely expired, mark status as completed
             if ($meeting['status'] === 'active' && $isExpired) {
                 $this->meetingModel->update($meeting['id'], ['status' => 'completed']);
                 $meeting['status'] = 'completed';
             }
 
-            // If meeting is completed or expired active meeting, assign Alpha to unrecorded users
-            if ($meeting['status'] === 'completed' || ($meeting['status'] === 'active' && $isExpired)) {
+            // Only assign Alpha to unrecorded users if meeting status is completed
+            if ($meeting['status'] === 'completed') {
                 $existingUserIds = array_column(
                     $this->db->table('attendances')
                              ->select('user_id')

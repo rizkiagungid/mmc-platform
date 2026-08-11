@@ -114,6 +114,11 @@
                                 <button type="button" class="btn btn-sm btn-red" data-bs-toggle="modal" data-bs-target="#chatModal<?= $msg['id'] ?>">
                                     <i class="fa-solid fa-comments me-1"></i> Thread & Balasan
                                 </button>
+                                <?php if (isset($isAdmin) && $isAdmin): ?>
+                                    <a href="<?= base_url('admin/cms/messages/delete/' . $msg['id']) ?>" class="btn btn-sm btn-outline-danger ms-1" onclick="return confirm('Apakah Anda yakin ingin menghapus pesan ini beserta semua balasannya?');">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
 

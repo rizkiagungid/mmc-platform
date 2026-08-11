@@ -32,6 +32,11 @@ class PublicController extends BaseController
 
         // 2. Hero Section
         $hero = $this->db->table('hero_sections')->orderBy('id', 'DESC')->get()->getRowArray();
+        $heroVideos = $this->db->table('hero_video_slides')
+                               ->where('is_active', 1)
+                               ->orderBy('sort_order', 'ASC')
+                               ->orderBy('id', 'DESC')
+                               ->get()->getResultArray();
 
         // 3. Stats
         $stats = $this->db->table('homepage_stats')
@@ -101,6 +106,7 @@ class PublicController extends BaseController
             'enableRegistration' => $this->settingModel->getSetting('enable_registration', '1'),
             'sections'           => $sections,
             'hero'               => $hero,
+            'heroVideos'         => $heroVideos,
             'stats'              => $stats,
             'divisions'          => $divisions,
             'portfolios'         => $portfolios,

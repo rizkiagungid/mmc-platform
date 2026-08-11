@@ -2,46 +2,208 @@
 
 <?= $this->section('content') ?>
 
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
     <div>
         <h4 class="text-white font-heading m-0">Manajemen Pengguna & Anggota</h4>
         <p class="text-secondary small m-0">Kelola akun Super Admin, Pembina, BPH, dan Anggota Club</p>
     </div>
-    <a href="<?= base_url('admin/users/create') ?>" class="btn btn-red">
-        <i class="fa-solid fa-user-plus me-1"></i> Tambah Anggota Baru
-    </a>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-success font-monospace fw-semibold" data-bs-toggle="modal" data-bs-target="#exportDataModal">
+            <i class="fa-solid fa-file-csv me-1"></i> Export Data CSV / Excel
+        </button>
+        <a href="<?= base_url('admin/users/create') ?>" class="btn btn-red">
+            <i class="fa-solid fa-user-plus me-1"></i> Tambah Anggota Baru
+        </a>
+    </div>
 </div>
 
-<!-- Search & Filter Card -->
-<div class="saas-card p-3 mb-4">
-    <form action="<?= current_url() ?>" method="GET" class="row g-2 align-items-center">
-        <div class="col-md-5 col-lg-5">
-            <div class="input-group">
-                <span class="input-group-text bg-black border-secondary border-opacity-25 text-secondary">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="custom-user-search" name="keyword" class="form-control bg-black text-white border-secondary border-opacity-25" placeholder="Cari nama, username, email, NIS/NIP, kelas/divisi..." value="<?= esc($keyword ?? '') ?>">
+<!-- Division & Member Stats Cards -->
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-6 g-3 mb-4">
+    <!-- Card 1: Total Akun Terdaftar (Semua Role) -->
+    <div class="col">
+        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
+            <div class="rounded-3 p-3 bg-light bg-opacity-10 text-white fs-4">
+                <i class="fa-solid fa-address-card"></i>
+            </div>
+            <div>
+                <div class="text-secondary style-tiny text-uppercase font-monospace">TOTAL AKUN</div>
+                <h4 class="fw-bold text-white font-heading m-0"><?= number_format($stats['all_users_count'] ?? 0) ?> <span class="fs-6 text-secondary fw-normal">Akun</span></h4>
             </div>
         </div>
-        <div class="col-md-4 col-lg-4">
-            <select name="role_id" id="role-filter-select" class="form-select bg-black text-white border-secondary border-opacity-25">
-                <option value="">-- Semua Role --</option>
-                <?php foreach ($roles as $r): ?>
-                    <option value="<?= $r['id'] ?>" <?= (isset($roleId) && $roleId == $r['id']) ? 'selected' : '' ?>>
-                        <?= esc($r['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
+    </div>
+
+    <!-- Card 2: Total Anggota Club (Role Anggota) -->
+    <div class="col">
+        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
+            <div class="rounded-3 p-3 bg-danger bg-opacity-25 text-danger fs-4">
+                <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+                <div class="text-secondary style-tiny text-uppercase font-monospace">TOTAL ANGGOTA</div>
+                <h4 class="fw-bold text-white font-heading m-0"><?= number_format($stats['total_members'] ?? 0) ?> <span class="fs-6 text-secondary fw-normal">Orang</span></h4>
+            </div>
         </div>
-        <div class="col-md-3 col-lg-3 d-flex gap-2">
-            <button type="submit" class="btn btn-red w-100">
-                <i class="fa-solid fa-filter me-1"></i> Filter
-            </button>
-            <?php if (!empty($keyword) || !empty($roleId)): ?>
-                <a href="<?= base_url('admin/users') ?>" class="btn btn-saas-dark" title="Reset Filter">
-                    <i class="fa-solid fa-rotate-left"></i>
-                </a>
-            <?php endif; ?>
+    </div>
+
+    <!-- Card 3: Divisi Broadcasting -->
+    <div class="col">
+        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
+            <div class="rounded-3 p-3 bg-info bg-opacity-25 text-info fs-4">
+                <i class="fa-solid fa-tower-broadcast"></i>
+            </div>
+            <div>
+                <div class="text-secondary style-tiny text-uppercase font-monospace">BROADCASTING</div>
+                <h4 class="fw-bold text-white font-heading m-0"><?= number_format($stats['broadcasting_count'] ?? 0) ?> <span class="fs-6 text-secondary fw-normal">Anggota</span></h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Divisi Programming -->
+    <div class="col">
+        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
+            <div class="rounded-3 p-3 bg-warning bg-opacity-25 text-warning fs-4">
+                <i class="fa-solid fa-code"></i>
+            </div>
+            <div>
+                <div class="text-secondary style-tiny text-uppercase font-monospace">PROGRAMMING</div>
+                <h4 class="fw-bold text-white font-heading m-0"><?= number_format($stats['programming_count'] ?? 0) ?> <span class="fs-6 text-secondary fw-normal">Anggota</span></h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 5: Pengurus BPH -->
+    <div class="col">
+        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
+            <div class="rounded-3 p-3 bg-primary bg-opacity-25 text-primary fs-4">
+                <i class="fa-solid fa-user-tie"></i>
+            </div>
+            <div>
+                <div class="text-secondary style-tiny text-uppercase font-monospace">PENGURUS BPH</div>
+                <h4 class="fw-bold text-white font-heading m-0"><?= number_format($stats['bph_count'] ?? 0) ?> <span class="fs-6 text-secondary fw-normal">Akun</span></h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 6: Akun Super Admin -->
+    <div class="col">
+        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
+            <div class="rounded-3 p-3 bg-success bg-opacity-25 text-success fs-4">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <div>
+                <div class="text-secondary style-tiny text-uppercase font-monospace">SUPER ADMIN</div>
+                <h4 class="fw-bold text-white font-heading m-0"><?= number_format($stats['admin_count'] ?? 0) ?> <span class="fs-6 text-secondary fw-normal">Akun</span></h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rich Multi-Filter Card -->
+<div class="saas-card p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-sliders text-danger"></i>
+            <h6 class="text-white font-heading mb-0">Pencarian & Multi-Filtering Anggota</h6>
+        </div>
+        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 font-monospace">
+            <?= count($users) ?> Data Ditemukan
+        </span>
+    </div>
+
+    <form action="<?= current_url() ?>" method="GET" id="user-filter-form">
+        <div class="row g-3">
+            <!-- Search Keyword -->
+            <div class="col-md-6 col-lg-4">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-magnifying-glass me-1"></i> Kata Kunci Pencarian</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-black border-secondary border-opacity-25 text-secondary">
+                        <i class="fa-solid fa-search"></i>
+                    </span>
+                    <input type="text" id="custom-user-search" name="keyword" class="form-control bg-black text-white border-secondary border-opacity-25" placeholder="Nama, username, email, NIS/NIP, HP, alamat..." value="<?= esc($keyword ?? '') ?>">
+                </div>
+            </div>
+
+            <!-- Filter Role -->
+            <div class="col-md-6 col-lg-2">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-user-shield me-1"></i> Role Pengguna</label>
+                <select name="role_id" id="role-filter-select" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Role --</option>
+                    <?php foreach ($roles as $r): ?>
+                        <?php if (session()->get('role_slug') !== 'superadmin' && $r['id'] == 1) continue; ?>
+                        <?php if (session()->get('role_slug') === 'bph' && $r['id'] == 2) continue; ?>
+                        <option value="<?= $r['id'] ?>" <?= (isset($roleId) && $roleId == $r['id']) ? 'selected' : '' ?>>
+                            <?= esc($r['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Filter Tingkat Kelas -->
+            <div class="col-md-4 col-lg-2">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-graduation-cap me-1"></i> Tingkat Kelas</label>
+                <select name="class_grade" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Kelas --</option>
+                    <?php foreach (['X', 'XI', 'XII'] as $grade): ?>
+                        <option value="<?= $grade ?>" <?= (isset($classGrade) && $classGrade === $grade) ? 'selected' : '' ?>>Kelas <?= $grade ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Filter Ruang Kelas -->
+            <div class="col-md-4 col-lg-2">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-door-open me-1"></i> Ruang Kelas</label>
+                <select name="class_room" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Ruang --</option>
+                    <?php for ($r = 1; $r <= 10; $r++): ?>
+                        <option value="<?= $r ?>" <?= (isset($classRoom) && $classRoom == $r) ? 'selected' : '' ?>>Ruang <?= $r ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+
+            <!-- Filter Divisi -->
+            <div class="col-md-4 col-lg-2">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-laptop-code me-1"></i> Divisi Ekskul</label>
+                <select name="division" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Divisi --</option>
+                    <?php foreach (['Broadcasting', 'Programming'] as $div): ?>
+                        <option value="<?= $div ?>" <?= (isset($division) && $division === $div) ? 'selected' : '' ?>><?= $div ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Filter Status Akun -->
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-circle-dot me-1"></i> Status Keanggotaan</label>
+                <select name="status" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Status --</option>
+                    <option value="active" <?= (isset($status) && $status === 'active') ? 'selected' : '' ?>>🟢 Aktif</option>
+                    <option value="inactive" <?= (isset($status) && $status === 'inactive') ? 'selected' : '' ?>>🟡 Belum Dikonfirmasi (Pending)</option>
+                    <option value="suspended" <?= (isset($status) && $status === 'suspended') ? 'selected' : '' ?>>🟠 Ditangguhkan (Suspended)</option>
+                    <option value="left" <?= (isset($status) && $status === 'left') ? 'selected' : '' ?>>🔴 Keluar Ekskul</option>
+                </select>
+            </div>
+
+            <!-- Filter Avatar / Foto Profil -->
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-image me-1"></i> Foto Profil</label>
+                <select name="has_avatar" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Foto --</option>
+                    <option value="1" <?= (isset($hasAvatar) && $hasAvatar === '1') ? 'selected' : '' ?>>📷 Memiliki Foto Profil</option>
+                    <option value="0" <?= (isset($hasAvatar) && $hasAvatar === '0') ? 'selected' : '' ?>>👤 Tanpa Foto Profil</option>
+                </select>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="col-md-12 col-lg-6 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-red px-4 fw-semibold">
+                    <i class="fa-solid fa-filter me-1"></i> Terapkan Filter
+                </button>
+                <?php if (!empty($keyword) || !empty($roleId) || !empty($classGrade) || !empty($classRoom) || !empty($division) || !empty($status) || (isset($hasAvatar) && $hasAvatar !== null && $hasAvatar !== '')): ?>
+                    <a href="<?= base_url('admin/users') ?>" class="btn btn-saas-dark px-3" title="Reset Semua Filter">
+                        <i class="fa-solid fa-rotate-left me-1"></i> Reset Filter
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
     </form>
 </div>
@@ -162,10 +324,10 @@
                                     </a>
                                 <?php endif; ?>
                                 <div class="dropdown">
-                                    <button class="btn btn-sm btn-saas-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <button class="btn btn-sm btn-saas-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                         Pilihan
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border border-secondary border-opacity-50">
                                         <?php if ($u['status'] === 'inactive'): ?>
                                             <li><a class="dropdown-item text-success fw-bold" href="<?= base_url('admin/users/activate/' . $u['id']) ?>" onclick="return confirm('Konfirmasi dan aktifkan akun pendaftar <?= esc($u['full_name']) ?>?')"><i class="fa-solid fa-user-check me-2"></i> Konfirmasi & Aktifkan Akun</a></li>
                                             <li><hr class="dropdown-divider"></li>
@@ -173,8 +335,10 @@
                                         <li><a class="dropdown-item" href="<?= base_url('admin/users/qr/' . $u['member_uuid']) ?>"><i class="fa-solid fa-qrcode me-2 text-warning"></i> Lihat ID Card & QR</a></li>
                                         <li><a class="dropdown-item" href="<?= base_url('admin/users/regenerate-qr/' . $u['id']) ?>" onclick="return confirm('Regenerasi QR akan membatalkan QR lama. Lanjutkan?')"><i class="fa-solid fa-arrows-rotate me-2 text-info"></i> Regenerasi Member QR</a></li>
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="<?= base_url('admin/users/edit/' . $u['id']) ?>"><i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit Profile</a></li>
-                                        <li><a class="dropdown-item text-danger" href="<?= base_url('admin/users/delete/' . $u['id']) ?>" onclick="return confirm('Hapus pengguna ini?')"><i class="fa-solid fa-trash me-2"></i> Hapus</a></li>
+                                        <?php if (!(session()->get('role_slug') === 'bph' && in_array($u['role_id'], [1,2]))) : ?>
+                                            <li><a class="dropdown-item" href="<?= base_url('admin/users/edit/' . $u['id']) ?>"><i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit Profile</a></li>
+                                            <li><a class="dropdown-item text-danger" href="<?= base_url('admin/users/delete/' . $u['id']) ?>" onclick="return confirm('Hapus pengguna ini?')"><i class="fa-solid fa-trash me-2"></i> Hapus</a></li>
+                                        <?php endif; ?>
                                     </ul>
                                 </div>
                             </div>
@@ -236,6 +400,8 @@
                                 </div>
                                 <select name="role_id" id="select_bulk_role" class="form-select bg-dark text-white border-secondary border-opacity-50" disabled>
                                     <?php foreach ($roles as $r): ?>
+                                        <?php if (session()->get('role_slug') !== 'superadmin' && $r['id'] == 1) continue; ?>
+                                        <?php if (session()->get('role_slug') === 'bph' && $r['id'] == 2) continue; ?>
                                         <option value="<?= $r['id'] ?>"><?= esc($r['name']) ?> (<?= esc($r['slug']) ?>)</option>
                                     <?php endforeach; ?>
                                 </select>
@@ -246,12 +412,37 @@
                         <div class="col-12">
                             <div class="saas-card p-3 bg-black bg-opacity-25 border border-secondary border-opacity-25">
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input bulk-field-chk" type="checkbox" name="change_class" value="1" id="chk_change_class" data-target="#input_bulk_class">
+                                    <input class="form-check-input bulk-field-chk" type="checkbox" name="change_class" value="1" id="chk_change_class" data-target=".bulk-class-input">
                                     <label class="form-check-label fw-bold text-white" for="chk_change_class">
                                         <i class="fa-solid fa-graduation-cap text-success me-1"></i> Ubah Kelas / Divisi Massal
                                     </label>
                                 </div>
-                                <input type="text" name="class_dept" id="input_bulk_class" class="form-control bg-dark text-white border-secondary border-opacity-50" placeholder="Contoh: XII Multimedia 1 / Divisi Videography" disabled>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <select name="class_grade" class="form-select bg-dark text-white border-secondary border-opacity-50 bulk-class-input" disabled>
+                                            <option value="">-- Pilih Kelas --</option>
+                                            <?php foreach (['X', 'XI', 'XII'] as $grade): ?>
+                                                <option value="<?= $grade ?>">Kelas <?= $grade ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select name="class_room" class="form-select bg-dark text-white border-secondary border-opacity-50 bulk-class-input" disabled>
+                                            <option value="">-- Pilih Ruang --</option>
+                                            <?php for ($r = 1; $r <= 10; $r++): ?>
+                                                <option value="<?= $r ?>">Ruang <?= $r ?></option>
+                                            <?php endfor; ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select name="division" class="form-select bg-dark text-white border-secondary border-opacity-50 bulk-class-input" disabled>
+                                            <option value="">-- Pilih Divisi --</option>
+                                            <?php foreach (['Broadcasting', 'Programming'] as $div): ?>
+                                                <option value="<?= $div ?>"><?= $div ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -388,6 +579,127 @@
         $('#btn-bulk-delete').on('click', function() {
             submitBulkAction('delete', 'Hapus Massal Anggota?', 'Apakah Anda yakin ingin menghapus {count} anggota terpilih dari sistem?', 'Ya, Hapus Semua', '#dc2626');
         });
+
+        // Export Column Checkers
+        $('#btn-check-all-cols').on('click', function() {
+            $('.export-col-chk').prop('checked', true);
+        });
+        $('#btn-uncheck-all-cols').on('click', function() {
+            $('.export-col-chk').prop('checked', false);
+        });
     });
 </script>
+
+<!-- Modal Export Data CSV / Excel -->
+<div class="modal fade" id="exportDataModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-white border border-secondary border-opacity-25">
+            <form action="<?= base_url('admin/users/export-csv') ?>" method="POST">
+                <?= csrf_field() ?>
+
+                <!-- Pass current active filters for Scope Filtering -->
+                <input type="hidden" name="keyword" value="<?= esc($keyword ?? '') ?>">
+                <input type="hidden" name="role_id" value="<?= esc($roleId ?? '') ?>">
+                <input type="hidden" name="class_grade" value="<?= esc($classGrade ?? '') ?>">
+                <input type="hidden" name="class_room" value="<?= esc($classRoom ?? '') ?>">
+                <input type="hidden" name="division" value="<?= esc($division ?? '') ?>">
+                <input type="hidden" name="status" value="<?= esc($status ?? '') ?>">
+                <input type="hidden" name="has_avatar" value="<?= esc($hasAvatar ?? '') ?>">
+
+                <div class="modal-header border-bottom border-secondary border-opacity-25">
+                    <h5 class="modal-title font-heading"><i class="fa-solid fa-file-csv text-success me-2"></i> Export Data Anggota & Pengguna (CSV / Excel)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <!-- Scope Selection -->
+                    <div class="mb-4">
+                        <label class="form-label text-white small fw-bold mb-2"><i class="fa-solid fa-filter me-1 text-danger"></i> 1. Cakupan Data yang Ingin Di-export</label>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 bg-black border border-secondary border-opacity-25 h-100">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="export_scope" id="scope_all" value="all" checked>
+                                        <label class="form-check-label text-white fw-semibold" for="scope_all">
+                                            Seluruh Data (Semua Pengguna)
+                                            <span class="d-block text-secondary style-tiny fw-normal mt-1">Mengeksport seluruh data pengguna tanpa batasan filter.</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded-3 bg-black border border-danger border-opacity-50 h-100">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="export_scope" id="scope_filtered" value="filtered">
+                                        <label class="form-check-label text-white fw-semibold" for="scope_filtered">
+                                            Data Hasil Filter Saat Ini (<?= count($users) ?> Data)
+                                            <span class="d-block text-secondary style-tiny fw-normal mt-1">Hanya mengeksport data yang saat ini tampil sesuai kata kunci/filter.</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column Selection -->
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="form-label text-white small fw-bold mb-0"><i class="fa-solid fa-list-check me-1 text-warning"></i> 2. Pilih Kolom Data CSV yang Diinginkan</label>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-saas-dark btn-sm style-tiny" id="btn-check-all-cols">Centang Semua</button>
+                                <button type="button" class="btn btn-saas-dark btn-sm style-tiny" id="btn-uncheck-all-cols">Hapus Semua</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 p-3 bg-black rounded-3 border border-secondary border-opacity-25">
+                            <?php
+                            $columnOptions = [
+                                'id'               => 'ID User',
+                                'member_uuid'      => 'Member UUID',
+                                'full_name'        => 'Nama Lengkap',
+                                'username'         => 'Username',
+                                'email'            => 'Email',
+                                'nis_nip'          => 'NIS / NIP',
+                                'phone'            => 'No. HP / WhatsApp',
+                                'class_dept'       => 'Kelas & Divisi',
+                                'role_name'        => 'Role',
+                                'status'           => 'Status Keanggotaan',
+                                'birth_date'       => 'Tanggal Lahir',
+                                'address'          => 'Alamat Lengkap',
+                                'social_instagram' => 'Instagram',
+                                'social_tiktok'    => 'TikTok',
+                                'social_facebook'  => 'Facebook',
+                                'social_linkedin'  => 'LinkedIn',
+                                'social_github'    => 'GitHub',
+                                'qr_version'       => 'Versi QR Code',
+                                'created_at'       => 'Tanggal Terdaftar',
+                            ];
+                            $defaultChecked = ['full_name', 'username', 'email', 'nis_nip', 'phone', 'class_dept', 'role_name', 'status'];
+                            ?>
+
+                            <?php foreach ($columnOptions as $colKey => $colLabel): ?>
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input export-col-chk" type="checkbox" name="columns[]" value="<?= $colKey ?>" id="col_<?= $colKey ?>" <?= in_array($colKey, $defaultChecked) ? 'checked' : '' ?>>
+                                        <label class="form-check-label text-white style-tiny" for="col_<?= $colKey ?>">
+                                            <?= $colLabel ?>
+                                        </label>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top border-secondary border-opacity-25 justify-content-between">
+                    <button type="button" class="btn btn-saas-dark btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-success px-4 font-monospace fw-bold">
+                        <i class="fa-solid fa-download me-1"></i> Unduh File CSV / Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>

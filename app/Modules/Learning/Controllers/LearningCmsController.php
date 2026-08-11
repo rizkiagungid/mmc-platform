@@ -104,6 +104,10 @@ class LearningCmsController extends BaseController
             return redirect()->to('/admin/learning')->with('error', 'Materi tidak ditemukan.');
         }
 
+        if (!empty($material['deleted_at'])) {
+            return redirect()->to('/admin/learning?status=trash')->with('error', 'Materi yang sudah berada di Sampah (Trash) tidak dapat diedit. Pulihkan materi terlebih dahulu.');
+        }
+
         $material['tags'] = $this->learningService->getTagsForMaterial($id);
         $divisions        = $this->db->table('divisions')->where('status', 'active')->get()->getResultArray();
         $mediaList        = $this->mediaService->getAllMedia();
@@ -178,7 +182,7 @@ class LearningCmsController extends BaseController
         $res       = $result['body'] ?? $result;
         $statusKey = ($res['status'] ?? '') === 'success' ? 'success' : 'error';
 
-        return redirect()->to('/admin/learning')->with($statusKey, $res['message'] ?? '');
+        return redirect()->to('/admin/learning?status=trash')->with($statusKey, $res['message'] ?? '');
     }
 
     public function purge(int $id)
@@ -193,6 +197,22 @@ class LearningCmsController extends BaseController
         return redirect()->to('/admin/learning?status=trash')->with($statusKey, $res['message'] ?? '');
     }
 
+    public function emptyTrash()
+    {
+        $this->checkWritePermission();
+
+        $actorId = (int)session()->get('user_id');
+        $trashed = $this->db->table('learning_materials')->select('id')->where('deleted_at IS NOT NULL')->get()->getResultArray();
+
+        $count = 0;
+        foreach ($trashed as $t) {
+            $this->learningService->purgeMaterial((int)$t['id'], $actorId);
+            $count++;
+        }
+
+        return redirect()->to('/admin/learning?status=trash')->with('success', "Sampah berhasil dikosongkan ({$count} materi dihapus permanen).");
+    }
+
     public function bulkAction()
     {
         $this->checkWritePermission();
@@ -200,12 +220,15 @@ class LearningCmsController extends BaseController
         $actorId   = (int)session()->get('user_id');
         $action    = $this->request->getPost('bulk_action');
         $ids       = $this->request->getPost('selected_ids') ?: [];
+        $status    = $this->request->getPost('current_status') ?: 'all';
 
         $result    = $this->learningService->bulkAction($action, $ids, $actorId);
         $res       = $result['body'] ?? $result;
         $statusKey = ($res['status'] ?? '') === 'success' ? 'success' : 'error';
 
-        return redirect()->to('/admin/learning')->with($statusKey, $res['message'] ?? '');
+        $redirectUrl = '/admin/learning' . ($status !== 'all' ? '?status=' . urlencode($status) : '');
+
+        return redirect()->to($redirectUrl)->with($statusKey, $res['message'] ?? '');
     }
 
     private function checkWritePermission()

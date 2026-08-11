@@ -62,12 +62,31 @@
                     <?php foreach ($submissions as $sub): ?>
                         <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25">
                             <div class="d-flex align-items-center justify-content-between mb-2">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-circle bg-danger bg-opacity-25 text-danger fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                        <?= strtoupper(substr($sub['full_name'], 0, 1)) ?>
-                                    </div>
+                                <div class="d-flex align-items-center gap-2" 
+                                     style="cursor: pointer;"
+                                     onclick='showUserProfileModal(<?= json_encode([
+                                         "id" => $sub["user_id"] ?? $sub["id"],
+                                         "full_name" => $sub["full_name"],
+                                         "username" => $sub["username"] ?? "-",
+                                         "nis_nip" => $sub["nis_nip"] ?? "-",
+                                         "class_dept" => $sub["class_dept"] ?? "-",
+                                         "email" => $sub["email"] ?? "-",
+                                         "phone" => $sub["phone"] ?? "-",
+                                         "role_name" => $sub["role_name"] ?? "Anggota",
+                                         "status" => $sub["status"] ?? "active",
+                                         "avatar" => $sub["avatar"] ?? "",
+                                         "member_uuid" => $sub["member_uuid"] ?? ""
+                                     ], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'
+                                     title="Klik untuk lihat detail profil <?= esc($sub['full_name']) ?>">
+                                    <?php if (!empty($sub['avatar'])): ?>
+                                        <img src="<?= base_url($sub['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 32px; height: 32px; min-width: 32px;">
+                                    <?php else: ?>
+                                        <div class="rounded-circle bg-danger bg-opacity-25 text-danger fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                            <?= strtoupper(substr($sub['full_name'], 0, 1)) ?>
+                                        </div>
+                                    <?php endif; ?>
                                     <div>
-                                        <div class="fw-semibold text-white small"><?= esc($sub['full_name']) ?></div>
+                                        <div class="fw-semibold text-white small text-decoration-underline"><?= esc($sub['full_name']) ?></div>
                                         <small class="text-secondary font-monospace" style="font-size: 0.7rem;"><?= date('H:i:s, d M Y', strtotime($sub['submitted_at'])) ?></small>
                                     </div>
                                 </div>
@@ -159,12 +178,31 @@
                     <span class="text-secondary small">Belum ada anggota ditugaskan</span>
                 <?php else: ?>
                     <?php foreach ($task['assignees'] as $m): ?>
-                        <div class="d-flex align-items-center gap-2 p-2 rounded bg-dark border border-secondary border-opacity-25">
-                            <div class="rounded-circle bg-danger text-white fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
-                                <?= strtoupper(substr($m['full_name'], 0, 1)) ?>
-                            </div>
+                        <div class="d-flex align-items-center gap-2 p-2 rounded bg-dark border border-secondary border-opacity-25"
+                             style="cursor: pointer;"
+                             onclick='showUserProfileModal(<?= json_encode([
+                                 "id" => $m["id"],
+                                 "full_name" => $m["full_name"],
+                                 "username" => $m["username"] ?? "-",
+                                 "nis_nip" => $m["nis_nip"] ?? "-",
+                                 "class_dept" => $m["class_dept"] ?? "-",
+                                 "email" => $m["email"] ?? "-",
+                                 "phone" => $m["phone"] ?? "-",
+                                 "role_name" => $m["role_name"] ?? "Anggota",
+                                 "status" => $m["status"] ?? "active",
+                                 "avatar" => $m["avatar"] ?? "",
+                                 "member_uuid" => $m["member_uuid"] ?? ""
+                             ], JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'
+                             title="Klik untuk lihat detail profil <?= esc($m['full_name']) ?>">
+                            <?php if (!empty($m['avatar'])): ?>
+                                <img src="<?= base_url($m['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 32px; height: 32px; min-width: 32px;">
+                            <?php else: ?>
+                                <div class="rounded-circle bg-danger text-white fw-bold d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                    <?= strtoupper(substr($m['full_name'], 0, 1)) ?>
+                                </div>
+                            <?php endif; ?>
                             <div class="d-flex flex-column">
-                                <span class="text-white fw-semibold small"><?= esc($m['full_name']) ?></span>
+                                <span class="text-white fw-semibold small text-decoration-underline"><?= esc($m['full_name']) ?></span>
                                 <small class="text-secondary font-monospace" style="font-size: 0.7rem;"><?= esc($m['class_dept'] ?: $m['username']) ?></small>
                             </div>
                         </div>
@@ -191,4 +229,118 @@
     </div>
 </div>
 
+<!-- Modal User Profile Detail Popup -->
+<div class="modal fade" id="userProfileDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-md">
+        <div class="modal-content bg-dark text-white border border-secondary border-opacity-25 shadow-lg">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-2.5">
+                <h5 class="modal-title font-heading fs-6 d-flex align-items-center gap-2 m-0">
+                    <i class="fa-solid fa-id-card text-danger"></i> Detail Profil Anggota
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <div id="modalUserAvatarWrapper" class="mb-3 d-flex justify-content-center">
+                    <!-- Populated by JS -->
+                </div>
+                <h5 id="modalUserFullName" class="text-white font-heading mb-1 fw-bold">Nama Anggota</h5>
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+                    <span id="modalUserRole" class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 px-2.5 py-1 font-monospace style-tiny">Role</span>
+                    <span id="modalUserStatus" class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2.5 py-1 font-monospace style-tiny">AKTIF</span>
+                </div>
+
+                <div class="saas-card p-3 text-start mb-3 style-tiny">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <span class="text-secondary d-block style-tiny">NIS / NIP</span>
+                            <strong id="modalUserNisNip" class="text-white font-monospace style-tiny">-</strong>
+                        </div>
+                        <div class="col-6">
+                            <span class="text-secondary d-block style-tiny">Username</span>
+                            <strong id="modalUserUsername" class="text-white font-monospace style-tiny">-</strong>
+                        </div>
+                        <div class="col-12 mt-2 pt-2 border-top border-secondary border-opacity-10">
+                            <span class="text-secondary d-block style-tiny">Kelas / Jurusan</span>
+                            <strong id="modalUserClassDept" class="text-white style-tiny">-</strong>
+                        </div>
+                        <div class="col-12 mt-2 pt-2 border-top border-secondary border-opacity-10">
+                            <span class="text-secondary d-block style-tiny">Email</span>
+                            <a id="modalUserEmail" href="#" class="text-info style-tiny text-break">-</a>
+                        </div>
+                        <div class="col-12 mt-2 pt-2 border-top border-secondary border-opacity-10">
+                            <span class="text-secondary d-block style-tiny">No. Telepon / WhatsApp</span>
+                            <a id="modalUserPhone" href="#" target="_blank" class="text-success style-tiny">-</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="modalUserQrWrapper">
+                    <a id="modalUserQrBtn" href="#" class="btn btn-sm btn-saas-dark w-100" target="_blank">
+                        <i class="fa-solid fa-qrcode text-warning me-1"></i> Tampilkan ID Card & Member QR
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection() ?>
+
+<script>
+function showUserProfileModal(user) {
+    const avatarWrapper = document.getElementById('modalUserAvatarWrapper');
+    if (user.avatar && user.avatar.trim() !== '') {
+        const baseUrl = '<?= base_url() ?>';
+        const imgUrl = user.avatar.startsWith('http') ? user.avatar : baseUrl + (user.avatar.startsWith('/') ? user.avatar.substring(1) : user.avatar);
+        avatarWrapper.innerHTML = `<img src="${imgUrl}" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 72px; height: 72px; min-width: 72px;">`;
+    } else {
+        const initial = user.full_name ? user.full_name.charAt(0).toUpperCase() : 'U';
+        avatarWrapper.innerHTML = `<div class="rounded-circle bg-danger bg-opacity-25 text-danger fw-bold d-flex align-items-center justify-content-center border border-danger border-opacity-50 fs-3" style="width: 72px; height: 72px;">${initial}</div>`;
+    }
+
+    document.getElementById('modalUserFullName').textContent = user.full_name || 'Anggota';
+    document.getElementById('modalUserRole').textContent = user.role_name || 'Anggota';
+    
+    const statusSpan = document.getElementById('modalUserStatus');
+    const isStatusActive = (user.status === 'active' || user.status === 'aktif');
+    statusSpan.textContent = isStatusActive ? 'AKTIF' : (user.status || 'NONAKTIF').toUpperCase();
+    statusSpan.className = isStatusActive 
+        ? 'badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 px-2.5 py-1 font-monospace style-tiny'
+        : 'badge bg-secondary bg-opacity-25 text-secondary border border-secondary border-opacity-25 px-2.5 py-1 font-monospace style-tiny';
+
+    document.getElementById('modalUserNisNip').textContent = user.nis_nip || '-';
+    document.getElementById('modalUserUsername').textContent = user.username || '-';
+    document.getElementById('modalUserClassDept').textContent = user.class_dept || '-';
+    
+    const emailElem = document.getElementById('modalUserEmail');
+    if (user.email && user.email !== '-') {
+        emailElem.textContent = user.email;
+        emailElem.href = 'mailto:' + user.email;
+    } else {
+        emailElem.textContent = '-';
+        emailElem.removeAttribute('href');
+    }
+
+    const phoneElem = document.getElementById('modalUserPhone');
+    if (user.phone && user.phone !== '-') {
+        const cleanPhone = user.phone.replace(/[^0-9]/g, '');
+        const waPhone = cleanPhone.startsWith('0') ? '62' + cleanPhone.substring(1) : cleanPhone;
+        phoneElem.innerHTML = `<i class="fa-brands fa-whatsapp text-success me-1"></i> ${user.phone}`;
+        phoneElem.href = 'https://wa.me/' + waPhone;
+    } else {
+        phoneElem.textContent = '-';
+        phoneElem.removeAttribute('href');
+    }
+
+    const qrBtn = document.getElementById('modalUserQrBtn');
+    if (user.member_uuid && user.member_uuid !== '-') {
+        qrBtn.href = '<?= base_url("admin/users/qr/") ?>' + user.member_uuid;
+        qrBtn.style.display = 'inline-flex';
+    } else {
+        qrBtn.style.display = 'none';
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('userProfileDetailModal'));
+    modal.show();
+}
+</script>

@@ -12,36 +12,110 @@
     </a>
 </div>
 
-<!-- Search & Filter Card -->
-<div class="saas-card p-3 mb-4">
-    <form action="<?= current_url() ?>" method="GET" class="row g-2 align-items-center">
-        <div class="col-md-5 col-lg-5">
-            <div class="input-group">
-                <span class="input-group-text bg-black border-secondary border-opacity-25 text-secondary">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" id="custom-user-search" name="keyword" class="form-control bg-black text-white border-secondary border-opacity-25" placeholder="Cari nama, username, email, NIS/NIP, kelas/divisi..." value="<?= esc($keyword ?? '') ?>">
+<!-- Rich Multi-Filter Card -->
+<div class="saas-card p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary border-opacity-25 pb-2">
+        <div class="d-flex align-items-center gap-2">
+            <i class="fa-solid fa-sliders text-danger"></i>
+            <h6 class="text-white font-heading mb-0">Pencarian & Multi-Filtering Anggota</h6>
+        </div>
+        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 font-monospace">
+            <?= count($users) ?> Data Ditemukan
+        </span>
+    </div>
+
+    <form action="<?= current_url() ?>" method="GET" id="user-filter-form">
+        <div class="row g-3">
+            <!-- Search Keyword -->
+            <div class="col-md-6 col-lg-4">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-magnifying-glass me-1"></i> Kata Kunci Pencarian</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-black border-secondary border-opacity-25 text-secondary">
+                        <i class="fa-solid fa-search"></i>
+                    </span>
+                    <input type="text" id="custom-user-search" name="keyword" class="form-control bg-black text-white border-secondary border-opacity-25" placeholder="Nama, username, email, NIS/NIP, HP, alamat..." value="<?= esc($keyword ?? '') ?>">
+                </div>
             </div>
-        </div>
-        <div class="col-md-4 col-lg-4">
-            <select name="role_id" id="role-filter-select" class="form-select bg-black text-white border-secondary border-opacity-25">
-                <option value="">-- Semua Role --</option>
-                <?php foreach ($roles as $r): ?>
-                    <option value="<?= $r['id'] ?>" <?= (isset($roleId) && $roleId == $r['id']) ? 'selected' : '' ?>>
-                        <?= esc($r['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-        <div class="col-md-3 col-lg-3 d-flex gap-2">
-            <button type="submit" class="btn btn-red w-100">
-                <i class="fa-solid fa-filter me-1"></i> Filter
-            </button>
-            <?php if (!empty($keyword) || !empty($roleId)): ?>
-                <a href="<?= base_url('admin/users') ?>" class="btn btn-saas-dark" title="Reset Filter">
-                    <i class="fa-solid fa-rotate-left"></i>
-                </a>
-            <?php endif; ?>
+
+            <!-- Filter Role -->
+            <div class="col-md-6 col-lg-2">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-user-shield me-1"></i> Role Pengguna</label>
+                <select name="role_id" id="role-filter-select" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Role --</option>
+                    <?php foreach ($roles as $r): ?>
+                        <option value="<?= $r['id'] ?>" <?= (isset($roleId) && $roleId == $r['id']) ? 'selected' : '' ?>>
+                            <?= esc($r['name']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Filter Tingkat Kelas -->
+            <div class="col-md-4 col-lg-2">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-graduation-cap me-1"></i> Tingkat Kelas</label>
+                <select name="class_grade" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Kelas --</option>
+                    <?php foreach (['X', 'XI', 'XII'] as $grade): ?>
+                        <option value="<?= $grade ?>" <?= (isset($classGrade) && $classGrade === $grade) ? 'selected' : '' ?>>Kelas <?= $grade ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Filter Ruang Kelas -->
+            <div class="col-md-4 col-lg-2">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-door-open me-1"></i> Ruang Kelas</label>
+                <select name="class_room" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Ruang --</option>
+                    <?php for ($r = 1; $r <= 10; $r++): ?>
+                        <option value="<?= $r ?>" <?= (isset($classRoom) && $classRoom == $r) ? 'selected' : '' ?>>Ruang <?= $r ?></option>
+                    <?php endfor; ?>
+                </select>
+            </div>
+
+            <!-- Filter Divisi -->
+            <div class="col-md-4 col-lg-2">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-laptop-code me-1"></i> Divisi Ekskul</label>
+                <select name="division" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Divisi --</option>
+                    <?php foreach (['Broadcasting', 'Programming'] as $div): ?>
+                        <option value="<?= $div ?>" <?= (isset($division) && $division === $div) ? 'selected' : '' ?>><?= $div ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Filter Status Akun -->
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-circle-dot me-1"></i> Status Keanggotaan</label>
+                <select name="status" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Status --</option>
+                    <option value="active" <?= (isset($status) && $status === 'active') ? 'selected' : '' ?>>🟢 Aktif</option>
+                    <option value="inactive" <?= (isset($status) && $status === 'inactive') ? 'selected' : '' ?>>🟡 Belum Dikonfirmasi (Pending)</option>
+                    <option value="suspended" <?= (isset($status) && $status === 'suspended') ? 'selected' : '' ?>>🟠 Ditangguhkan (Suspended)</option>
+                    <option value="left" <?= (isset($status) && $status === 'left') ? 'selected' : '' ?>>🔴 Keluar Ekskul</option>
+                </select>
+            </div>
+
+            <!-- Filter Avatar / Foto Profil -->
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-image me-1"></i> Foto Profil</label>
+                <select name="has_avatar" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Foto --</option>
+                    <option value="1" <?= (isset($hasAvatar) && $hasAvatar === '1') ? 'selected' : '' ?>>📷 Memiliki Foto Profil</option>
+                    <option value="0" <?= (isset($hasAvatar) && $hasAvatar === '0') ? 'selected' : '' ?>>👤 Tanpa Foto Profil</option>
+                </select>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="col-md-12 col-lg-6 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-red px-4 fw-semibold">
+                    <i class="fa-solid fa-filter me-1"></i> Terapkan Filter
+                </button>
+                <?php if (!empty($keyword) || !empty($roleId) || !empty($classGrade) || !empty($classRoom) || !empty($division) || !empty($status) || (isset($hasAvatar) && $hasAvatar !== null && $hasAvatar !== '')): ?>
+                    <a href="<?= base_url('admin/users') ?>" class="btn btn-saas-dark px-3" title="Reset Semua Filter">
+                        <i class="fa-solid fa-rotate-left me-1"></i> Reset Filter
+                    </a>
+                <?php endif; ?>
+            </div>
         </div>
     </form>
 </div>

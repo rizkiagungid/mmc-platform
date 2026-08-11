@@ -40,8 +40,9 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-medium">Username</label>
-                                <input type="text" name="username" class="form-control" placeholder="Contoh: fauzi_mmc" value="<?= old('username') ?>" required>
+                                <label class="form-label text-secondary small fw-medium">Username <span class="text-danger">*</span></label>
+                                <input type="text" name="username" class="form-control" placeholder="Contoh: fauzi_mmc" value="<?= old('username') ?>" pattern="^\S+$" title="Username tidak boleh mengandung spasi" onkeyup="this.value = this.value.replace(/\s+/g, '')" required>
+                                <small class="text-secondary style-tiny d-block mt-1"><i class="fa-solid fa-circle-info text-info me-1"></i> Tanpa spasi</small>
                             </div>
 
                             <div class="col-md-6">
@@ -49,23 +50,73 @@
                                 <input type="email" name="email" class="form-control" placeholder="fauzi@gmail.com" value="<?= old('email') ?>" required>
                             </div>
 
-                            <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-medium">Kelas - Divisi</label>
-                                <input type="text" name="class_dept" class="form-control" placeholder="Contoh: XI 2 - Programming" value="<?= old('class_dept') ?>" required>
+                            <div class="col-md-12">
+                                <label class="form-label text-secondary small fw-medium">Kelas, Ruang & Divisi</label>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <select name="class_grade" class="form-select bg-dark text-white border-secondary border-opacity-50" required>
+                                            <option value="" disabled <?= !old('class_grade') ? 'selected' : '' ?>>-- Pilih Kelas --</option>
+                                            <?php foreach (['X', 'XI', 'XII'] as $grade): ?>
+                                                <option value="<?= $grade ?>" <?= old('class_grade') === $grade ? 'selected' : '' ?>>Kelas <?= $grade ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select name="class_room" class="form-select bg-dark text-white border-secondary border-opacity-50" required>
+                                            <option value="" disabled <?= !old('class_room') ? 'selected' : '' ?>>-- Pilih Ruang --</option>
+                                            <?php for ($r = 1; $r <= 10; $r++): ?>
+                                                <option value="<?= $r ?>" <?= old('class_room') == $r ? 'selected' : '' ?>>Ruang <?= $r ?></option>
+                                            <?php endfor; ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <select name="division" class="form-select bg-dark text-white border-secondary border-opacity-50" required>
+                                            <option value="" disabled <?= !old('division') ? 'selected' : '' ?>>-- Pilih Divisi --</option>
+                                            <?php foreach (['Broadcasting', 'Programming'] as $div): ?>
+                                                <option value="<?= $div ?>" <?= old('division') === $div ? 'selected' : '' ?>><?= $div ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-medium">Nomor WhatsApp / Phone</label>
+                                <label class="form-label text-secondary small fw-medium">Nomor WhatsApp / Phone <span class="text-danger">*</span></label>
                                 <input type="text" name="phone" class="form-control" placeholder="081234567890" value="<?= old('phone') ?>" required>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-medium">Password</label>
+                                <label class="form-label text-secondary small fw-medium"><i class="fa-solid fa-cake-candles text-warning me-1"></i> Tanggal Lahir <span class="text-secondary opacity-75 style-tiny">(Opsional)</span></label>
+                                <input type="date" name="birth_date" class="form-control bg-dark text-white border-secondary border-opacity-50" value="<?= old('birth_date') ?>">
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label text-secondary small fw-medium"><i class="fa-solid fa-location-dot text-danger me-1"></i> Alamat Tempat Tinggal <span class="text-secondary opacity-75 style-tiny">(Opsional)</span></label>
+                                <input type="text" name="address" class="form-control" placeholder="Contoh: Jl. Raya Ciapus No. 12, Tamansari, Bogor" value="<?= old('address') ?>">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary small fw-medium"><i class="fa-brands fa-instagram text-danger me-1"></i> Instagram <span class="text-secondary opacity-75 style-tiny">(Opsional)</span></label>
+                                <input type="text" name="social_instagram" class="form-control" placeholder="@username" value="<?= old('social_instagram') ?>">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary small fw-medium"><i class="fa-brands fa-tiktok text-light me-1"></i> TikTok <span class="text-secondary opacity-75 style-tiny">(Opsional)</span></label>
+                                <input type="text" name="social_tiktok" class="form-control" placeholder="@username TikTok" value="<?= old('social_tiktok') ?>">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label class="form-label text-secondary small fw-medium"><i class="fa-brands fa-facebook text-primary me-1"></i> Facebook <span class="text-secondary opacity-75 style-tiny">(Opsional)</span></label>
+                                <input type="text" name="social_facebook" class="form-control" placeholder="Nama Akun / URL Facebook" value="<?= old('social_facebook') ?>">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-medium">Password <span class="text-danger">*</span></label>
                                 <input type="password" name="password" class="form-control" placeholder="Minimal 6 karakter" required>
                             </div>
 
                             <div class="col-md-6">
-                                <label class="form-label text-secondary small fw-medium">Konfirmasi Password</label>
+                                <label class="form-label text-secondary small fw-medium">Konfirmasi Password <span class="text-danger">*</span></label>
                                 <input type="password" name="confirm_password" class="form-control" placeholder="Ulangi password" required>
                             </div>
                         </div>

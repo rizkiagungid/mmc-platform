@@ -12,6 +12,7 @@ $routes->group('admin/learning', ['filter' => 'role:superadmin,pembina,bph'], fu
     $routes->get('delete/(:num)', '\App\Modules\Learning\Controllers\LearningCmsController::delete/$1');
     $routes->get('restore/(:num)', '\App\Modules\Learning\Controllers\LearningCmsController::restore/$1');
     $routes->get('purge/(:num)', '\App\Modules\Learning\Controllers\LearningCmsController::purge/$1');
+    $routes->get('empty-trash', '\App\Modules\Learning\Controllers\LearningCmsController::emptyTrash');
     $routes->post('bulk-action', '\App\Modules\Learning\Controllers\LearningCmsController::bulkAction');
 });
 

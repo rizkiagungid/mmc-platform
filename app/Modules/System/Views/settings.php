@@ -411,6 +411,106 @@
                     </div>
                 </div>
 
+                <hr class="border-secondary border-opacity-25 my-4">
+
+                <!-- Reset Data & Media Disk Section -->
+                <h5 class="text-danger font-heading mb-2"><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i> Reset Data Komunikasi & Media Disk Server</h5>
+                <p class="text-secondary style-tiny mb-3">Tindakan pembersihan berikut akan menghapus data di database serta <strong>menghapus seluruh berkas lampiran fisik dari disk server secara langsung (`unlink`)</strong> untuk menghemat ruang penyimpanan server.</p>
+
+                <div class="row g-3 mb-4">
+                    <!-- Clear All Inbox Chat Card -->
+                    <div class="col-md-4">
+                        <div class="p-3.5 rounded-3 bg-body-tertiary border border-danger border-opacity-50 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 style-tiny font-monospace">PEMBERSIHAN PERMANEN</span>
+                                    <i class="fa-solid fa-comments text-danger fs-4"></i>
+                                </div>
+                                <h5 class="text-body font-heading mb-1 fw-bold">Kosongkan Seluruh Inbox Chat</h5>
+                                <p class="text-secondary style-tiny m-0 mb-2">Menghapus seluruh percakapan obrolan (pribadi & grup), riwayat pesan, serta menghapus seluruh <strong>foto grup & berkas lampiran fisik dari disk server</strong>.</p>
+                                <div class="d-flex align-items-center gap-3 style-tiny font-monospace text-secondary bg-body p-2 rounded-2 border border-secondary border-opacity-25">
+                                    <span><i class="fa-solid fa-message text-danger me-1"></i> <?= esc($chatStats['msg_count'] ?? 0) ?> Pesan</span>
+                                    <span><i class="fa-solid fa-file text-warning me-1"></i> <?= esc($chatStats['file_count'] ?? 0) ?> File Disk (<?= esc($chatStats['formatted_size'] ?? '0 B') ?>)</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2">
+                                <button type="button" class="btn btn-red w-100 btn-sm font-monospace btn-storage-action" data-form="form-clear-inbox" data-title="⚠️ Hapus SELURUH Inbox Obrolan?" data-text="PERINGATAN! Tindakan ini akan menghapus SEMUA pesan obrolan pribadi & grup beserta SELURUH berkas fisik lampiran di server secara permanen. Data TIDAK DAPAT dikembalikan!">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Hapus Seluruh Inbox & Berkas
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clear All Feed Social Card -->
+                    <div class="col-md-4">
+                        <div class="p-3.5 rounded-3 bg-body-tertiary border border-danger border-opacity-50 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 style-tiny font-monospace">PEMBERSIHAN PERMANEN</span>
+                                    <i class="fa-solid fa-square-rss text-danger fs-4"></i>
+                                </div>
+                                <h5 class="text-body font-heading mb-1 fw-bold">Kosongkan Seluruh Beranda Feed</h5>
+                                <p class="text-secondary style-tiny m-0 mb-2">Menghapus seluruh postingan status, suka, komentar, serta menghapus seluruh <strong>berkas foto & video media unggahan fisik dari disk server</strong>.</p>
+                                <div class="d-flex align-items-center gap-3 style-tiny font-monospace text-secondary bg-body p-2 rounded-2 border border-secondary border-opacity-25">
+                                    <span><i class="fa-solid fa-newspaper text-danger me-1"></i> <?= esc($feedStats['post_count'] ?? 0) ?> Status</span>
+                                    <span><i class="fa-solid fa-photo-film text-info me-1"></i> <?= esc($feedStats['file_count'] ?? 0) ?> Media Disk (<?= esc($feedStats['formatted_size'] ?? '0 B') ?>)</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2">
+                                <button type="button" class="btn btn-red w-100 btn-sm font-monospace btn-storage-action" data-form="form-clear-feed" data-title="⚠️ Hapus SELURUH Beranda Feed?" data-text="PERINGATAN! Tindakan ini akan menghapus SEMUA postingan status, likes, komentar, dan berkas foto/video media fisik di server secara permanen. Data TIDAK DAPAT dikembalikan!">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Hapus Seluruh Feed & Media
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clear All Notifications Card -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3.5 rounded-3 bg-body-tertiary border border-danger border-opacity-50 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 style-tiny font-monospace">PEMBERSIHAN PERMANEN</span>
+                                    <i class="fa-solid fa-bell text-danger fs-4"></i>
+                                </div>
+                                <h5 class="text-body font-heading mb-1 fw-bold">Kosongkan Seluruh Notifikasi</h5>
+                                <p class="text-secondary style-tiny m-0 mb-2">Menghapus seluruh riwayat notifikasi pengguna (pesan pengumuman, pengingat tugas, presensi, & sistem) dari database.</p>
+                                <div class="d-flex align-items-center gap-3 style-tiny font-monospace text-secondary bg-body p-2 rounded-2 border border-secondary border-opacity-25">
+                                    <span><i class="fa-solid fa-bell text-danger me-1"></i> <?= esc($notifStats['total_count'] ?? 0) ?> Notifikasi</span>
+                                    <span><i class="fa-solid fa-envelope-open text-warning me-1"></i> <?= esc($notifStats['unread_count'] ?? 0) ?> Belum Dibaca</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2">
+                                <button type="button" class="btn btn-red w-100 btn-sm font-monospace btn-storage-action" data-form="form-clear-notifications" data-title="⚠️ Hapus SELURUH Notifikasi Pengguna?" data-text="PERINGATAN! Tindakan ini akan menghapus SEMUA notifikasi seluruh pengguna dari database secara permanen. Data TIDAK DAPAT dikembalikan!">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Hapus Seluruh Notifikasi
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clear All Avatars Card -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="p-3.5 rounded-3 bg-body-tertiary border border-danger border-opacity-50 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 style-tiny font-monospace">PEMBERSIHAN PERMANEN</span>
+                                    <i class="fa-solid fa-id-card text-danger fs-4"></i>
+                                </div>
+                                <h5 class="text-body font-heading mb-1 fw-bold">Hapus Seluruh Foto Profil Akun</h5>
+                                <p class="text-secondary style-tiny m-0 mb-2">Mereset foto profil seluruh pengguna ke avatar default serta menghapus seluruh <strong>berkas fisik foto profil dari disk server</strong>.</p>
+                                <div class="d-flex align-items-center gap-2 style-tiny font-monospace text-secondary bg-body p-2 rounded-2 border border-secondary border-opacity-25">
+                                    <span><i class="fa-solid fa-users text-danger me-1"></i> <?= esc($avatarStats['user_count'] ?? 0) ?> Akun</span>
+                                    <span><i class="fa-solid fa-image text-warning me-1"></i> <?= esc($avatarStats['file_count'] ?? 0) ?> File (<?= esc($avatarStats['formatted_size'] ?? '0 B') ?>)</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-2">
+                                <button type="button" class="btn btn-red w-100 btn-sm font-monospace btn-storage-action" data-form="form-clear-avatars" data-title="⚠️ Hapus SELURUH Foto Profil Akun?" data-text="PERINGATAN! Tindakan ini akan menghapus SEMUA foto profil pengguna dan meresetnya ke gambar default, serta menghapus seluruh berkas fisik di server. Data TIDAK DAPAT dikembalikan!">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Hapus Seluruh Foto Profil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="alert alert-dark border border-secondary border-opacity-25 style-tiny mb-0">
                     <i class="fa-solid fa-circle-info text-info me-1"></i> Pembersihan cache dan log aman dilakukan secara berkala untuk membebaskan ruang penyimpanan server tanpa mempengaruhi database maupun berkas unggahan publik.
                 </div>
@@ -430,6 +530,10 @@
 <form id="form-clear-cache" action="<?= base_url('admin/system/clear-cache') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
 <form id="form-clear-logs" action="<?= base_url('admin/system/clear-logs') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
 <form id="form-clear-all" action="<?= base_url('admin/system/clear-all-storage') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
+<form id="form-clear-inbox" action="<?= base_url('admin/system/clear-all-inbox') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
+<form id="form-clear-feed" action="<?= base_url('admin/system/clear-all-feed') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
+<form id="form-clear-notifications" action="<?= base_url('admin/system/clear-all-notifications') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
+<form id="form-clear-avatars" action="<?= base_url('admin/system/clear-all-avatars') ?>" method="POST" class="d-none"><?= csrf_field() ?></form>
 
 <?= $this->endSection() ?>
 

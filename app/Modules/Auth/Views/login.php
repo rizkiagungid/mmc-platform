@@ -29,10 +29,10 @@
                         <?= csrf_field() ?>
 
                         <div class="mb-3">
-                            <label class="form-label text-secondary small fw-medium">Username atau Email</label>
+                            <label class="form-label text-secondary small fw-medium">Email, Username, atau No HP</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fa-solid fa-user"></i></span>
-                                <input type="text" name="login" class="form-control" placeholder="Contoh: rizki_member" value="<?= old('login') ?>" required autofocus>
+                                <input type="text" name="login" class="form-control" placeholder="Email, username, atau no HP" value="<?= old('login') ?>" required autofocus>
                             </div>
                         </div>
 

@@ -48,11 +48,48 @@
             </div>
 
             <div class="d-flex flex-column gap-2">
-                <?php foreach ($missions as $m): ?>
-                    <div class="p-2.5 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
-                        <div class="text-white small"><i class="fa-solid fa-check text-success me-2"></i> <?= esc($m['mission_text']) ?></div>
-                    </div>
-                <?php endforeach; ?>
+                <?php if (empty($missions)): ?>
+                    <div class="text-secondary style-tiny fst-italic">Belum ada butir misi.</div>
+                <?php else: ?>
+                    <?php foreach ($missions as $m): ?>
+                        <div class="p-2.5 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-between gap-2">
+                            <div class="text-white small text-break"><i class="fa-solid fa-check text-success me-2"></i> <?= esc($m['mission_text']) ?></div>
+                            <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                                <button type="button" class="btn btn-sm btn-saas-dark text-warning p-1 px-2 style-tiny border border-secondary border-opacity-25" data-bs-toggle="modal" data-bs-target="#editMissionModal<?= $m['id'] ?>" title="Edit Misi">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <a href="<?= base_url('admin/cms/history/missions/delete/' . $m['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus butir misi ini?')" class="btn btn-sm btn-saas-dark text-danger p-1 px-2 style-tiny border border-danger border-opacity-25" title="Hapus Misi">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Modal Edit Misi -->
+                        <div class="modal fade" id="editMissionModal<?= $m['id'] ?>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-dark text-white border border-secondary border-opacity-25">
+                                    <div class="modal-header border-bottom border-secondary border-opacity-25">
+                                        <h5 class="modal-title font-heading"><i class="fa-solid fa-pen-to-square text-warning me-2"></i> Edit Butir Misi</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="<?= base_url('admin/cms/history/missions/update/' . $m['id']) ?>" method="POST">
+                                        <?= csrf_field() ?>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label text-secondary small">Pernyataan Misi <span class="text-danger">*</span></label>
+                                                <textarea name="mission_text" class="form-control" rows="3" required><?= esc($m['mission_text']) ?></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-top border-secondary border-opacity-25">
+                                            <button type="button" class="btn btn-saas-dark" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-warning text-dark fw-bold">Simpan Perubahan</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -68,15 +105,62 @@
             </div>
 
             <div class="d-flex flex-column gap-2">
-                <?php foreach ($timelines as $t): ?>
-                    <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-start gap-3">
-                        <span class="badge bg-danger font-monospace px-2.5 py-1 fs-6"><?= esc($t['year']) ?></span>
-                        <div>
-                            <div class="fw-bold text-white font-heading"><?= esc($t['title']) ?></div>
-                            <p class="text-secondary style-tiny m-0"><?= esc($t['description']) ?></p>
+                <?php if (empty($timelines)): ?>
+                    <div class="text-secondary style-tiny fst-italic">Belum ada data timeline peristiwa.</div>
+                <?php else: ?>
+                    <?php foreach ($timelines as $t): ?>
+                        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-between gap-3">
+                            <div class="d-flex align-items-start gap-3 flex-grow-1 overflow-hidden">
+                                <span class="badge bg-danger font-monospace px-2.5 py-1 fs-6 flex-shrink-0"><?= esc($t['year']) ?></span>
+                                <div class="text-truncate">
+                                    <div class="fw-bold text-white font-heading text-truncate"><?= esc($t['title']) ?></div>
+                                    <p class="text-secondary style-tiny m-0 text-truncate"><?= esc($t['description']) ?></p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                                <button type="button" class="btn btn-sm btn-saas-dark text-warning p-1 px-2 style-tiny border border-secondary border-opacity-25" data-bs-toggle="modal" data-bs-target="#editTimelineModal<?= $t['id'] ?>" title="Edit Timeline">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <a href="<?= base_url('admin/cms/history/timelines/delete/' . $t['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus timeline peristiwa ini?')" class="btn btn-sm btn-saas-dark text-danger p-1 px-2 style-tiny border border-danger border-opacity-25" title="Hapus Timeline">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+
+                        <!-- Modal Edit Timeline -->
+                        <div class="modal fade" id="editTimelineModal<?= $t['id'] ?>" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content bg-dark text-white border border-secondary border-opacity-25">
+                                    <div class="modal-header border-bottom border-secondary border-opacity-25">
+                                        <h5 class="modal-title font-heading"><i class="fa-solid fa-pen-to-square text-warning me-2"></i> Edit Timeline Peristiwa</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="<?= base_url('admin/cms/history/timelines/update/' . $t['id']) ?>" method="POST">
+                                        <?= csrf_field() ?>
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label text-secondary small">Tahun Peristiwa <span class="text-danger">*</span></label>
+                                                <input type="text" name="year" class="form-control font-monospace" value="<?= esc($t['year']) ?>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-secondary small">Judul Tonggak Sejarah <span class="text-danger">*</span></label>
+                                                <input type="text" name="title" class="form-control" value="<?= esc($t['title']) ?>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label text-secondary small">Deskripsi Peristiwa</label>
+                                                <textarea name="description" class="form-control" rows="3"><?= esc($t['description']) ?></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-top border-secondary border-opacity-25">
+                                            <button type="button" class="btn btn-saas-dark" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-warning text-dark fw-bold">Simpan Perubahan</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
     </div>

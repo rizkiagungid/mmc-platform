@@ -1,15 +1,24 @@
 <?= $this->extend('layouts/master_admin') ?>
 
 <?= $this->section('content') ?>
+<?php $currentStatus = $filters['status'] ?? 'all'; ?>
 <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
     <div>
         <h4 class="text-white font-heading m-0"><i class="fa-solid fa-book-bookmark text-danger me-2"></i> Learning Center — Materi Pembelajaran</h4>
         <p class="text-secondary small m-0">Kelola dan publikasikan modul kurikulum, artikel tutorial, dan panduan belajar anggota MMC</p>
     </div>
     <?php if (session()->get('role_slug') === 'superadmin'): ?>
-        <a href="<?= base_url('admin/learning/create') ?>" class="btn btn-red px-3">
-            <i class="fa-solid fa-plus me-1"></i> Buat Materi Baru
-        </a>
+        <?php if ($currentStatus === 'trash'): ?>
+            <?php if (!empty($materials)): ?>
+                <a href="<?= base_url('admin/learning/empty-trash') ?>" onclick="return confirm('Kosongkan semua materi dari Sampah secara permanen? Aksi ini tidak dapat dibatalkan!')" class="btn btn-danger px-3">
+                    <i class="fa-solid fa-trash-can me-1"></i> Kosongkan Sampah
+                </a>
+            <?php endif; ?>
+        <?php else: ?>
+            <a href="<?= base_url('admin/learning/create') ?>" class="btn btn-red px-3">
+                <i class="fa-solid fa-plus me-1"></i> Buat Materi Baru
+            </a>
+        <?php endif; ?>
     <?php endif; ?>
 </div>
 
@@ -86,6 +95,7 @@
 <!-- Bulk Action Form & Data Table -->
 <form action="<?= base_url('admin/learning/bulk-action') ?>" method="POST" id="bulkForm">
     <?= csrf_field() ?>
+    <input type="hidden" name="current_status" value="<?= esc($currentStatus) ?>">
     <div class="saas-card p-4">
         <?php if (session()->get('role_slug') === 'superadmin'): ?>
             <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25 flex-wrap gap-2">
@@ -215,17 +225,17 @@
 
                                     <?php if (session()->get('role_slug') === 'superadmin'): ?>
                                         <?php if ($m['deleted_at'] !== null): ?>
-                                            <a href="<?= base_url('admin/learning/restore/' . $m['id']) ?>" class="btn btn-sm btn-outline-success py-1 px-2" title="Pulihkan dari Trash">
+                                            <a href="<?= base_url('admin/learning/restore/' . $m['id']) ?>" class="btn btn-sm btn-outline-success py-1 px-2" title="Pulihkan dari Sampah">
                                                 <i class="fa-solid fa-rotate-left"></i>
                                             </a>
-                                            <a href="<?= base_url('admin/learning/purge/' . $m['id']) ?>" onclick="return confirm('HAPUS PERMANEN materi ini beserta pembersihan file aset aman? Aksi tidak dapat dibatalkan!')" class="btn btn-sm btn-danger py-1 px-2" title="Hapus Permanen">
-                                                <i class="fa-solid fa-fire"></i>
+                                            <a href="<?= base_url('admin/learning/purge/' . $m['id']) ?>" onclick="return confirm('Hapus permanen materi ini dari sampah? Aksi tidak dapat dibatalkan!')" class="btn btn-sm btn-danger py-1 px-2" title="Hapus Permanen">
+                                                <i class="fa-solid fa-trash-can"></i>
                                             </a>
                                         <?php else: ?>
                                             <a href="<?= base_url('admin/learning/edit/' . $m['id']) ?>" class="btn btn-sm btn-outline-warning py-1 px-2" title="Edit Materi">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
-                                            <a href="<?= base_url('admin/learning/delete/' . $m['id']) ?>" onclick="return confirm('Pindahkan materi ini ke Trash?')" class="btn btn-sm btn-outline-danger py-1 px-2" title="Pindahkan ke Trash">
+                                            <a href="<?= base_url('admin/learning/delete/' . $m['id']) ?>" onclick="return confirm('Pindahkan materi ini ke Sampah?')" class="btn btn-sm btn-outline-danger py-1 px-2" title="Pindahkan ke Sampah">
                                                 <i class="fa-solid fa-trash"></i>
                                             </a>
                                         <?php endif; ?>

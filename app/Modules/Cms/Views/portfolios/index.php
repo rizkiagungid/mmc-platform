@@ -105,16 +105,16 @@
                                             </div>
                                         </div>
 
-                                        <div class="row g-3 mb-3">
+                                         <div class="row g-3 mb-3">
                                             <div class="col-md-6">
-                                                <label class="form-label text-secondary small">Upload Cover / Thumbnail</label>
+                                                <label class="form-label text-secondary small">Upload Cover / Thumbnail <span class="text-secondary opacity-75 style-tiny fw-normal">(Opsional)</span></label>
                                                 <input type="file" name="thumbnail_file" class="form-control" accept="image/*">
                                                 <?php if (!empty($p['thumbnail'])): ?>
                                                     <div class="mt-1 text-secondary style-tiny font-monospace">File saat ini: <?= esc($p['thumbnail']) ?></div>
                                                 <?php endif; ?>
                                             </div>
                                             <div class="col-md-6">
-                                                <label class="form-label text-secondary small">Upload Direct Video / Media Utama</label>
+                                                <label class="form-label text-secondary small">Upload Direct Video / Media Utama <span class="text-secondary opacity-75 style-tiny fw-normal">(Opsional)</span></label>
                                                 <input type="file" name="media_file_input" class="form-control" accept="image/*,video/*">
                                                 <?php if (!empty($p['media_file'])): ?>
                                                     <div class="mt-1 text-success style-tiny font-monospace"><i class="fa-solid fa-circle-check me-1"></i> Media ter-upload: <?= esc($p['media_file']) ?></div>
@@ -123,7 +123,7 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label text-secondary small">Upload Galeri Gambar/Video (Multiple Upload)</label>
+                                            <label class="form-label text-secondary small">Upload Galeri Gambar/Video (Multiple Upload) <span class="text-secondary opacity-75 style-tiny fw-normal">(Opsional)</span></label>
                                             <input type="file" name="gallery_files[]" class="form-control" accept="image/*,video/*" multiple>
                                             <span class="text-secondary style-tiny">Pilih beberapa file sekaligus (Ctrl + Klik / Drag & Drop) untuk menambah foto/video ke galeri detail.</span>
                                         </div>
@@ -216,17 +216,17 @@
 
                     <div class="row g-3 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label text-secondary small">Upload Cover / Thumbnail</label>
+                            <label class="form-label text-secondary small">Upload Cover / Thumbnail <span class="text-secondary opacity-75 style-tiny fw-normal">(Opsional)</span></label>
                             <input type="file" name="thumbnail_file" class="form-control" accept="image/*">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label text-secondary small">Upload Direct Video / Media Utama</label>
+                            <label class="form-label text-secondary small">Upload Direct Video / Media Utama <span class="text-secondary opacity-75 style-tiny fw-normal">(Opsional)</span></label>
                             <input type="file" name="media_file_input" class="form-control" accept="image/*,video/*">
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-secondary small">Upload Galeri Gambar/Video (Multiple Upload)</label>
+                        <label class="form-label text-secondary small">Upload Galeri Gambar/Video (Multiple Upload) <span class="text-secondary opacity-75 style-tiny fw-normal">(Opsional)</span></label>
                         <input type="file" name="gallery_files[]" class="form-control" accept="image/*,video/*" multiple>
                         <span class="text-secondary style-tiny">Bisa memilih beberapa file gambar/video sekaligus.</span>
                     </div>

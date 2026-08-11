@@ -186,6 +186,124 @@ if (!function_exists('pwa_sw_script')) {
                     window.location.reload();
                 }
             }
+
+            // Native Web Push & OS Browser Notification API
+            (function() {
+                if (!('Notification' in window)) return;
+
+                window.requestNativeNotificationPermission = function() {
+                    Notification.requestPermission().then(function(permission) {
+                        if (permission === 'granted') {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Notifikasi HP Disetujui!',
+                                    text: 'Notifikasi browser & HP telah aktif. Anda akan menerima pemberitahuan langsung di jendela HP / Laptop saat ada tugas, presensi, atau pesan baru.',
+                                    background: '#1e293b',
+                                    color: '#fff',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                            }
+                            const notifBtn = document.getElementById('nativeNotifEnableBtn');
+                            if (notifBtn) notifBtn.remove();
+                            checkAndTriggerNativePush();
+                        } else if (permission === 'denied') {
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'warning',
+                                    title: 'Izin Notifikasi Ditolak',
+                                    text: 'Anda menolak izin notifikasi. Ubah setelan situs di browser HP / laptop Anda untuk mengizinkan notifikasi.',
+                                    background: '#1e293b',
+                                    color: '#fff',
+                                    confirmButtonColor: '#ef4444'
+                                });
+                            }
+                        }
+                    });
+                };
+
+                function getShownNotifIds() {
+                    try { return JSON.parse(localStorage.getItem('mmc_shown_notifs') || '[]'); } catch(e) { return []; }
+                }
+
+                function addShownNotifId(id) {
+                    let list = getShownNotifIds();
+                    if (!list.includes(id)) {
+                        list.push(id);
+                        if (list.length > 100) list.shift();
+                        localStorage.setItem('mmc_shown_notifs', JSON.stringify(list));
+                    }
+                }
+
+                function checkAndTriggerNativePush() {
+                    if (Notification.permission !== 'granted') return;
+
+                    fetch('{$baseUrl}notifications/dropdown')
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!data || !data.notifications || !Array.isArray(data.notifications)) return;
+
+                            const shownIds = getShownNotifIds();
+                            data.notifications.forEach(n => {
+                                if (n.is_read == 0 && !shownIds.includes(n.id)) {
+                                    addShownNotifId(n.id);
+
+                                    const notifTitle = n.title || 'Notifikasi MMC Platform';
+                                    const notifBody  = n.message || 'Ada pemberitahuan baru di platform.';
+                                    const targetUrl  = n.link ? (n.link.startsWith('http') ? n.link : '{$baseUrl}' + (n.link.startsWith('/') ? n.link.substring(1) : n.link)) : '{$baseUrl}notifications';
+                                    const iconUrl    = '{$baseUrl}assets/logo-mm-2023.png';
+
+                                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                                        navigator.serviceWorker.ready.then(function(registration) {
+                                            registration.showNotification(notifTitle, {
+                                                body: notifBody,
+                                                icon: iconUrl,
+                                                badge: iconUrl,
+                                                vibrate: [200, 100, 200],
+                                                tag: 'mmc-notif-' + n.id,
+                                                data: { url: targetUrl }
+                                            });
+                                        });
+                                    } else {
+                                        try {
+                                            const nativeNotif = new Notification(notifTitle, {
+                                                body: notifBody,
+                                                icon: iconUrl,
+                                                tag: 'mmc-notif-' + n.id,
+                                            });
+                                            nativeNotif.onclick = function() {
+                                                window.focus();
+                                                window.location.href = targetUrl;
+                                                nativeNotif.close();
+                                            };
+                                        } catch(e) {}
+                                    }
+                                }
+                            });
+                        })
+                        .catch(function(err) {});
+                }
+
+                window.addEventListener('load', function() {
+                    if (Notification.permission === 'default') {
+                        const container = document.getElementById('nativeNotifBannerContainer') || document.querySelector('.admin-topbar .d-flex.align-items-center.gap-2');
+                        if (container && !document.getElementById('nativeNotifEnableBtn')) {
+                            const btn = document.createElement('button');
+                            btn.id = 'nativeNotifEnableBtn';
+                            btn.type = 'button';
+                            btn.className = 'btn btn-sm btn-outline-warning d-none d-md-inline-flex align-items-center gap-1 animate-pulse';
+                            btn.innerHTML = '<i class=\'fa-solid fa-bell me-1\'></i> Aktifkan Notifikasi';
+                            btn.onclick = window.requestNativeNotificationPermission;
+                            container.insertBefore(btn, container.firstChild);
+                        }
+                    }
+
+                    if (Notification.permission === 'granted') {
+                        checkAndTriggerNativePush();
+                        setInterval(checkAndTriggerNativePush, 20000);
+                    }
+                });
+            })();
         </script>
         ";
     }

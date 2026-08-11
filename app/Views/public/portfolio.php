@@ -18,13 +18,13 @@
                         if (strpos($p['external_url'], 'youtube.com/watch') !== false) {
                             parse_str(parse_url($p['external_url'], PHP_URL_QUERY), $queryVars);
                             if (isset($queryVars['v'])) {
-                                $embedUrl = 'https://www.youtube.com/embed/' . $queryVars['v'];
+                                $embedUrl = 'https://www.youtube.com/embed/' . $queryVars['v'] . '?controls=1&playsinline=1&rel=0';
                             }
                         } elseif (strpos($p['external_url'], 'youtu.be/') !== false) {
                             $path = parse_url($p['external_url'], PHP_URL_PATH);
-                            $embedUrl = 'https://www.youtube.com/embed/' . ltrim($path, '/');
+                            $embedUrl = 'https://www.youtube.com/embed/' . ltrim($path, '/') . '?controls=1&playsinline=1&rel=0';
                         } elseif (strpos($p['external_url'], 'youtube.com/embed/') !== false) {
-                            $embedUrl = $p['external_url'];
+                            $embedUrl = $p['external_url'] . (str_contains($p['external_url'], '?') ? '&' : '?') . 'controls=1&playsinline=1&rel=0';
                         }
                     }
 

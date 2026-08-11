@@ -10,13 +10,13 @@ class TaskMasterSeeder extends Seeder
     {
         // 1. Task Statuses
         $statuses = [
-            ['id' => 1, 'name' => 'Todo', 'color' => '#6c757d', 'sort_order' => 1, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
-            ['id' => 2, 'name' => 'In Progress', 'color' => '#0ea5e9', 'sort_order' => 2, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
-            ['id' => 3, 'name' => 'Review', 'color' => '#f59e0b', 'sort_order' => 3, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
-            ['id' => 4, 'name' => 'Revision', 'color' => '#ec4899', 'sort_order' => 4, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
-            ['id' => 5, 'name' => 'Done', 'color' => '#10b981', 'sort_order' => 5, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
+            ['id' => 1, 'name' => 'Belum dikerjakan', 'color' => '#6c757d', 'sort_order' => 1, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
+            ['id' => 2, 'name' => 'Sedang dikerjakan', 'color' => '#0ea5e9', 'sort_order' => 2, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
+            ['id' => 3, 'name' => 'Tugas dikirim', 'color' => '#f59e0b', 'sort_order' => 3, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
+            ['id' => 4, 'name' => 'Revisi', 'color' => '#ec4899', 'sort_order' => 4, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
+            ['id' => 5, 'name' => 'Selesai', 'color' => '#10b981', 'sort_order' => 5, 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')],
         ];
-        $this->db->table('task_statuses')->ignore(true)->insertBatch($statuses);
+        $this->db->table('task_statuses')->ignore(false)->upsertBatch($statuses);
 
         // 2. Task Priorities
         $priorities = [

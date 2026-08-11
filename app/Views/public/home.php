@@ -4,8 +4,47 @@
 
 <!-- Dynamic Homepage Section Builder Render Loop -->
 <?php foreach ($sections as $sec): ?>
+<?php
+if (!function_exists('parseHeroVideoUrl')) {
+    function parseHeroVideoUrl(string $input, string $type = 'file'): array {
+        $input = trim($input);
+        
+        if (preg_match('/src=["\']([^"\']+)["\']/i', $input, $match)) {
+            $input = $match[1];
+        }
+
+        if (preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i', $input, $matches)) {
+            $ytId = $matches[1];
+            return [
+                'is_youtube' => true,
+                'embed_url'  => 'https://www.youtube.com/embed/' . $ytId . '?autoplay=1&mute=1&loop=1&playlist=' . $ytId . '&enablejsapi=1&controls=1&playsinline=1&rel=0',
+            ];
+        }
+
+        if (str_contains($input, 'youtube.com') || str_contains($input, 'youtu.be')) {
+            $embedUrl = str_replace('/watch?v=', '/embed/', $input);
+            $params = 'controls=1&playsinline=1&rel=0';
+            if (!str_contains($embedUrl, '?')) {
+                $embedUrl .= '?' . $params;
+            } else {
+                $embedUrl .= '&' . $params;
+            }
+            return [
+                'is_youtube' => true,
+                'embed_url'  => $embedUrl,
+            ];
+        }
+
+        return [
+            'is_youtube' => false,
+            'embed_url'  => base_url($input),
+        ];
+    }
+}
+?>
+
     <?php if ($sec['section_key'] === 'hero'): ?>
-        <!-- Hero Section -->
+        <!-- Hero Section with Framed Bootstrap Video Carousel Slide -->
         <section class="<?= esc($sec['padding_top']) ?> <?= esc($sec['padding_bottom']) ?> text-center position-relative overflow-hidden" style="background: radial-gradient(circle at 50% 20%, rgba(220, 38, 38, 0.15) 0%, rgba(9, 9, 11, 1) 70%);">
             <div class="<?= esc($sec['container_type']) ?>">
                 <div class="row justify-content-center">
@@ -18,29 +57,90 @@
                             <?= esc($hero['title'] ?? 'Inovasi Visual & Kreativitas Digital Tanpa Batas') ?>
                         </h1>
                         
-                        <p class="lead text-secondary mb-5 px-lg-5">
+                        <p class="lead text-secondary mb-4 px-lg-5">
                             <?= esc($hero['description'] ?? 'Platform terpadu Ekstrakurikuler Multimedia Club SMAN 1 Tamansari. Wadah bagi para kreator muda di bidang videografi, fotografi, desain grafis, broadcasting, dan web development.') ?>
                         </p>
 
-                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
                             <?php if (session()->get('is_logged_in')): ?>
-                                <a href="<?= base_url('dashboard') ?>" class="btn btn-red btn-lg px-5 py-3 fs-6">
+                                <a href="<?= base_url('dashboard') ?>" class="btn btn-red btn-lg px-5 py-3 fs-6 shadow">
                                     <i class="fa-solid fa-gauge me-2"></i> Ke Dashboard
                                 </a>
                             <?php else: ?>
-                                <a href="<?= base_url('login') ?>" class="btn btn-red btn-lg px-4 py-3 fs-6">
+                                <a href="<?= base_url('login') ?>" class="btn btn-red btn-lg px-4 py-3 fs-6 shadow">
                                     <i class="fa-solid fa-right-to-bracket me-2"></i> Masuk / Login
                                 </a>
                                 <?php if (($enableRegistration ?? '1') === '1'): ?>
-                                    <a href="<?= base_url($hero['primary_btn_url'] ?? '/register') ?>" class="btn btn-outline-red btn-lg px-4 py-3 fs-6">
+                                    <a href="<?= base_url($hero['primary_btn_url'] ?? '/register') ?>" class="btn btn-outline-red btn-lg px-4 py-3 fs-6 shadow">
                                         <i class="fa-solid fa-user-plus me-2"></i> <?= esc($hero['primary_btn_text'] ?? 'Gabung Sekarang') ?>
                                     </a>
                                 <?php endif; ?>
                             <?php endif; ?>
-                            <a href="<?= base_url($hero['secondary_btn_url'] ?? '/portfolio') ?>" class="btn btn-saas-dark btn-lg px-4 py-3 fs-6">
+                            <a href="<?= base_url($hero['secondary_btn_url'] ?? '/portfolio') ?>" class="btn btn-saas-dark btn-lg px-4 py-3 fs-6 border border-secondary border-opacity-50 shadow">
                                 <i class="fa-solid fa-photo-film me-2"></i> <?= esc($hero['secondary_btn_text'] ?? 'Lihat Portofolio Karya') ?>
                             </a>
                         </div>
+
+                        <?php if (!empty($heroVideos)): ?>
+                            <!-- Bootstrap Video Carousel Container -->
+                            <div class="col-lg-11 mx-auto mt-2">
+                                <div class="saas-card p-2 rounded-4 border border-secondary border-opacity-25 shadow-lg position-relative overflow-hidden">
+                                     <div id="heroVideoCarouselFrame" class="carousel slide rounded-4 overflow-hidden" data-bs-ride="false" data-bs-interval="false">
+                                        
+                                        <!-- Carousel Indicators -->
+                                        <?php if (count($heroVideos) > 1): ?>
+                                            <div class="carousel-indicators z-3 mb-3">
+                                                <?php foreach ($heroVideos as $vIdx => $vItem): ?>
+                                                    <button type="button" data-bs-target="#heroVideoCarouselFrame" data-bs-slide-to="<?= $vIdx ?>" class="<?= $vIdx === 0 ? 'active' : '' ?>" aria-current="<?= $vIdx === 0 ? 'true' : 'false' ?>" aria-label="Slide <?= $vIdx + 1 ?>"></button>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+
+                                        <!-- Carousel Slides -->
+                                        <div class="carousel-inner rounded-4" style="background: #000;">
+                                            <?php foreach ($heroVideos as $vIdx => $vItem): ?>
+                                                <?php $vInfo = parseHeroVideoUrl($vItem['video_url'], $vItem['video_type']); ?>
+                                                <div class="carousel-item <?= $vIdx === 0 ? 'active' : '' ?>">
+                                                    <div class="position-relative overflow-hidden d-flex align-items-center justify-content-center" style="max-height: 520px; aspect-ratio: 16/9; background: #000;">
+                                                        <?php if ($vInfo['is_youtube']): ?>
+                                                            <iframe src="<?= esc($vInfo['embed_url']) ?>" class="w-100 h-100 border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen style="aspect-ratio: 16/9;"></iframe>
+                                                        <?php else: ?>
+                                                            <video class="hero-boxed-video w-100 h-100 object-fit-cover" controls autoplay loop muted playsinline>
+                                                                <source src="<?= base_url($vItem['video_url']) ?>" type="video/mp4">
+                                                                Browser Anda tidak mendukung tag video.
+                                                            </video>
+                                                        <?php endif; ?>
+
+                                                        <?php if (!empty($vItem['title']) || !empty($vItem['subtitle'])): ?>
+                                                            <div class="carousel-caption d-none d-md-block bg-black bg-opacity-75 rounded-3 p-3 mb-3 border border-secondary border-opacity-25 shadow-lg text-start mx-auto" style="max-width: 80%; pointer-events: none;">
+                                                                <?php if (!empty($vItem['subtitle'])): ?>
+                                                                    <span class="badge bg-danger bg-opacity-25 text-danger font-monospace mb-1 style-tiny"><?= esc($vItem['subtitle']) ?></span>
+                                                                <?php endif; ?>
+                                                                <?php if (!empty($vItem['title'])): ?>
+                                                                    <h5 class="text-white font-heading m-0"><?= esc($vItem['title']) ?></h5>
+                                                                <?php endif; ?>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
+
+                                        <!-- Carousel Controls (Previous & Next Arrows) -->
+                                        <?php if (count($heroVideos) > 1): ?>
+                                            <button class="carousel-control-prev z-3 w-auto ms-2" type="button" data-bs-target="#heroVideoCarouselFrame" data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon bg-dark bg-opacity-75 rounded-circle p-3 shadow border border-secondary border-opacity-25" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Previous</span>
+                                            </button>
+                                            <button class="carousel-control-next z-3 w-auto me-2" type="button" data-bs-target="#heroVideoCarouselFrame" data-bs-slide="next">
+                                                <span class="carousel-control-next-icon bg-dark bg-opacity-75 rounded-circle p-3 shadow border border-secondary border-opacity-25" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Next</span>
+                                            </button>
+                                         <?php endif; ?>
+                                     </div>
+                                 </div>
+                             </div>
+                         <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -48,7 +148,7 @@
 
     <?php elseif ($sec['section_key'] === 'stats'): ?>
         <!-- Dynamic Stats Counter Section -->
-        <section class="py-4 border-y border-secondary border-opacity-25" style="background: #0d0d12;">
+        <section class="py-4 border-y border-secondary border-opacity-25 bg-saas-alt">
             <div class="<?= esc($sec['container_type']) ?>">
                 <div class="row g-4 justify-content-center">
                     <?php if (!empty($stats)): ?>
@@ -107,7 +207,7 @@
 
     <?php elseif ($sec['section_key'] === 'portfolio'): ?>
         <!-- Dynamic Featured Portfolios Showcase with Video Player -->
-        <section class="<?= esc($sec['padding_top']) ?> <?= esc($sec['padding_bottom']) ?>" style="background: #0b0b0f;">
+        <section class="<?= esc($sec['padding_top']) ?> <?= esc($sec['padding_bottom']) ?> bg-saas-alt">
             <div class="<?= esc($sec['container_type']) ?>">
                 <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between mb-5">
                     <div>
@@ -128,13 +228,13 @@
                                 if (strpos($p['external_url'], 'youtube.com/watch') !== false) {
                                     parse_str(parse_url($p['external_url'], PHP_URL_QUERY), $queryVars);
                                     if (isset($queryVars['v'])) {
-                                        $embedUrl = 'https://www.youtube.com/embed/' . $queryVars['v'];
+                                        $embedUrl = 'https://www.youtube.com/embed/' . $queryVars['v'] . '?controls=1&playsinline=1&rel=0';
                                     }
                                 } elseif (strpos($p['external_url'], 'youtu.be/') !== false) {
                                     $path = parse_url($p['external_url'], PHP_URL_PATH);
-                                    $embedUrl = 'https://www.youtube.com/embed/' . ltrim($path, '/');
+                                    $embedUrl = 'https://www.youtube.com/embed/' . ltrim($path, '/') . '?controls=1&playsinline=1&rel=0';
                                 } elseif (strpos($p['external_url'], 'youtube.com/embed/') !== false) {
-                                    $embedUrl = $p['external_url'];
+                                    $embedUrl = $p['external_url'] . (str_contains($p['external_url'], '?') ? '&' : '?') . 'controls=1&playsinline=1&rel=0';
                                 }
                             }
 
@@ -317,7 +417,7 @@
     <?php elseif ($sec['section_key'] === 'achievements'): ?>
         <!-- Dynamic Achievements & Winning Teams Section -->
         <?php $renderedAchievementsSection = true; ?>
-        <section class="<?= esc($sec['padding_top'] ?? 'py-5') ?> <?= esc($sec['padding_bottom'] ?? 'py-5') ?>" style="background: #09090c;">
+        <section class="<?= esc($sec['padding_top'] ?? 'py-5') ?> <?= esc($sec['padding_bottom'] ?? 'py-5') ?> bg-saas-alt">
             <div class="<?= esc($sec['container_type'] ?? 'container') ?>">
                 <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between mb-5">
                     <div>
@@ -420,7 +520,7 @@
 
 <?php if (empty($renderedAchievementsSection)): ?>
     <!-- Fallback Achievements & Winning Teams Section if section key not in DB homepage_sections -->
-    <section class="py-5" style="background: #09090c;">
+    <section class="py-5 bg-saas-alt">
         <div class="container">
             <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between mb-5">
                 <div>

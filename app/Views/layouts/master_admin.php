@@ -3,7 +3,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?= esc($title ?? 'Portal Multimedia Club') ?></title>
     
     <!-- Google Fonts -->
@@ -23,49 +23,13 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/pwa-install-banner.css') ?>">
 
-    <style>
-        /* Select2 Dark Mode Custom Styling */
-        .select2-container--default .select2-selection--single {
-            background-color: #000 !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            color: #fff !important;
-            height: 38px !important;
-            padding: 4px 6px !important;
-            border-radius: 0.375rem !important;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            color: #fff !important;
-            line-height: 28px !important;
-            padding-left: 4px !important;
-        }
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 36px !important;
-        }
-        .select2-dropdown {
-            background-color: #121218 !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            color: #fff !important;
-            z-index: 1065 !important;
-        }
-        .select2-search__field {
-            background-color: #000 !important;
-            border: 1px solid rgba(255, 255, 255, 0.25) !important;
-            color: #fff !important;
-            border-radius: 0.25rem !important;
-        }
-        .select2-container--default .select2-results__option--highlighted[aria-selected] {
-            background-color: #dc3545 !important;
-            color: #fff !important;
-        }
-        .select2-container--default .select2-results__option[aria-selected=true] {
-            background-color: rgba(220, 53, 69, 0.25) !important;
-            color: #fff !important;
-        }
-        .select2-results__option {
-            color: #e0e0e0 !important;
-            padding: 8px 12px !important;
-        }
-    </style>
+    <!-- Early Anti-Flicker Theme Detection -->
+    <script>
+        (function() {
+            const storedTheme = localStorage.getItem('theme-mode') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', storedTheme);
+        })();
+    </script>
 
     <!-- PWA Meta Tags -->
     <?php helper('pwa'); ?>
@@ -123,10 +87,6 @@
                     </a>
 
                     <?php if (session()->get('role_slug') !== 'superadmin'): ?>
-                        <a href="<?= base_url('attendance/scan') ?>" class="sidebar-link <?= (url_is('attendance/scan*')) ? 'active' : '' ?>">
-                            <i class="fa-solid fa-camera text-danger me-1"></i> Presensi Saya (QR / PIN)
-                        </a>
-
                         <a href="<?= base_url('attendance/history') ?>" class="sidebar-link <?= (url_is('attendance/history*')) ? 'active' : '' ?>">
                             <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Riwayat Presensi Saya
                         </a>
@@ -172,7 +132,7 @@
                         <i class="fa-solid fa-comments text-info me-1"></i> Kritik & Saran
                     </a>
 
-                    <?php if (in_array(session()->get('role_slug'), ['superadmin', 'pembina'])): ?>
+                    <?php if (in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph'])): ?>
                         <div class="px-2 mt-3 mb-2">
                             <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">SISTEM</span>
                         </div>
@@ -180,6 +140,12 @@
                         <a href="<?= base_url('admin/audit-logs') ?>" class="sidebar-link <?= (url_is('admin/audit-logs*')) ? 'active' : '' ?>">
                             <i class="fa-solid fa-shield-halved text-danger me-1"></i> Audit Logs
                         </a>
+
+                        <?php if (session()->get('role_slug') === 'superadmin'): ?>
+                            <a href="<?= base_url('admin/storage') ?>" class="sidebar-link <?= (url_is('admin/storage*')) ? 'active' : '' ?>">
+                                <i class="fa-solid fa-hard-drive text-warning me-1"></i> Asset & Storage Disk
+                            </a>
+                        <?php endif; ?>
 
                         <a href="<?= base_url('admin/settings') ?>" class="sidebar-link <?= (url_is('admin/settings*')) ? 'active' : '' ?>">
                             <i class="fa-solid fa-sliders text-secondary me-1"></i> Pengaturan
@@ -210,11 +176,48 @@
                 <?php endif; ?>
 
                 <div class="px-2 mt-3 mb-2">
-                    <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">AKUN</span>
+                    <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">KOMUNIKASI & AKUN</span>
                 </div>
 
+                <?php
+                    $navNotifModel = new \App\Models\NotificationModel();
+                    $navChatModel  = new \App\Models\ChatMessageModel();
+                    $navUserId     = session()->get('user_id');
+                    $navUnread     = $navUserId ? $navNotifModel->getUnreadCount($navUserId) : 0;
+                    $navNotifs     = $navUserId ? $navNotifModel->getUserNotifications($navUserId, 'all', 6) : [];
+
+                    $navUnreadChat = 0;
+                    if ($navUserId) {
+                        $navUserConvs = array_column((new \App\Models\ChatParticipantModel())->where('user_id', $navUserId)->findAll(), 'conversation_id');
+                        if (!empty($navUserConvs)) {
+                            $navUnreadChat = $navChatModel->whereIn('conversation_id', $navUserConvs)
+                                                          ->where('sender_id !=', $navUserId)
+                                                          ->where('is_read', 0)
+                                                          ->countAllResults();
+                        }
+                    }
+                ?>
+
+                <a href="<?= base_url('feed') ?>" class="sidebar-link <?= (url_is('feed*')) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-square-rss text-info me-1"></i> Beranda MM
+                </a>
+
+                <a href="<?= base_url('inbox') ?>" class="sidebar-link <?= (url_is('inbox*')) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-comments text-danger me-1"></i> Inbox Obrolan
+                    <?php if ($navUnreadChat > 0): ?>
+                        <span class="badge bg-danger ms-auto style-tiny"><?= $navUnreadChat > 99 ? '99+' : $navUnreadChat ?></span>
+                    <?php endif; ?>
+                </a>
+
+                <a href="<?= base_url('notifications') ?>" class="sidebar-link <?= (url_is('notifications*')) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-bell text-warning me-1"></i> Notifikasi
+                    <?php if ($navUnread > 0): ?>
+                        <span class="badge bg-danger ms-auto style-tiny"><?= $navUnread > 99 ? '99+' : $navUnread ?></span>
+                    <?php endif; ?>
+                </a>
+
                 <a href="<?= base_url('profile') ?>" class="sidebar-link <?= (url_is('profile*')) ? 'active' : '' ?>">
-                    <i class="fa-solid fa-id-card text-light me-1"></i> Profil & QR Member
+                    <i class="fa-solid fa-id-card text-light me-1"></i> Profil & QR
                 </a>
 
                 <a href="<?= base_url('/') ?>" target="_blank" class="sidebar-link">
@@ -230,7 +233,7 @@
                     <img src="<?= base_url(session()->get('avatar')) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 36px; height: 36px; min-width: 36px;">
                 <?php else: ?>
                     <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; min-width: 36px;">
-                        <?= strtoupper(substr(session()->get('full_name') ?? 'U', 0, 1)) ?>
+                        <?= strtoupper(substr(session()->get('full_name') ?: 'U', 0, 1)) ?>
                     </div>
                 <?php endif; ?>
                 <div class="d-flex flex-column text-truncate">
@@ -249,7 +252,7 @@
     <!-- Main Content Area -->
     <div class="flex-grow-1 d-flex flex-column min-vh-100 w-100" style="background-color: var(--bg-main); min-width: 0;">
         <!-- Top Bar -->
-        <header class="navbar navbar-expand border-bottom border-secondary border-opacity-25 px-3 px-lg-4 py-3" style="background: rgba(18, 18, 24, 0.85); backdrop-filter: blur(10px);">
+        <header class="navbar navbar-expand border-bottom border-secondary border-opacity-25 px-3 px-lg-4 admin-topbar" style="position: sticky; top: 0; z-index: 1050; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(13,13,18,0.96); overflow: visible;">
             <div class="container-fluid p-0 d-flex align-items-center justify-content-between">
                 
                 <div class="d-flex align-items-center gap-2">
@@ -282,6 +285,62 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2">
+                    <!-- Notifications Bell Dropdown -->
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-sm btn-saas-dark p-0 rounded-circle border border-secondary border-opacity-25 d-flex align-items-center justify-content-center flex-shrink-0 position-relative" style="width: 36px; height: 36px; min-height: 36px; overflow: visible;" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" title="Notifikasi System">
+                            <i class="fa-solid fa-bell text-warning small"></i>
+                            <?php if ($navUnread > 0): ?>
+                                <span class="position-absolute badge rounded-pill bg-danger border border-dark" style="font-size: 0.6rem; padding: 0.2em 0.4em; top: -5px; right: -6px; min-width: 18px; line-height: 1.2; z-index: 10;">
+                                    <?= $navUnread > 99 ? '99+' : $navUnread ?>
+                                </span>
+                            <?php endif; ?>
+                        </button>
+
+                        <div class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border border-secondary border-opacity-50 p-0 notif-dropdown-menu">
+                            <div class="p-3 border-bottom border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+                                <h6 class="m-0 text-white font-heading style-tiny fw-bold">
+                                    <i class="fa-solid fa-bell text-warning me-1"></i> Notifikasi System
+                                </h6>
+                                <?php if ($navUnread > 0): ?>
+                                    <a href="<?= base_url('notifications/mark-all-read') ?>" class="style-tiny text-info text-decoration-none">Tandai dibaca</a>
+                                <?php endif; ?>
+                            </div>
+
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                <?php if (empty($navNotifs)): ?>
+                                    <div class="p-3 text-center text-secondary style-tiny">Belum ada notifikasi.</div>
+                                <?php else: ?>
+                                    <?php foreach ($navNotifs as $nn): ?>
+                                        <?php
+                                            $nnIcon = 'fa-solid fa-bell text-secondary';
+                                            if ($nn['type'] === 'task') $nnIcon = 'fa-solid fa-list-check text-warning';
+                                            elseif ($nn['type'] === 'profile') $nnIcon = 'fa-solid fa-user-gear text-info';
+                                            elseif ($nn['type'] === 'feedback') $nnIcon = 'fa-solid fa-comments text-danger';
+                                            elseif ($nn['type'] === 'attendance') $nnIcon = 'fa-solid fa-qrcode text-success';
+                                        ?>
+                                        <a href="<?= !empty($nn['link']) ? base_url('notifications/mark-read/' . $nn['id']) : base_url('notifications') ?>" class="dropdown-item py-2 px-3 border-bottom border-secondary border-opacity-10 d-flex align-items-start gap-2 <?= empty($nn['is_read']) ? 'bg-dark bg-opacity-75' : '' ?>">
+                                            <i class="<?= $nnIcon ?> style-tiny mt-1 flex-shrink-0"></i>
+                                            <div class="text-wrap" style="min-width: 0;">
+                                                <div class="text-white style-tiny fw-bold text-truncate"><?= esc($nn['title']) ?></div>
+                                                <div class="text-secondary style-tiny text-truncate" style="max-width: 230px;"><?= esc($nn['message']) ?></div>
+                                                <small class="text-secondary font-monospace style-tiny opacity-75" style="font-size: 0.65rem;"><?= date('H:i, d M Y', strtotime($nn['created_at'])) ?></small>
+                                            </div>
+                                        </a>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="p-2 border-top border-secondary border-opacity-25 text-center bg-black rounded-bottom">
+                                <a href="<?= base_url('notifications') ?>" class="style-tiny text-danger text-decoration-none fw-bold">
+                                    Lihat Semua Notifikasi <i class="fa-solid fa-chevron-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="adminThemeToggleBtn" onclick="toggleThemeMode()" class="btn btn-sm btn-saas-dark p-0 rounded-circle border border-secondary border-opacity-25 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px; min-height: 36px;" title="Ubah Mode Terang / Gelap">
+                        <i class="fa-solid fa-moon text-warning small" id="adminThemeToggleIcon"></i>
+                    </button>
                     <a href="<?= base_url('/') ?>" class="btn btn-sm btn-saas-dark d-none d-sm-inline-flex">
                         <i class="fa-solid fa-arrow-left me-1"></i> Website Utama
                     </a>
@@ -312,9 +371,10 @@
     <!-- SweetAlert2 Toast & Auto-Close Mobile Nav Handler -->
     <script>
         $(document).ready(function() {
+            const isMobile = window.innerWidth < 768;
             const Toast = Swal.mixin({
                 toast: true,
-                position: 'top-end',
+                position: isMobile ? 'top' : 'top-end',
                 showConfirmButton: false,
                 timer: 3500,
                 timerProgressBar: true,
@@ -468,5 +528,33 @@
     <!-- PWA Service Worker Registration & Scripts -->
     <?= pwa_sw_script() ?>
     <script src="<?= base_url('assets/js/pwa-install-banner.js') ?>"></script>
+
+    <script>
+        function updateAdminThemeIcon(theme) {
+            const icon = document.getElementById('adminThemeToggleIcon');
+            const btn = document.getElementById('adminThemeToggleBtn');
+            if (!icon) return;
+            if (theme === 'light') {
+                icon.className = 'fa-solid fa-sun text-warning';
+                if (btn) btn.title = 'Ubah ke Mode Gelap';
+            } else {
+                icon.className = 'fa-solid fa-moon text-light';
+                if (btn) btn.title = 'Ubah ke Mode Terang';
+            }
+        }
+
+        function toggleThemeMode() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', nextTheme);
+            localStorage.setItem('theme-mode', nextTheme);
+            updateAdminThemeIcon(nextTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            updateAdminThemeIcon(currentTheme);
+        });
+    </script>
 </body>
 </html>

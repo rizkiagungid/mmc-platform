@@ -21,9 +21,54 @@ class UserService extends BaseService
         $this->auditLogModel = new AuditLogModel();
     }
 
-    public function getAllUsers(?int $roleId = null, ?string $keyword = null): array
+    public function getAllUsers(?int $roleId = null, ?string $keyword = null, array $filters = []): array
     {
-        return $this->userModel->getUsersWithRole($roleId, $keyword);
+        return $this->userModel->getUsersWithRole($roleId, $keyword, true, $filters);
+    }
+
+    public function getMemberStats(): array
+    {
+        $db = \Config\Database::connect();
+        
+        $allUsersCount = $db->table('users')
+                            ->where('deleted_at IS NULL')
+                            ->countAllResults();
+
+        $totalMembers = $db->table('users')
+                           ->where('role_id', 4)
+                           ->where('deleted_at IS NULL')
+                           ->countAllResults();
+
+        $broadcastingCount = $db->table('users')
+                                ->where('role_id', 4)
+                                ->where('deleted_at IS NULL')
+                                ->like('class_dept', 'Broadcasting')
+                                ->countAllResults();
+
+        $programmingCount = $db->table('users')
+                               ->where('role_id', 4)
+                               ->where('deleted_at IS NULL')
+                               ->like('class_dept', 'Programming')
+                               ->countAllResults();
+
+        $bphCount = $db->table('users')
+                       ->where('role_id', 3)
+                       ->where('deleted_at IS NULL')
+                       ->countAllResults();
+
+        $superAdminCount = $db->table('users')
+                              ->where('role_id', 1)
+                              ->where('deleted_at IS NULL')
+                              ->countAllResults();
+
+        return [
+            'all_users_count'    => $allUsersCount,
+            'total_members'      => $totalMembers,
+            'broadcasting_count' => $broadcastingCount,
+            'programming_count'  => $programmingCount,
+            'bph_count'          => $bphCount,
+            'admin_count'        => $superAdminCount,
+        ];
     }
 
     public function getAllRoles(): array
@@ -33,7 +78,11 @@ class UserService extends BaseService
 
     public function getUserById(int $id): ?array
     {
-        return $this->userModel->find($id);
+        $user = $this->userModel->select('users.*, roles.name as role_name, roles.slug as role_slug')
+                                ->join('roles', 'roles.id = users.role_id', 'left')
+                                ->where('users.id', $id)
+                                ->first();
+        return $user ?: $this->userModel->find($id);
     }
 
     public function getUserByUuid(string $uuid): ?array
@@ -47,18 +96,25 @@ class UserService extends BaseService
 
         try {
             $userId = $this->userModel->insert([
-                'member_uuid'   => $this->userModel->generateUuid(),
-                'role_id'       => (int) $data['role_id'],
-                'username'      => trim($data['username']),
-                'email'         => trim($data['email']),
-                'password_hash' => password_hash($data['password'], PASSWORD_BCRYPT),
-                'full_name'     => trim($data['full_name']),
-                'nis_nip'       => trim($data['nis_nip'] ?? ''),
-                'class_dept'    => trim($data['class_dept'] ?? ''),
-                'phone'         => trim($data['phone'] ?? ''),
-                'qr_version'    => 1,
-                'qr_updated_at' => date('Y-m-d H:i:s'),
-                'status'        => $data['status'] ?? 'active',
+                'member_uuid'      => $this->userModel->generateUuid(),
+                'role_id'          => (int) $data['role_id'],
+                'username'         => trim($data['username']),
+                'email'            => trim($data['email']),
+                'password_hash'    => password_hash($data['password'], PASSWORD_BCRYPT),
+                'full_name'        => trim($data['full_name']),
+                'nis_nip'          => trim($data['nis_nip'] ?? ''),
+                'class_dept'       => $this->resolveClassDept($data),
+                'phone'            => trim($data['phone'] ?? ''),
+                'address'          => trim($data['address'] ?? '') ?: null,
+                'birth_date'       => !empty($data['birth_date']) ? $data['birth_date'] : null,
+                'social_instagram' => trim($data['social_instagram'] ?? '') ?: null,
+                'social_tiktok'    => trim($data['social_tiktok'] ?? '') ?: null,
+                'social_facebook'  => trim($data['social_facebook'] ?? '') ?: null,
+                'social_linkedin'  => trim($data['social_linkedin'] ?? '') ?: null,
+                'social_github'    => trim($data['social_github'] ?? '') ?: null,
+                'qr_version'       => 1,
+                'qr_updated_at'    => date('Y-m-d H:i:s'),
+                'status'           => $data['status'] ?? 'active',
             ]);
 
             $this->auditLogModel->recordLog($operatorId, 'USER_CREATE', "Membuat pengguna baru: {$data['full_name']} (@{$data['username']})");
@@ -82,14 +138,21 @@ class UserService extends BaseService
 
         try {
             $updateData = [
-                'role_id'    => (int) $data['role_id'],
-                'username'   => trim($data['username']),
-                'email'      => trim($data['email']),
-                'full_name'  => trim($data['full_name']),
-                'nis_nip'    => trim($data['nis_nip'] ?? ''),
-                'class_dept' => trim($data['class_dept'] ?? ''),
-                'phone'      => trim($data['phone'] ?? ''),
-                'status'     => $data['status'] ?? 'active',
+                'role_id'          => (int) $data['role_id'],
+                'username'         => trim($data['username']),
+                'email'            => trim($data['email']),
+                'full_name'        => trim($data['full_name']),
+                'nis_nip'          => trim($data['nis_nip'] ?? ''),
+                'class_dept'       => $this->resolveClassDept($data),
+                'phone'            => trim($data['phone'] ?? ''),
+                'address'          => trim($data['address'] ?? '') ?: null,
+                'birth_date'       => !empty($data['birth_date']) ? $data['birth_date'] : null,
+                'social_instagram' => trim($data['social_instagram'] ?? '') ?: null,
+                'social_tiktok'    => trim($data['social_tiktok'] ?? '') ?: null,
+                'social_facebook'  => trim($data['social_facebook'] ?? '') ?: null,
+                'social_linkedin'  => trim($data['social_linkedin'] ?? '') ?: null,
+                'social_github'    => trim($data['social_github'] ?? '') ?: null,
+                'status'           => $data['status'] ?? 'active',
             ];
 
             if (!empty($data['password'])) {
@@ -119,10 +182,10 @@ class UserService extends BaseService
 
         try {
             $this->userModel->delete($id);
-            $this->auditLogModel->recordLog($operatorId, 'USER_DELETE', "Soft delete pengguna ID: {$id} ({$user['full_name']})");
+            $this->auditLogModel->recordLog($operatorId, 'USER_DELETE', "Menghapus pengguna ID: {$id} ({$user['full_name']})");
 
             $this->commitTransaction();
-            return $this->success('Pengguna berhasil dihapus.');
+            return $this->success('Pengguna berhasil dihapus dari sistem.');
         } catch (\Throwable $e) {
             $this->db->transRollback();
             return $this->error('Gagal menghapus pengguna: ' . $e->getMessage());
@@ -162,7 +225,7 @@ class UserService extends BaseService
         }
     }
 
-    public function updateSelfProfile(int $userId, array $data, $avatarFile = null): array
+    public function updateSelfProfile(int $userId, array $data, $avatarFile = null, bool $canEditUsername = false): array
     {
         $user = $this->userModel->find($userId);
         if (!$user) {
@@ -173,14 +236,48 @@ class UserService extends BaseService
 
         try {
             $updateData = [
-                'full_name'  => trim($data['full_name']),
-                'email'      => trim($data['email']),
-                'phone'      => trim($data['phone'] ?? ''),
-                'class_dept' => trim($data['class_dept'] ?? ''),
+                'full_name'        => trim($data['full_name']),
+                'email'            => trim($data['email']),
+                'phone'            => trim($data['phone'] ?? ''),
+                'address'          => array_key_exists('address', $data) ? (trim($data['address']) ?: null) : ($user['address'] ?? null),
+                'birth_date'       => array_key_exists('birth_date', $data) ? (trim($data['birth_date']) ?: null) : ($user['birth_date'] ?? null),
+                'social_instagram' => array_key_exists('social_instagram', $data) ? (trim($data['social_instagram']) ?: null) : ($user['social_instagram'] ?? null),
+                'social_tiktok'    => array_key_exists('social_tiktok', $data) ? (trim($data['social_tiktok']) ?: null) : ($user['social_tiktok'] ?? null),
+                'social_facebook'  => array_key_exists('social_facebook', $data) ? (trim($data['social_facebook']) ?: null) : ($user['social_facebook'] ?? null),
+                'social_linkedin'  => array_key_exists('social_linkedin', $data) ? (trim($data['social_linkedin']) ?: null) : ($user['social_linkedin'] ?? null),
+                'social_github'    => array_key_exists('social_github', $data) ? (trim($data['social_github']) ?: null) : ($user['social_github'] ?? null),
+                'class_dept'       => $this->resolveClassDept($data),
             ];
+
+            $changes = [];
+
+            if ($canEditUsername && array_key_exists('username', $data) && !empty(trim($data['username']))) {
+                $newUsername = trim($data['username']);
+                if ($newUsername !== $user['username']) {
+                    $updateData['username'] = $newUsername;
+                    $changes[] = "username dari '@{$user['username']}' menjadi '@{$newUsername}'";
+                }
+            }
+
+            if (array_key_exists('nis_nip', $data)) {
+                $newNisNip = trim($data['nis_nip']) ?: null;
+                if ($newNisNip !== ($user['nis_nip'] ?? null)) {
+                    $updateData['nis_nip'] = $newNisNip;
+                    $changes[] = "NIS/NIP";
+                }
+            }
+
+            if ($updateData['full_name'] !== $user['full_name']) {
+                $changes[] = "nama lengkap";
+            }
+
+            if ($updateData['email'] !== $user['email']) {
+                $changes[] = "email";
+            }
 
             if (!empty($data['password'])) {
                 $updateData['password_hash'] = password_hash($data['password'], PASSWORD_BCRYPT);
+                $changes[] = "kata sandi";
             }
 
             // Handle avatar removal request
@@ -189,6 +286,7 @@ class UserService extends BaseService
                     @unlink(FCPATH . $user['avatar']);
                 }
                 $updateData['avatar'] = null;
+                $changes[] = "hapus foto profil";
             }
 
             // Handle avatar file upload
@@ -206,6 +304,7 @@ class UserService extends BaseService
                 $newName = $avatarFile->getRandomName();
                 $avatarFile->move($uploadDir, $newName);
                 $updateData['avatar'] = 'uploads/avatars/' . $newName;
+                $changes[] = "foto profil baru";
             }
 
             $this->userModel->update($userId, $updateData);
@@ -214,9 +313,13 @@ class UserService extends BaseService
 
             session()->set('full_name', $updateData['full_name']);
             session()->set('email', $updateData['email']);
+            if (isset($updateData['username'])) {
+                session()->set('username', $updateData['username']);
+            }
             session()->set('avatar', $currentAvatar);
 
-            $this->auditLogModel->recordLog($userId, 'PROFILE_UPDATE', 'Pengguna memperbarui data profil dan foto profil');
+            $logDetail = !empty($changes) ? implode(', ', $changes) : 'data profil';
+            $this->auditLogModel->recordLog($userId, 'PROFILE_UPDATE', "Pengguna mandiri memperbarui data profil ({$logDetail})");
 
             $this->commitTransaction();
             return $this->success('Profil Anda berhasil diperbarui.');
@@ -267,8 +370,11 @@ class UserService extends BaseService
             $updateData['role_id'] = (int)$data['role_id'];
         }
 
-        if (!empty($data['change_class']) && isset($data['class_dept'])) {
-            $updateData['class_dept'] = trim($data['class_dept']);
+        if (!empty($data['change_class'])) {
+            $classDept = $this->resolveClassDept($data);
+            if (!empty($classDept)) {
+                $updateData['class_dept'] = $classDept;
+            }
         }
 
         if (empty($updateData)) {
@@ -290,6 +396,14 @@ class UserService extends BaseService
             $this->db->transRollback();
             return $this->error('Gagal memperbarui data massal: ' . $e->getMessage());
         }
+    }
+
+    private function resolveClassDept(array $data): string
+    {
+        if (!empty($data['class_grade']) && !empty($data['class_room']) && !empty($data['division'])) {
+            return trim($data['class_grade']) . ' ' . trim($data['class_room']) . ' - ' . trim($data['division']);
+        }
+        return trim($data['class_dept'] ?? '');
     }
 
     public function bulkActionUsers(array $userIds, string $action, ?int $operatorId = null): array

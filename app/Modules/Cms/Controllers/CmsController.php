@@ -19,10 +19,11 @@ class CmsController extends BaseController
     public function index()
     {
         return view('App\Modules\Cms\Views\homepage_builder', [
-            'title'    => 'Homepage Section Builder & WCMS',
-            'sections' => $this->cmsService->getHomepageSections(),
-            'hero'     => $this->cmsService->getHeroSection(),
-            'stats'    => $this->cmsService->getHomepageStats(),
+            'title'           => 'Homepage Section Builder & WCMS',
+            'sections'        => $this->cmsService->getHomepageSections(),
+            'hero'            => $this->cmsService->getHeroSection(),
+            'heroVideoSlides' => $this->cmsService->getHeroVideoSlides(),
+            'stats'           => $this->cmsService->getHomepageStats(),
         ]);
     }
 
@@ -45,6 +46,27 @@ class CmsController extends BaseController
             return redirect()->back()->with('error', $result['body']['message']);
         }
 
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    public function saveHeroVideo()
+    {
+        @ini_set('upload_max_filesize', '30M');
+        @ini_set('post_max_size', '35M');
+
+        $videoFile = $this->request->getFile('video_file');
+        $result = $this->cmsService->saveHeroVideoSlide($this->request->getPost(), $videoFile, session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->withInput()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    public function deleteHeroVideo(int $id)
+    {
+        $result = $this->cmsService->deleteHeroVideoSlide($id, session()->get('user_id'));
         return redirect()->back()->with('success', $result['body']['message']);
     }
 
@@ -76,9 +98,13 @@ class CmsController extends BaseController
                                       ->get()->getResultArray();
         }
 
+        $userRole = session()->get('role_slug');
+        $isAdmin = in_array($userRole, ['superadmin', 'pembina', 'bph']);
+
         return view('App\Modules\Cms\Views\contact_messages', [
             'title'    => 'Kritik & Saran',
             'messages' => $messages,
+            'isAdmin'  => $isAdmin,
         ]);
     }
 
@@ -133,6 +159,17 @@ class CmsController extends BaseController
     public function storeFeedback()
     {
         $result = $this->cmsService->saveFeedbackMessage($this->request->getPost());
+
+        if ($result['body']['status'] === 'success') {
+            $notificationModel = new \App\Models\NotificationModel();
+            $notificationModel->notifyRoles(
+                ['superadmin', 'pembina', 'bph'],
+                'Pesan Kritik & Saran Baru',
+                'Telah diterima pesan kritik & saran baru dari pengunjung/anggota klub.',
+                'feedback',
+                base_url('admin/cms/messages')
+            );
+        }
 
         if ($this->request->isAJAX()) {
             return $this->response->setJSON($result['body']);
@@ -189,5 +226,16 @@ class CmsController extends BaseController
                             ->get()->getResultArray();
 
         return $this->response->setJSON(['status' => 'success', 'data' => $replies]);
+    }
+
+    public function deleteMessage(int $id)
+    {
+        $result = $this->cmsService->deleteContactMessage($id, session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
     }
 }

@@ -72,8 +72,8 @@
                 <tr>
                     <th style="width: 40px;">No</th>
                     <th>Judul Tugas</th>
-                    <th>Prioritas (Ubah Langsung)</th>
-                    <th>Assignees & Status Anggota (Ubah Langsung)</th>
+                    <th>Prioritas</th>
+                    <th>Assignees & Status Anggota</th>
                     <th>Deadline</th>
                     <th class="text-center" style="width: 130px;">Aksi</th>
                 </tr>
@@ -101,13 +101,18 @@
                             </form>
                         </td>
                         <td>
-                            <div class="d-flex flex-column gap-1">
-                                <?php if (empty($t['assignees'])): ?>
-                                    <span class="text-secondary small font-monospace">Belum ada assignee</span>
-                                <?php else: ?>
+                            <?php if (empty($t['assignees'])): ?>
+                                <span class="text-secondary small font-monospace">Belum ada assignee</span>
+                            <?php else: ?>
+                                <?php $assigneesCount = count($t['assignees']); ?>
+                                <button class="btn btn-sm btn-saas-dark py-1 px-2 style-tiny text-white border-secondary border-opacity-50 text-nowrap" type="button" data-bs-toggle="collapse" data-bs-target="#assignees-collapse-<?= $t['id'] ?>" aria-expanded="false" onclick="toggleAssigneeListBtn(this, <?= $assigneesCount ?>)">
+                                    <i class="fa-solid fa-users text-danger me-1"></i> Lihat Anggota (<?= $assigneesCount ?>)
+                                </button>
+
+                                <div class="collapse flex-column gap-1 mt-2" id="assignees-collapse-<?= $t['id'] ?>">
                                     <?php foreach ($t['assignees'] as $a): ?>
                                         <div class="d-flex align-items-center gap-1">
-                                            <span class="badge bg-dark border border-secondary text-white font-monospace style-tiny" title="<?= esc($a['full_name']) ?>">
+                                            <span class="badge bg-dark border border-secondary text-white font-monospace style-tiny text-truncate" style="max-width: 180px;" title="<?= esc($a['full_name']) ?>">
                                                 <i class="fa-solid fa-user me-1 text-danger"></i> <?= esc($a['full_name']) ?>
                                             </span>
                                             <form action="<?= base_url('admin/tasks/update-assignee-status/' . $t['id']) ?>" method="POST" class="m-0">
@@ -123,8 +128,8 @@
                                             </form>
                                         </div>
                                     <?php endforeach; ?>
-                                <?php endif; ?>
-                            </div>
+                                </div>
+                            <?php endif; ?>
                         </td>
                         <td class="font-monospace small text-danger">
                             <?= $t['deadline'] ? date('d M Y, H:i', strtotime($t['deadline'])) : 'Tanpa Batas' ?>
@@ -153,6 +158,17 @@
 
 <?= $this->section('scripts') ?>
 <script>
+    function toggleAssigneeListBtn(btn, count) {
+        setTimeout(function() {
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            if (isExpanded) {
+                btn.innerHTML = '<i class="fa-solid fa-users-slash text-warning me-1"></i> Sembunyikan (' + count + ')';
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-users text-danger me-1"></i> Lihat Anggota (' + count + ')';
+            }
+        }, 50);
+    }
+
     $(document).ready(function() {
         $('#tasks-table').DataTable({
             language: {

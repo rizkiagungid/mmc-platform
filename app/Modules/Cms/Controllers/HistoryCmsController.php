@@ -87,4 +87,57 @@ class HistoryCmsController extends BaseController
 
         return redirect()->to('/admin/cms/history')->with('success', 'Timeline sejarah berhasil ditambahkan.');
     }
+
+    public function updateMission(int $id)
+    {
+        $db   = \Config\Database::connect();
+        $text = trim($this->request->getPost('mission_text') ?? '');
+
+        if (empty($text)) {
+            return redirect()->back()->with('error', 'Teks misi wajib diisi.');
+        }
+
+        $db->table('club_missions')->where('id', $id)->update([
+            'mission_text' => $text,
+            'updated_at'   => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()->to('/admin/cms/history')->with('success', 'Butir misi berhasil diperbarui.');
+    }
+
+    public function deleteMission(int $id)
+    {
+        $db = \Config\Database::connect();
+        $db->table('club_missions')->where('id', $id)->delete();
+
+        return redirect()->to('/admin/cms/history')->with('success', 'Butir misi berhasil dihapus.');
+    }
+
+    public function updateTimeline(int $id)
+    {
+        $db    = \Config\Database::connect();
+        $year  = trim($this->request->getPost('year') ?? '');
+        $title = trim($this->request->getPost('title') ?? '');
+
+        if (empty($year) || empty($title)) {
+            return redirect()->back()->with('error', 'Tahun dan Judul Timeline wajib diisi.');
+        }
+
+        $db->table('history_timelines')->where('id', $id)->update([
+            'year'        => $year,
+            'title'       => $title,
+            'description' => trim($this->request->getPost('description') ?? ''),
+            'updated_at'  => date('Y-m-d H:i:s'),
+        ]);
+
+        return redirect()->to('/admin/cms/history')->with('success', 'Timeline sejarah berhasil diperbarui.');
+    }
+
+    public function deleteTimeline(int $id)
+    {
+        $db = \Config\Database::connect();
+        $db->table('history_timelines')->where('id', $id)->delete();
+
+        return redirect()->to('/admin/cms/history')->with('success', 'Timeline peristiwa berhasil dihapus.');
+    }
 }

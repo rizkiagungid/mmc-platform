@@ -36,21 +36,36 @@ class AuthController extends BaseController
         $password   = $this->request->getPost('password') ?? '';
 
         if (empty($loginInput) || empty($password)) {
-            return redirect()->back()->withInput()->with('error', 'Username/Email dan Password wajib diisi.');
+            return redirect()->back()->withInput()->with('error', 'Email, Username, atau No HP dan Password wajib diisi.');
         }
 
-        // Search by username or email
-        $user = $this->userModel->select('users.*, roles.name as role_name, roles.slug as role_slug')
+        $cleanPhone = preg_replace('/[^0-9]/', '', $loginInput);
+
+        // Search by username, email, or phone
+        $builder = $this->userModel->select('users.*, roles.name as role_name, roles.slug as role_slug')
                                ->join('roles', 'roles.id = users.role_id')
                                ->groupStart()
                                    ->where('users.username', $loginInput)
                                    ->orWhere('users.email', $loginInput)
-                               ->groupEnd()
-                               ->first();
+                                   ->orWhere('users.phone', $loginInput);
+
+        if (!empty($cleanPhone) && strlen($cleanPhone) >= 8) {
+            $builder->orWhere("REPLACE(REPLACE(REPLACE(REPLACE(users.phone, ' ', ''), '-', ''), '+', ''), '(', '')", $cleanPhone);
+
+            if (str_starts_with($cleanPhone, '628')) {
+                $zeroPhone = '08' . substr($cleanPhone, 3);
+                $builder->orWhere("REPLACE(REPLACE(REPLACE(REPLACE(users.phone, ' ', ''), '-', ''), '+', ''), '(', '')", $zeroPhone);
+            } elseif (str_starts_with($cleanPhone, '08')) {
+                $sixtyTwoPhone = '628' . substr($cleanPhone, 2);
+                $builder->orWhere("REPLACE(REPLACE(REPLACE(REPLACE(users.phone, ' ', ''), '-', ''), '+', ''), '(', '')", $sixtyTwoPhone);
+            }
+        }
+
+        $user = $builder->groupEnd()->first();
 
         if (!$user) {
             $this->auditLogModel->recordLog(null, 'LOGIN_FAILED', "Percobaan login gagal untuk identifier: {$loginInput}");
-            return redirect()->back()->withInput()->with('error', 'Username atau password tidak ditemukan.');
+            return redirect()->back()->withInput()->with('error', 'Email, Username, No HP, atau Password tidak sesuai.');
         }
 
         if ($user['status'] !== 'active') {
@@ -108,20 +123,39 @@ class AuthController extends BaseController
         if ($this->settingModel->getSetting('enable_registration', '1') === '0') {
             return redirect()->to('/login')->with('error', 'Pendaftaran akun baru saat ini sedang ditutup oleh Administrator.');
         }
+        $usernameInput = (string)$this->request->getPost('username');
+        if (preg_match('/\s/', $usernameInput)) {
+            return redirect()->back()->withInput()->with('error', 'Pendaftaran gagal: Username tidak boleh mengandung spasi! Silakan ganti spasi dengan garis bawah (_) atau titik (.).');
+        }
+
         $rules = [
-            'full_name'  => 'required|min_length[3]|max_length[100]',
-            'username'   => 'required|alpha_numeric_punct|min_length[3]|is_unique[users.username]',
-            'email'      => 'required|valid_email|is_unique[users.email]',
-            'nis_nip'    => 'required|min_length[4]',
-            'class_dept' => 'required',
-            'phone'      => 'required|numeric|min_length[10]',
-            'password'   => 'required|min_length[6]',
+            'full_name'        => 'required|min_length[3]|max_length[100]',
+            'username'         => 'required|regex_match[/^\S+$/]|alpha_numeric_punct|min_length[3]|is_unique[users.username]',
+            'email'            => 'required|valid_email|is_unique[users.email]',
+            'nis_nip'          => 'required|min_length[4]',
+            'class_grade'      => 'required|in_list[X,XI,XII]',
+            'class_room'       => 'required|integer|greater_than_equal_to[1]|less_than_equal_to[10]',
+            'division'         => 'required|in_list[Broadcasting,Programming]',
+            'phone'            => 'required|numeric|min_length[10]',
+            'password'         => 'required|min_length[6]',
             'confirm_password' => 'matches[password]',
         ];
 
-        if (!$this->validate($rules)) {
+        $customErrors = [
+            'username' => [
+                'regex_match' => 'Username tidak boleh mengandung karakter spasi. Silakan gunakan huruf, angka, garis bawah (_), atau titik (.).',
+                'is_unique'   => 'Username tersebut sudah terdaftar, silakan gunakan username lain.',
+            ]
+        ];
+
+        if (!$this->validate($rules, $customErrors)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
+
+        $classGrade = trim($this->request->getPost('class_grade'));
+        $classRoom  = trim($this->request->getPost('class_room'));
+        $division   = trim($this->request->getPost('division'));
+        $classDept  = "{$classGrade} {$classRoom} - {$division}";
 
         $memberRole = $this->roleModel->getRoleBySlug('member');
 
@@ -133,7 +167,7 @@ class AuthController extends BaseController
             'password_hash' => password_hash($this->request->getPost('password'), PASSWORD_BCRYPT),
             'full_name'     => trim($this->request->getPost('full_name')),
             'nis_nip'       => trim($this->request->getPost('nis_nip')),
-            'class_dept'    => trim($this->request->getPost('class_dept')),
+            'class_dept'    => $classDept,
             'phone'         => trim($this->request->getPost('phone')),
             'qr_version'    => 1,
             'qr_updated_at' => date('Y-m-d H:i:s'),

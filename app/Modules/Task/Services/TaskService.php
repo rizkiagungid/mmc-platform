@@ -214,6 +214,13 @@ class TaskService extends BaseService
             $link = base_url('uploads/tasks/' . $newName);
         }
 
+        // Restrict members from picking status > 3 (Revisi / Selesai are reserved for Admin/BPH/Pembina)
+        if (!in_array(session()->get('role_slug'), ['superadmin', 'bph', 'pembina'])) {
+            if ($myStatusId && $myStatusId > 3) {
+                $myStatusId = 3;
+            }
+        }
+
         // If no submission text/link/file is uploaded, but member requested a status update
         if (empty($text) && empty($link) && $myStatusId) {
             $this->assigneeModel->updateAssigneeStatus($taskId, $userId, $myStatusId);
@@ -225,8 +232,7 @@ class TaskService extends BaseService
             return $this->error('Harap masukkan deskripsi hasil/catatan karya atau unggah berkas / tautan attachment.');
         }
 
-        $reviewStatus = $this->statusModel->where('name', 'Review')->first();
-        $statusId     = $myStatusId ?: ($reviewStatus ? $reviewStatus['id'] : 3);
+        $statusId = $myStatusId ?: 3;
 
         $this->beginTransaction();
 
@@ -305,15 +311,15 @@ class TaskService extends BaseService
             $taskObj    = $this->taskModel->find($taskId);
 
             if ($targetUser) {
-                // Send notification
-                $this->db->table('notifications')->insert([
-                    'user_id'    => $userId,
-                    'title'      => 'Evaluasi & Catatan Revisi Tugas: ' . ($taskObj['title'] ?? ''),
-                    'message'    => "Pembina/BPH memberikan evaluasi (Status: {$statusName}, Nilai: {$grade}/100)" . (!empty($feedback) ? ": \"{$feedback}\"" : '.'),
-                    'type'       => 'task_eval',
-                    'is_read'    => 0,
-                    'created_at' => date('Y-m-d H:i:s'),
-                ]);
+                // Send notification with direct link to task detail
+                $notificationModel = new \App\Models\NotificationModel();
+                $notificationModel->notifyUser(
+                    $userId,
+                    'Evaluasi & Catatan Revisi Tugas: ' . ($taskObj['title'] ?? ''),
+                    "Pembina/BPH memberikan evaluasi (Status: {$statusName}, Nilai: {$grade}/100)" . (!empty($feedback) ? ": \"{$feedback}\"" : '.'),
+                    'task',
+                    'member/tasks/submit/' . $taskId
+                );
             }
 
             $this->auditLogModel->recordLog($evaluatorId, 'TASK_EVALUATE', "Evaluasi pengiriman tugas ID {$submissionId} (Nilai: {$grade})");
@@ -342,20 +348,20 @@ class TaskService extends BaseService
         preg_match_all('/@([a-zA-Z0-9_\.\-]+)/', $comment, $matches);
         $mentionedUsernames = array_unique($matches[1] ?? []);
 
-        $mentionedUserIds = [];
+        $notificationModel = new \App\Models\NotificationModel();
+        $mentionedUserIds  = [];
         if (!empty($mentionedUsernames)) {
             $users = $this->userModel->whereIn('username', $mentionedUsernames)->findAll();
             foreach ($users as $u) {
                 $mentionedUserIds[] = $u['id'];
 
-                $this->db->table('notifications')->insert([
-                    'user_id'    => $u['id'],
-                    'title'      => 'Mention di Tugas: ' . $task['title'],
-                    'message'    => 'Anda disebutkan dalam diskusi tugas: ' . $task['title'],
-                    'type'       => 'mention',
-                    'is_read'    => 0,
-                    'created_at' => date('Y-m-d H:i:s'),
-                ]);
+                $notificationModel->notifyUser(
+                    $u['id'],
+                    'Mention di Tugas: ' . $task['title'],
+                    'Anda disebutkan dalam diskusi tugas: ' . $task['title'],
+                    'task',
+                    'member/tasks/submit/' . $taskId
+                );
             }
         }
 

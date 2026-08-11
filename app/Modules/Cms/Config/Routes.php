@@ -9,6 +9,8 @@ $routes->group('admin/cms', ['filter' => ['auth', 'role:superadmin,pembina,bph']
     $routes->get('builder', '\App\Modules\Cms\Controllers\CmsController::index');
     $routes->post('sections/update', '\App\Modules\Cms\Controllers\CmsController::updateSections');
     $routes->post('hero/update', '\App\Modules\Cms\Controllers\CmsController::updateHero');
+    $routes->post('hero/video/save', '\App\Modules\Cms\Controllers\CmsController::saveHeroVideo');
+    $routes->get('hero/video/delete/(:num)', '\App\Modules\Cms\Controllers\CmsController::deleteHeroVideo/$1');
     $routes->post('stats/save', '\App\Modules\Cms\Controllers\CmsController::saveStat');
     $routes->get('stats/delete/(:num)', '\App\Modules\Cms\Controllers\CmsController::deleteStat/$1');
 
@@ -44,7 +46,11 @@ $routes->group('admin/cms', ['filter' => ['auth', 'role:superadmin,pembina,bph']
     $routes->get('history', '\App\Modules\Cms\Controllers\HistoryCmsController::index');
     $routes->post('history/save', '\App\Modules\Cms\Controllers\HistoryCmsController::saveHistory');
     $routes->post('history/missions/save', '\App\Modules\Cms\Controllers\HistoryCmsController::saveMission');
+    $routes->post('history/missions/update/(:num)', '\App\Modules\Cms\Controllers\HistoryCmsController::updateMission/$1');
+    $routes->get('history/missions/delete/(:num)', '\App\Modules\Cms\Controllers\HistoryCmsController::deleteMission/$1');
     $routes->post('history/timelines/save', '\App\Modules\Cms\Controllers\HistoryCmsController::saveTimeline');
+    $routes->post('history/timelines/update/(:num)', '\App\Modules\Cms\Controllers\HistoryCmsController::updateTimeline/$1');
+    $routes->get('history/timelines/delete/(:num)', '\App\Modules\Cms\Controllers\HistoryCmsController::deleteTimeline/$1');
 
     // Organizational Chart Structure (CRUD)
     $routes->get('structure', '\App\Modules\Cms\Controllers\OrgCmsController::index');
@@ -58,6 +64,9 @@ $routes->group('admin/cms', ['filter' => ['auth', 'role:superadmin,pembina,bph']
     $routes->post('faqs/store', '\App\Modules\Cms\Controllers\FaqCmsController::store');
     $routes->post('faqs/update/(:num)', '\App\Modules\Cms\Controllers\FaqCmsController::update/$1');
     $routes->get('faqs/delete/(:num)', '\App\Modules\Cms\Controllers\FaqCmsController::delete/$1');
+
+    // Delete Messages (Admin only)
+    $routes->get('messages/delete/(:num)', '\App\Modules\Cms\Controllers\CmsController::deleteMessage/$1');
 });
 
 // Feedback, Kritik & Saran, and Contact Messages (Accessible by Admin and Member)

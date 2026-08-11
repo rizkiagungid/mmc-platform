@@ -77,8 +77,8 @@
                                     <span class="badge" style="background-color: <?= $t['priority_color'] ?>;">
                                         <?= esc($t['priority_name']) ?>
                                     </span>
-                                    <span class="badge" style="background-color: <?= $t['my_status_color'] ?? '#3b82f6' ?>;">
-                                        Status Saya: <?= esc($t['my_status_name'] ?? 'Todo') ?>
+                                    <span class="badge" style="background-color: <?= $t['my_status_color'] ?? '#6c757d' ?>;">
+                                        Status Saya: <?= esc($t['my_status_name'] ?? 'Belum dikerjakan') ?>
                                     </span>
                                 </div>
 
@@ -105,7 +105,7 @@
                             </div>
 
                             <a href="<?= base_url('member/tasks/submit/' . $t['id']) ?>" class="btn <?= !empty($t['is_submitted']) ? 'btn-saas-dark text-success border-success border-opacity-50' : 'btn-red' ?> w-100">
-                                <i class="fa-solid <?= !empty($t['is_submitted']) ? 'fa-pen-to-square' : 'fa-paper-plane' ?> me-1"></i> <?= !empty($t['is_submitted']) ? 'Lihat / Edit Pengiriman' : 'Kirim Karya Sekarang' ?>
+                                <i class="fa-solid <?= !empty($t['is_submitted']) ? 'fa-pen-to-square' : 'fa-paper-plane' ?> me-1"></i> <?= !empty($t['is_submitted']) ? 'Lihat / Edit Pengiriman' : 'Kirim Tugas Sekarang' ?>
                             </a>
                         </div>
                     </div>

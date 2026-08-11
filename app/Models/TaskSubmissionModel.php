@@ -28,8 +28,9 @@ class TaskSubmissionModel extends Model
 
     public function getSubmissionsByTask(int $taskId)
     {
-        return $this->select('task_submissions.*, users.full_name, users.avatar, users.nis_nip, task_statuses.name as status_name, task_statuses.color as status_color, evaluator.full_name as evaluator_name')
+        return $this->select('task_submissions.*, users.full_name, users.username, users.avatar, users.nis_nip, users.class_dept, users.email, users.phone, users.status, users.member_uuid, roles.name as role_name, task_statuses.name as status_name, task_statuses.color as status_color, evaluator.full_name as evaluator_name')
                     ->join('users', 'users.id = task_submissions.user_id')
+                    ->join('roles', 'roles.id = users.role_id', 'left')
                     ->join('task_statuses', 'task_statuses.id = task_submissions.status_id', 'left')
                     ->join('users as evaluator', 'evaluator.id = task_submissions.evaluated_by', 'left')
                     ->where('task_submissions.task_id', $taskId)

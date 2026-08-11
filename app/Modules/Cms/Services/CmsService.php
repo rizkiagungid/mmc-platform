@@ -91,6 +91,110 @@ class CmsService extends BaseService
         }
     }
 
+    public function getHeroVideoSlides(bool $activeOnly = false): array
+    {
+        $builder = $this->db->table('hero_video_slides')->orderBy('sort_order', 'ASC')->orderBy('id', 'DESC');
+        if ($activeOnly) {
+            $builder->where('is_active', 1);
+        }
+        return $builder->get()->getResultArray();
+    }
+
+    public function saveHeroVideoSlide(array $data, $videoFile, int $actorId): array
+    {
+        $this->beginTransaction();
+        try {
+            $id = (int)($data['id'] ?? 0);
+            $existing = null;
+            if ($id > 0) {
+                $existing = $this->db->table('hero_video_slides')->where('id', $id)->get()->getRowArray();
+            }
+
+            $videoUrl = $existing ? $existing['video_url'] : '';
+            $videoType = trim($data['video_type'] ?? 'file');
+
+            if ($videoFile && $videoFile->getError() !== UPLOAD_ERR_NO_FILE) {
+                if (!$videoFile->isValid()) {
+                    $this->db->transRollback();
+                    return $this->error('Gagal mengunggah video: ' . $videoFile->getErrorString());
+                }
+
+                $uploadDir = FCPATH . 'uploads/cms/videos/';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0777, true);
+                }
+
+                if ($existing && $existing['video_type'] === 'file' && !empty($existing['video_url']) && file_exists(FCPATH . $existing['video_url'])) {
+                    @unlink(FCPATH . $existing['video_url']);
+                }
+
+                $newName = $videoFile->getRandomName();
+                $videoFile->move($uploadDir, $newName);
+                $videoUrl = 'uploads/cms/videos/' . $newName;
+                $videoType = 'file';
+            } elseif ($videoType === 'url' && !empty($data['video_url_input'])) {
+                $rawInput = trim($data['video_url_input']);
+                if (preg_match('/src=["\']([^"\']+)["\']/i', $rawInput, $match)) {
+                    $videoUrl = $match[1];
+                } else {
+                    $videoUrl = $rawInput;
+                }
+                $videoType = 'url';
+            }
+
+            if (empty($videoUrl)) {
+                $this->db->transRollback();
+                return $this->error('File video atau URL video wajib diisi.');
+            }
+
+            $payload = [
+                'title'      => trim($data['title'] ?? ''),
+                'subtitle'   => trim($data['subtitle'] ?? ''),
+                'video_url'  => $videoUrl,
+                'video_type' => $videoType,
+                'sort_order' => (int)($data['sort_order'] ?? 0),
+                'is_active'  => isset($data['is_active']) ? 1 : 0,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+
+            if ($existing) {
+                $this->db->table('hero_video_slides')->where('id', $id)->update($payload);
+                $msg = 'Video slide hero berhasil diperbarui.';
+            } else {
+                $payload['created_at'] = date('Y-m-d H:i:s');
+                $this->db->table('hero_video_slides')->insert($payload);
+                $msg = 'Video slide hero berhasil ditambahkan.';
+            }
+
+            $this->auditLogModel->recordLog($actorId, 'CMS_HERO_VIDEO_SAVE', $msg);
+            $this->commitTransaction();
+            return $this->success($msg);
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal menyimpan video slide hero: ' . $e->getMessage());
+        }
+    }
+
+    public function deleteHeroVideoSlide(int $id, int $actorId): array
+    {
+        $this->beginTransaction();
+        try {
+            $existing = $this->db->table('hero_video_slides')->where('id', $id)->get()->getRowArray();
+            if ($existing) {
+                if ($existing['video_type'] === 'file' && !empty($existing['video_url']) && file_exists(FCPATH . $existing['video_url'])) {
+                    @unlink(FCPATH . $existing['video_url']);
+                }
+                $this->db->table('hero_video_slides')->where('id', $id)->delete();
+                $this->auditLogModel->recordLog($actorId, 'CMS_HERO_VIDEO_DELETE', 'Menghapus video slide hero ID: ' . $id);
+            }
+            $this->commitTransaction();
+            return $this->success('Video slide hero berhasil dihapus.');
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal menghapus video slide hero: ' . $e->getMessage());
+        }
+    }
+
     private function ensureStatsColumnsExist()
     {
         if (!$this->db->fieldExists('is_auto', 'homepage_stats')) {
@@ -219,5 +323,21 @@ class CmsService extends BaseService
         return $this->db->table('contact_messages')
                         ->orderBy('created_at', 'DESC')
                         ->get()->getResultArray();
+    }
+
+    public function deleteContactMessage(int $id, int $actorId): array
+    {
+        $this->beginTransaction();
+        try {
+            $this->db->table('contact_replies')->where('contact_message_id', $id)->delete();
+            $this->db->table('contact_messages')->where('id', $id)->delete();
+            
+            $this->auditLogModel->recordLog($actorId, 'CMS_MESSAGE_DELETE', "Menghapus pesan kritik & saran ID {$id}");
+            $this->commitTransaction();
+            return $this->success('Pesan Kritik & Saran beserta balasannya berhasil dihapus.');
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal menghapus pesan: ' . $e->getMessage());
+        }
     }
 }

@@ -118,6 +118,15 @@ class MeetingService extends BaseService
 
             $this->auditLogModel->recordLog($operatorId, 'MEETING_ACTIVATE', "Mengaktifkan sesi pertemuan ID: {$id} ({$meeting['title']}) dengan PIN {$pinCode}");
 
+            $notificationModel = new \App\Models\NotificationModel();
+            $notificationModel->notifyRoles(
+                ['superadmin', 'pembina', 'bph', 'anggota'],
+                'Sesi Presensi Aktif: ' . $meeting['title'],
+                "Sesi pertemuan '{$meeting['title']}' telah diaktifkan dengan Kode PIN: {$pinCode}. Silakan lakukan scan presensi QR atau PIN.",
+                'attendance',
+                base_url('attendance/scan')
+            );
+
             $this->commitTransaction();
             return $this->success("Sesi pertemuan '{$meeting['title']}' berhasil diaktifkan! PIN: {$pinCode}", [
                 'meeting_id' => $id,

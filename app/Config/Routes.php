@@ -38,6 +38,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('member/tasks/comment/(:num)', '\App\Modules\Task\Controllers\TaskController::postComment/$1');
     $routes->get('profile', '\App\Modules\User\Controllers\UserController::profile');
     $routes->post('profile', '\App\Modules\User\Controllers\UserController::updateProfile');
+    $routes->get('inbox', '\App\Modules\Chat\Controllers\ChatController::index');
+    $routes->get('feed', '\App\Modules\Feed\Controllers\FeedController::index');
 });
 
 // 4. Admin CMS Routes (Super Admin, Pembina, BPH)
@@ -55,6 +57,8 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->get('users/qr/(:segment)', '\App\Modules\User\Controllers\UserController::showQr/$1');
     $routes->post('users/bulk-update', '\App\Modules\User\Controllers\UserController::bulkUpdate');
     $routes->post('users/bulk-action', '\App\Modules\User\Controllers\UserController::bulkAction');
+    $routes->get('users/export-csv', '\App\Modules\User\Controllers\UserController::exportCsv');
+    $routes->post('users/export-csv', '\App\Modules\User\Controllers\UserController::exportCsv');
 
     // Meeting Management (Modular Meeting)
     $routes->get('meetings', '\App\Modules\Meeting\Controllers\MeetingController::index');
@@ -89,19 +93,32 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->post('tasks/update-assignee-status/(:num)', '\App\Modules\Task\Controllers\TaskController::quickUpdateAssigneeStatus/$1');
     $routes->post('tasks/comment/(:num)', '\App\Modules\Task\Controllers\TaskController::postComment/$1');
 
-    // System Settings & Audit Logs (Modular System - Super Admin & Pembina only)
-    $routes->group('', ['filter' => 'role:superadmin,pembina'], static function ($routes) {
+    // System Settings & Audit Logs (Modular System - Super Admin, Pembina, & BPH)
+    $routes->group('', ['filter' => 'role:superadmin,pembina,bph'], static function ($routes) {
         $routes->get('audit-logs', '\App\Modules\System\Controllers\SystemController::auditLogs');
+        $routes->get('audit-logs/clear', '\App\Modules\System\Controllers\SystemController::clearAuditLogs');
+        $routes->post('audit-logs/clear', '\App\Modules\System\Controllers\SystemController::clearAuditLogs');
         $routes->get('settings', '\App\Modules\System\Controllers\SystemController::settings');
         $routes->post('settings', '\App\Modules\System\Controllers\SystemController::updateSettings');
         $routes->post('system/clear-cache', '\App\Modules\System\Controllers\SystemController::clearCache');
         $routes->post('system/clear-logs', '\App\Modules\System\Controllers\SystemController::clearLogs');
         $routes->post('system/clear-all-storage', '\App\Modules\System\Controllers\SystemController::clearAllStorage');
+        $routes->post('system/clear-all-inbox', '\App\Modules\System\Controllers\SystemController::clearAllInbox');
+        $routes->post('system/clear-all-feed', '\App\Modules\System\Controllers\SystemController::clearAllFeed');
+        $routes->post('system/clear-all-notifications', '\App\Modules\System\Controllers\SystemController::clearAllNotifications');
+        $routes->post('system/clear-all-avatars', '\App\Modules\System\Controllers\SystemController::clearAllAvatars');
+
+        // Superadmin Asset Storage Manager Routes
+        $routes->group('', ['filter' => 'role:superadmin'], static function ($routes) {
+            $routes->get('storage', '\App\Modules\System\Controllers\FileStorageController::index');
+            $routes->post('storage/delete', '\App\Modules\System\Controllers\FileStorageController::deleteFile');
+            $routes->post('storage/bulk-delete', '\App\Modules\System\Controllers\FileStorageController::bulkDelete');
+        });
     });
 });
 
 // Load Modular Routes
-$modules = ['Auth', 'User', 'Meeting', 'Attendance', 'Task', 'Cms', 'Learning', 'System'];
+$modules = ['Auth', 'User', 'Meeting', 'Attendance', 'Task', 'Cms', 'Learning', 'System', 'Notification', 'Chat', 'Feed'];
 foreach ($modules as $module) {
     $routeFile = APPPATH . 'Modules/' . $module . '/Config/Routes.php';
     if (file_exists($routeFile)) {

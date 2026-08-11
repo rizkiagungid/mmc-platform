@@ -55,17 +55,17 @@
                         </td>
                         <td class="text-end">
                             <div class="dropdown">
-                                <button class="btn btn-sm btn-saas-dark dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <button class="btn btn-sm btn-saas-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-boundary="viewport">
                                     Pilihan
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-dark">
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border border-secondary border-opacity-50">
                                     <?php if ($m['status'] !== 'active'): ?>
                                         <li><a class="dropdown-item text-success" href="<?= base_url('admin/meetings/activate/' . $m['id']) ?>" onclick="return confirm('Aktifkan sesi ini? Sesi aktif sebelumnya akan diselesaikan.')"><i class="fa-solid fa-play me-2"></i> Aktifkan Sesi Ini</a></li>
                                     <?php else: ?>
-                                        <li><a class="dropdown-item text-warning" href="<?= base_url('admin/meetings/complete/' . $m['id']) ?>" onclick="return confirm('Selesaikan sesi ini? Anggota yang belum scan presensi akan otomatis berstatus Alpa.')"><i class="fa-solid fa-check-double me-2"></i> Selesaikan & Set Auto-Alpa</a></li>
+                                        <li><a class="dropdown-item text-warning" href="<?= base_url('admin/meetings/complete/' . $m['id']) ?>" onclick="return confirm('Selesaikan sesi ini? Anggota yang belum scan presensi akan otomatis berstatus Alpa.')"><i class="fa-solid fa-check-double me-2"></i> Selesaikan Sesi ini</a></li>
                                     <?php endif; ?>
                                     <li><a class="dropdown-item" href="<?= base_url('admin/meetings/qr/' . $m['id']) ?>"><i class="fa-solid fa-qrcode me-2 text-warning"></i> Tampilkan Poster QR</a></li>
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li><hr class="dropdown-divider border-secondary border-opacity-25"></li>
                                     <li><a class="dropdown-item" href="<?= base_url('admin/meetings/edit/' . $m['id']) ?>"><i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit Data</a></li>
                                     <li><a class="dropdown-item text-danger" href="<?= base_url('admin/meetings/delete/' . $m['id']) ?>" onclick="return confirm('Hapus sesi pertemuan ini?')"><i class="fa-solid fa-trash me-2"></i> Hapus</a></li>
                                 </ul>

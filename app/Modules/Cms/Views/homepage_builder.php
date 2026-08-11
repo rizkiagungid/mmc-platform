@@ -97,50 +97,119 @@
     </div>
 
     <!-- 2. Hero Section Settings -->
+    <!-- 2. Hero Section Settings -->
     <div class="tab-pane fade" id="hero-pane">
-        <div class="saas-card p-4 col-lg-9 mx-auto">
-            <h5 class="text-white font-heading mb-3"><i class="fa-solid fa-heading text-info me-2"></i> Edit Teks & CTA Hero Banner</h5>
-            <form action="<?= base_url('admin/cms/hero/update') ?>" method="POST">
-                <?= csrf_field() ?>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="saas-card p-4 h-100">
+                    <h5 class="text-white font-heading mb-3"><i class="fa-solid fa-heading text-info me-2"></i> Edit Teks & CTA Hero Banner</h5>
+                    <form action="<?= base_url('admin/cms/hero/update') ?>" method="POST">
+                        <?= csrf_field() ?>
 
-                <div class="mb-3">
-                    <label class="form-label text-secondary small fw-medium">Sub-Judul Atas (Subtitle Badge)</label>
-                    <input type="text" name="subtitle" class="form-control" value="<?= esc($hero['subtitle'] ?? '') ?>">
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Sub-Judul Atas (Subtitle Badge)</label>
+                            <input type="text" name="subtitle" class="form-control" value="<?= esc($hero['subtitle'] ?? '') ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Judul Utama (Hero Title) <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control form-control-lg" required value="<?= esc($hero['title'] ?? '') ?>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-secondary small fw-medium">Deskripsi Singkat</label>
+                            <textarea name="description" class="form-control" rows="3"><?= esc($hero['description'] ?? '') ?></textarea>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-medium">Teks Tombol Utama (Primary CTA)</label>
+                                <input type="text" name="primary_btn_text" class="form-control" value="<?= esc($hero['primary_btn_text'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-medium">URL Tombol Utama</label>
+                                <input type="text" name="primary_btn_url" class="form-control" value="<?= esc($hero['primary_btn_url'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-medium">Teks Tombol Sekunder</label>
+                                <input type="text" name="secondary_btn_text" class="form-control" value="<?= esc($hero['secondary_btn_text'] ?? '') ?>">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label text-secondary small fw-medium">URL Tombol Sekunder</label>
+                                <input type="text" name="secondary_btn_url" class="form-control" value="<?= esc($hero['secondary_btn_url'] ?? '') ?>">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-red px-4">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Simpan Teks Hero Section
+                        </button>
+                    </form>
                 </div>
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label text-secondary small fw-medium">Judul Utama (Hero Title) <span class="text-danger">*</span></label>
-                    <input type="text" name="title" class="form-control form-control-lg" required value="<?= esc($hero['title'] ?? '') ?>">
+            <div class="col-lg-6">
+                <div class="saas-card p-4 h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <div>
+                                <h5 class="text-white font-heading m-0"><i class="fa-solid fa-film text-danger me-2"></i> Hero Video Slider</h5>
+                                <p class="text-secondary style-tiny m-0">Tambahkan dan atur slide video background pada bagian Hero Banner</p>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-red" data-bs-toggle="modal" data-bs-target="#addHeroVideoModal">
+                                <i class="fa-solid fa-plus me-1"></i> Tambah Video
+                            </button>
+                        </div>
+
+                        <?php if (empty($heroVideoSlides)): ?>
+                            <div class="p-4 rounded-3 bg-black border border-secondary border-opacity-25 text-center text-secondary my-3">
+                                <i class="fa-solid fa-video-slash fs-2 mb-2 d-block opacity-25"></i>
+                                Belum ada slide video hero. Klik "Tambah Video" untuk mengunggah file MP4/WebM atau memasukkan URL video.
+                            </div>
+                        <?php else: ?>
+                            <div class="d-flex flex-column gap-3 my-3" style="max-height: 420px; overflow-y: auto;">
+                                <?php foreach ($heroVideoSlides as $vSlide): ?>
+                                    <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-between gap-3">
+                                        <div class="d-flex align-items-center gap-3 overflow-hidden">
+                                            <div class="rounded bg-black border border-secondary border-opacity-25 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 80px; height: 50px; overflow: hidden;">
+                                                <?php if (str_contains($vSlide['video_url'], 'youtube') || str_contains($vSlide['video_url'], 'youtu.be') || str_contains($vSlide['video_url'], '<iframe')): ?>
+                                                    <i class="fa-brands fa-youtube text-danger fs-3"></i>
+                                                <?php elseif ($vSlide['video_type'] === 'file'): ?>
+                                                    <video src="<?= base_url($vSlide['video_url']) ?>" class="w-100 h-100 object-fit-cover" muted></video>
+                                                <?php else: ?>
+                                                    <i class="fa-solid fa-link text-info fs-4"></i>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="overflow-hidden">
+                                                <h6 class="text-white font-heading mb-1 text-truncate" style="max-width: 220px;">
+                                                    <?= esc($vSlide['title'] ?: 'Slide Video #' . $vSlide['id']) ?>
+                                                </h6>
+                                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                                    <span class="badge bg-secondary bg-opacity-25 text-secondary style-tiny">
+                                                        <?= strtoupper($vSlide['video_type']) ?>
+                                                    </span>
+                                                    <span class="badge <?= $vSlide['is_active'] ? 'bg-success bg-opacity-25 text-success' : 'bg-danger bg-opacity-25 text-danger' ?> style-tiny">
+                                                        <?= $vSlide['is_active'] ? 'Aktif' : 'Non-aktif' ?>
+                                                    </span>
+                                                    <span class="text-secondary style-tiny font-monospace">Urutan: <?= $vSlide['sort_order'] ?></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex gap-2 flex-shrink-0">
+                                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#editHeroVideoModal<?= $vSlide['id'] ?>">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </button>
+                                            <a href="<?= base_url('admin/cms/hero/video/delete/' . $vSlide['id']) ?>" onclick="return confirm('Hapus video slide ini?')" class="btn btn-sm btn-outline-danger">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label text-secondary small fw-medium">Deskripsi Singkat</label>
-                    <textarea name="description" class="form-control" rows="3"><?= esc($hero['description'] ?? '') ?></textarea>
-                </div>
-
-                <div class="row g-3 mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label text-secondary small fw-medium">Teks Tombol Utama (Primary CTA)</label>
-                        <input type="text" name="primary_btn_text" class="form-control" value="<?= esc($hero['primary_btn_text'] ?? '') ?>">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-secondary small fw-medium">URL Tombol Utama</label>
-                        <input type="text" name="primary_btn_url" class="form-control" value="<?= esc($hero['primary_btn_url'] ?? '') ?>">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-secondary small fw-medium">Teks Tombol Sekunder</label>
-                        <input type="text" name="secondary_btn_text" class="form-control" value="<?= esc($hero['secondary_btn_text'] ?? '') ?>">
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-secondary small fw-medium">URL Tombol Sekunder</label>
-                        <input type="text" name="secondary_btn_url" class="form-control" value="<?= esc($hero['secondary_btn_url'] ?? '') ?>">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-red px-4">
-                    <i class="fa-solid fa-floppy-disk me-1"></i> Simpan Hero Section
-                </button>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -358,5 +427,154 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Tambah Hero Video Slide -->
+<div class="modal fade" id="addHeroVideoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-secondary border-opacity-25">
+            <div class="modal-header border-bottom border-secondary border-opacity-25">
+                <h5 class="modal-title font-heading"><i class="fa-solid fa-video text-danger me-2"></i> Tambah Video Hero Banner</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="<?= base_url('admin/cms/hero/video/save') ?>" method="POST" enctype="multipart/form-data">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">Judul Slide (Opsional)</label>
+                        <input type="text" name="title" class="form-control" placeholder="Contoh: Showcase Videografi 2026">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">Sub-judul / Teks Singkat (Opsional)</label>
+                        <input type="text" name="subtitle" class="form-control" placeholder="Contoh: Karya Siswa Ekstrakurikuler MMC">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-secondary small">Metode Sumber Video</label>
+                        <select name="video_type" class="form-select bg-dark text-white border-secondary border-opacity-50" onchange="
+                            if (this.value === 'file') {
+                                document.getElementById('add_file_input_wrap').style.display = 'block';
+                                document.getElementById('add_url_input_wrap').style.display = 'none';
+                            } else {
+                                document.getElementById('add_file_input_wrap').style.display = 'none';
+                                document.getElementById('add_url_input_wrap').style.display = 'block';
+                            }
+                        ">
+                            <option value="file" selected>📁 Unggah File Video (MP4 / WebM / OGG)</option>
+                            <option value="url">🌐 Tempel Link / URL Video (MP4 Direct Link)</option>
+                        </select>
+                    </div>
+
+                    <div id="add_file_input_wrap" class="mb-3">
+                        <label class="form-label text-secondary small">File Video <span class="text-danger">*</span></label>
+                        <input type="file" name="video_file" class="form-control bg-dark text-white border-secondary border-opacity-50" accept="video/mp4,video/webm,video/ogg">
+                        <div class="form-text text-secondary style-tiny">Format: MP4, WebM, OGG (Maksimal 30MB).</div>
+                    </div>
+
+                    <div id="add_url_input_wrap" class="mb-3" style="display: none;">
+                        <label class="form-label text-secondary small">URL Video Direct Link <span class="text-danger">*</span></label>
+                        <input type="text" name="video_url_input" class="form-control font-monospace" placeholder="https://example.com/video.mp4">
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label text-secondary small">Urutan Tampil (Sort Order)</label>
+                            <input type="number" name="sort_order" class="form-control font-monospace" value="1" min="0">
+                        </div>
+                        <div class="col-6 d-flex align-items-end">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="add_v_active" value="1" checked>
+                                <label class="form-check-label text-secondary small ms-1" for="add_v_active">Aktifkan Slide</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25">
+                    <button type="button" class="btn btn-saas-dark" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-red">Simpan Video Slide</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<?php if (!empty($heroVideoSlides)): ?>
+    <?php foreach ($heroVideoSlides as $vSlide): ?>
+        <!-- Modal Edit Hero Video Slide -->
+        <div class="modal fade" id="editHeroVideoModal<?= $vSlide['id'] ?>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white border border-secondary border-opacity-25">
+                    <div class="modal-header border-bottom border-secondary border-opacity-25">
+                        <h5 class="modal-title font-heading"><i class="fa-solid fa-pen text-info me-2"></i> Edit Video Hero Banner</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form action="<?= base_url('admin/cms/hero/video/save') ?>" method="POST" enctype="multipart/form-data">
+                        <?= csrf_field() ?>
+                        <input type="hidden" name="id" value="<?= $vSlide['id'] ?>">
+
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small">Judul Slide (Opsional)</label>
+                                <input type="text" name="title" class="form-control" value="<?= esc($vSlide['title']) ?>">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small">Sub-judul / Teks Singkat (Opsional)</label>
+                                <input type="text" name="subtitle" class="form-control" value="<?= esc($vSlide['subtitle']) ?>">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label text-secondary small">Metode Sumber Video</label>
+                                <select name="video_type" class="form-select bg-dark text-white border-secondary border-opacity-50" onchange="
+                                    if (this.value === 'file') {
+                                        document.getElementById('edit_file_wrap<?= $vSlide['id'] ?>').style.display = 'block';
+                                        document.getElementById('edit_url_wrap<?= $vSlide['id'] ?>').style.display = 'none';
+                                    } else {
+                                        document.getElementById('edit_file_wrap<?= $vSlide['id'] ?>').style.display = 'none';
+                                        document.getElementById('edit_url_wrap<?= $vSlide['id'] ?>').style.display = 'block';
+                                    }
+                                ">
+                                    <option value="file" <?= $vSlide['video_type'] === 'file' ? 'selected' : '' ?>>📁 Unggah File Video (MP4 / WebM / OGG)</option>
+                                    <option value="url" <?= $vSlide['video_type'] === 'url' ? 'selected' : '' ?>>🌐 Tempel Link / URL Video (MP4 Direct Link)</option>
+                                </select>
+                            </div>
+
+                            <div id="edit_file_wrap<?= $vSlide['id'] ?>" class="mb-3" style="display: <?= $vSlide['video_type'] === 'file' ? 'block' : 'none' ?>;">
+                                <label class="form-label text-secondary small">Ganti File Video (Opsional)</label>
+                                <?php if ($vSlide['video_type'] === 'file' && !empty($vSlide['video_url'])): ?>
+                                    <div class="p-2 mb-2 bg-black rounded border border-secondary border-opacity-25 style-tiny font-monospace text-truncate">
+                                        <i class="fa-solid fa-video me-1 text-danger"></i> <?= esc($vSlide['video_url']) ?>
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" name="video_file" class="form-control bg-dark text-white border-secondary border-opacity-50" accept="video/mp4,video/webm,video/ogg">
+                                <div class="form-text text-secondary style-tiny">Format: MP4, WebM, OGG (Maksimal 30MB). Biarkan kosong jika tidak mengubah file.</div>
+                            </div>
+
+                            <div id="edit_url_wrap<?= $vSlide['id'] ?>" class="mb-3" style="display: <?= $vSlide['video_type'] === 'url' ? 'block' : 'none' ?>;">
+                                <label class="form-label text-secondary small">URL Video Direct Link</label>
+                                <input type="text" name="video_url_input" class="form-control font-monospace" value="<?= esc($vSlide['video_url']) ?>" placeholder="https://example.com/video.mp4">
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label text-secondary small">Urutan Tampil (Sort Order)</label>
+                                    <input type="number" name="sort_order" class="form-control font-monospace" value="<?= esc($vSlide['sort_order']) ?>" min="0">
+                                </div>
+                                <div class="col-6 d-flex align-items-end">
+                                    <div class="form-check form-switch mb-2">
+                                        <input class="form-check-input" type="checkbox" name="is_active" id="edit_v_active<?= $vSlide['id'] ?>" value="1" <?= $vSlide['is_active'] ? 'checked' : '' ?>>
+                                        <label class="form-check-label text-secondary small ms-1" for="edit_v_active<?= $vSlide['id'] ?>">Aktifkan Slide</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top border-secondary border-opacity-25">
+                            <button type="button" class="btn btn-saas-dark" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-red">Update Video Slide</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+<?php endif; ?>
 
 <?= $this->endSection() ?>

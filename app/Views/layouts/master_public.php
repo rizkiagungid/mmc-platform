@@ -3,7 +3,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?= esc($title ?? get_setting('site_title', 'Multimedia Club SMAN 1 Tamansari')) ?></title>
     
     <!-- Dynamic Meta SEO -->
@@ -35,17 +35,22 @@
     <!-- PWA Meta Tags -->
     <?= pwa_meta_tags() ?>
 
-    <!-- Custom Head Tags Injection -->
-    <?= get_setting('custom_head_tags', '') ?>
+    <!-- Early Anti-Flicker Theme Detection -->
+    <script>
+        (function() {
+            const storedTheme = localStorage.getItem('theme-mode') || 'dark';
+            document.documentElement.setAttribute('data-bs-theme', storedTheme);
+        })();
+    </script>
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-    <!-- Glassmorphic Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-saas sticky-top py-3">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-saas sticky-top">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2 font-heading" href="<?= base_url('/') ?>">
-                <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="Logo" style="height: 38px;" class="rounded-2 p-1 bg-white">
-                <span class="fs-6 fs-sm-5 fw-bold text-white text-truncate" style="max-width: 240px;"><?= esc(get_setting('site_title', 'Multimedia Club SMAN 1 Tamansari')) ?></span>
+                <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="Logo" style="height: 38px;" class="rounded-2 p-1 bg-white flex-shrink-0">
+                <span class="fs-6 fs-sm-5 fw-bold text-truncate navbar-title-text"><?= esc(get_setting('site_title', 'Multimedia Club SMAN 1 Tamansari')) ?></span>
             </a>
             
             <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPublic" aria-controls="navbarPublic" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,28 +59,31 @@
 
             <div class="collapse navbar-collapse" id="navbarPublic">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-2">
-                    <li class="nav-item"><a class="nav-link text-light px-3 <?= (url_is('/')) ? 'active fw-bold text-danger' : '' ?>" href="<?= base_url('/') ?>">Home</a></li>
-                    <li class="nav-item"><a class="nav-link text-light px-3 <?= (url_is('about*')) ? 'active fw-bold text-danger' : '' ?>" href="<?= base_url('about') ?>">Tentang</a></li>
-                    <li class="nav-item"><a class="nav-link text-light px-3 <?= (url_is('learning-path*')) ? 'active fw-bold text-danger' : '' ?>" href="<?= base_url('learning-path') ?>">Learning Path</a></li>
-                    <li class="nav-item"><a class="nav-link text-light px-3 <?= (url_is('materi*')) ? 'active fw-bold text-danger' : '' ?>" href="<?= base_url('materi') ?>">Materi</a></li>
-                    <li class="nav-item"><a class="nav-link text-light px-3 <?= (url_is('portfolio*')) ? 'active fw-bold text-danger' : '' ?>" href="<?= base_url('portfolio') ?>">Portofolio</a></li>
-                    <li class="nav-item"><a class="nav-link text-light px-3 <?= (url_is('achievements*') || url_is('prestasi*')) ? 'active fw-bold text-danger' : '' ?>" href="<?= base_url('achievements') ?>">Prestasi</a></li>
-                    <li class="nav-item"><a class="nav-link text-light px-3 <?= (url_is('gallery*')) ? 'active fw-bold text-danger' : '' ?>" href="<?= base_url('gallery') ?>">Galeri</a></li>
-                    <li class="nav-item"><a class="nav-link text-light px-3 <?= (url_is('faq*')) ? 'active fw-bold text-danger' : '' ?>" href="<?= base_url('faq') ?>">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('/')) ? 'active fw-bold' : '' ?>" href="<?= base_url('/') ?>">Home</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('about*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('about') ?>">Tentang</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('learning-path*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('learning-path') ?>">Learning Path</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('materi*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('materi') ?>">Materi</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('portfolio*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('portfolio') ?>">Portofolio</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('achievements*') || url_is('prestasi*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('achievements') ?>">Prestasi</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('gallery*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('gallery') ?>">Galeri</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('faq*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('faq') ?>">FAQ</a></li>
                 </ul>
 
-                <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0 flex-wrap">
+                <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
+                    <button type="button" id="themeToggleBtn" onclick="toggleThemeMode()" class="btn btn-saas-dark p-0 rounded-circle border border-secondary border-opacity-25 d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; min-height: 40px;" title="Ubah Mode Terang / Gelap">
+                        <i class="fa-solid fa-moon text-warning fs-6" id="themeToggleIcon"></i>
+                    </button>
                     <?php if (session()->get('is_logged_in')): ?>
-                        <a href="<?= base_url('dashboard') ?>" class="btn btn-red px-4 w-100 w-lg-auto">
+                        <a href="<?= base_url('dashboard') ?>" class="btn btn-red px-4 text-nowrap">
                             <i class="fa-solid fa-gauge me-2"></i> Dashboard
                         </a>
                     <?php else: ?>
                         <?php 
                             $enableRegNav = (new \App\Models\SettingModel())->getSetting('enable_registration', '1');
                         ?>
-                        <a href="<?= base_url('login') ?>" class="btn btn-outline-red px-4 flex-fill flex-lg-grow-0">Login</a>
+                        <a href="<?= base_url('login') ?>" class="btn btn-outline-red px-3 text-nowrap">Login</a>
                         <?php if ($enableRegNav === '1'): ?>
-                            <a href="<?= base_url('register') ?>" class="btn btn-red px-4 flex-fill flex-lg-grow-0">Daftar Member</a>
+                            <a href="<?= base_url('register') ?>" class="btn btn-red px-3 text-nowrap">Daftar Member</a>
                         <?php endif; ?>
                     <?php endif; ?>
                 </div>
@@ -89,7 +97,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="mt-auto py-5 border-top border-secondary border-opacity-25" style="background: #07070a;">
+    <footer class="mt-auto py-5 border-top border-secondary border-opacity-25 bg-saas-alt">
         <div class="container">
             <div class="row g-4">
                 <div class="col-lg-5">
@@ -159,9 +167,10 @@
     <!-- SweetAlert2 Toast Handler -->
     <script>
         $(document).ready(function() {
+            const isMobile = window.innerWidth < 768;
             const Toast = Swal.mixin({
                 toast: true,
-                position: 'top-end',
+                position: isMobile ? 'top' : 'top-end',
                 showConfirmButton: false,
                 timer: 3500,
                 timerProgressBar: true,
@@ -186,6 +195,20 @@
                     title: '<?= session()->getFlashdata('error') ?>'
                 });
             <?php endif; ?>
+
+            // Pause videos when modal is closed
+            $('.modal').on('hidden.bs.modal', function () {
+                $(this).find('video').each(function() {
+                    this.pause();
+                });
+                $(this).find('iframe').each(function() {
+                    const src = $(this).attr('src');
+                    if (src) {
+                        $(this).attr('src', '');
+                        $(this).attr('src', src);
+                    }
+                });
+            });
         });
     </script>
     
@@ -301,5 +324,33 @@
     <!-- PWA Service Worker Registration & Scripts -->
     <?= pwa_sw_script() ?>
     <script src="<?= base_url('assets/js/pwa-install-banner.js') ?>"></script>
+
+    <script>
+        function updateThemeIcon(theme) {
+            const icon = document.getElementById('themeToggleIcon');
+            const btn = document.getElementById('themeToggleBtn');
+            if (!icon) return;
+            if (theme === 'light') {
+                icon.className = 'fa-solid fa-sun text-warning';
+                if (btn) btn.title = 'Ubah ke Mode Gelap';
+            } else {
+                icon.className = 'fa-solid fa-moon text-light';
+                if (btn) btn.title = 'Ubah ke Mode Terang';
+            }
+        }
+
+        function toggleThemeMode() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-bs-theme', nextTheme);
+            localStorage.setItem('theme-mode', nextTheme);
+            updateThemeIcon(nextTheme);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+            updateThemeIcon(currentTheme);
+        });
+    </script>
 </body>
 </html>

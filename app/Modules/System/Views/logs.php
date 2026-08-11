@@ -2,15 +2,22 @@
 
 <?= $this->section('content') ?>
 
-<div class="d-flex align-items-center justify-content-between mb-4">
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
     <div>
         <h4 class="text-white font-heading m-0">Audit Logs System</h4>
         <p class="text-secondary small m-0">Rekam jejak aktivitas pengguna, perubahan data, dan keamanan platform</p>
     </div>
 
-    <span class="badge bg-dark border border-secondary text-secondary font-monospace">
-        <i class="fa-solid fa-shield-halved text-danger me-1"></i> Security Audit Active
-    </span>
+    <div class="d-flex align-items-center gap-2">
+        <?php if (session()->get('role_slug') === 'superadmin'): ?>
+            <a href="<?= base_url('admin/audit-logs/clear') ?>" onclick="return confirm('⚠️ PERINGATAN: Apakah Anda yakin ingin menghapus SELURUH riwayat audit log? Tindakan ini tidak dapat dibatalkan!')" class="btn btn-sm btn-outline-danger">
+                <i class="fa-solid fa-trash-can me-1"></i> Hapus Semua Log
+            </a>
+        <?php endif; ?>
+        <span class="badge bg-dark border border-secondary text-secondary font-monospace">
+            <i class="fa-solid fa-shield-halved text-danger me-1"></i> Security Audit Active
+        </span>
+    </div>
 </div>
 
 <div class="saas-card p-4">

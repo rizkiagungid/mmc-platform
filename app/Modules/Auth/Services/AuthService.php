@@ -26,20 +26,35 @@ class AuthService extends BaseService
         $loginInput = trim($loginInput);
 
         if (empty($loginInput) || empty($password)) {
-            return $this->error('Username/Email dan Password wajib diisi.');
+            return $this->error('Email, Username, atau No HP dan Password wajib diisi.');
         }
 
-        $user = $this->userModel->select('users.*, roles.name as role_name, roles.slug as role_slug')
+        $cleanPhone = preg_replace('/[^0-9]/', '', $loginInput);
+
+        $builder = $this->userModel->select('users.*, roles.name as role_name, roles.slug as role_slug')
                                ->join('roles', 'roles.id = users.role_id')
                                ->groupStart()
                                    ->where('users.username', $loginInput)
                                    ->orWhere('users.email', $loginInput)
-                               ->groupEnd()
-                               ->first();
+                                   ->orWhere('users.phone', $loginInput);
+
+        if (!empty($cleanPhone) && strlen($cleanPhone) >= 8) {
+            $builder->orWhere("REPLACE(REPLACE(REPLACE(REPLACE(users.phone, ' ', ''), '-', ''), '+', ''), '(', '')", $cleanPhone);
+
+            if (str_starts_with($cleanPhone, '628')) {
+                $zeroPhone = '08' . substr($cleanPhone, 3);
+                $builder->orWhere("REPLACE(REPLACE(REPLACE(REPLACE(users.phone, ' ', ''), '-', ''), '+', ''), '(', '')", $zeroPhone);
+            } elseif (str_starts_with($cleanPhone, '08')) {
+                $sixtyTwoPhone = '628' . substr($cleanPhone, 2);
+                $builder->orWhere("REPLACE(REPLACE(REPLACE(REPLACE(users.phone, ' ', ''), '-', ''), '+', ''), '(', '')", $sixtyTwoPhone);
+            }
+        }
+
+        $user = $builder->groupEnd()->first();
 
         if (!$user) {
             $this->auditLogModel->recordLog(null, 'LOGIN_FAILED', "Percobaan login gagal untuk identifier: {$loginInput}");
-            return $this->error('Username atau password tidak ditemukan.');
+            return $this->error('Email, Username, No HP, atau Password tidak sesuai.');
         }
 
         if ($user['status'] !== 'active') {
@@ -95,10 +110,17 @@ class AuthService extends BaseService
                 'full_name'     => trim($data['full_name']),
                 'nis_nip'       => trim($data['nis_nip']),
                 'class_dept'    => trim($data['class_dept']),
-                'phone'         => trim($data['phone']),
-                'qr_version'    => 1,
-                'qr_updated_at' => date('Y-m-d H:i:s'),
-                'status'        => 'inactive',
+                'phone'            => trim($data['phone']),
+                'address'          => !empty($data['address']) ? trim($data['address']) : null,
+                'birth_date'       => !empty($data['birth_date']) ? trim($data['birth_date']) : null,
+                'social_instagram' => !empty($data['social_instagram']) ? trim($data['social_instagram']) : null,
+                'social_tiktok'    => !empty($data['social_tiktok']) ? trim($data['social_tiktok']) : null,
+                'social_facebook'  => !empty($data['social_facebook']) ? trim($data['social_facebook']) : null,
+                'social_linkedin'  => !empty($data['social_linkedin']) ? trim($data['social_linkedin']) : null,
+                'social_github'    => !empty($data['social_github']) ? trim($data['social_github']) : null,
+                'qr_version'       => 1,
+                'qr_updated_at'    => date('Y-m-d H:i:s'),
+                'status'           => 'inactive',
             ]);
 
             $this->auditLogModel->recordLog($userId, 'REGISTER_SUCCESS', "Anggota baru {$data['full_name']} mendaftar akun (menunggu konfirmasi admin)");

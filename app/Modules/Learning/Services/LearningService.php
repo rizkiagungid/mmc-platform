@@ -682,19 +682,39 @@ class LearningService extends BaseService
             return;
         }
 
-        $relativePath = str_replace(base_url(), '', $assetPath);
-        $fullPath = ROOTPATH . 'public/' . ltrim($relativePath, '/\\');
-        if (!is_file($fullPath)) {
-            return;
-        }
+        try {
+            $relativePath = str_replace(base_url(), '', $assetPath);
+            $fullPath = ROOTPATH . 'public/' . ltrim($relativePath, '/\\');
+            if (!is_file($fullPath)) {
+                return;
+            }
 
-        // Verify that this asset is NOT referenced elsewhere in DB (portfolios, gallery, homepage sections, other materials, etc.)
-        $inPortfolios  = $this->db->table('portfolios')->where('thumbnail', $assetPath)->orWhere('media_file', $assetPath)->countAllResults();
-        $inDivisions   = $this->db->table('divisions')->where('cover_image', $assetPath)->countAllResults();
-        $inOtherMat    = $this->db->table('learning_materials')->where('thumbnail', $assetPath)->orWhere('banner', $assetPath)->countAllResults();
+            $inPortfolios = 0;
+            if ($this->db->tableExists('portfolios')) {
+                $builder = $this->db->table('portfolios')->where('thumbnail', $assetPath);
+                if ($this->db->fieldExists('media_file', 'portfolios')) {
+                    $builder->orWhere('media_file', $assetPath);
+                }
+                $inPortfolios = $builder->countAllResults();
+            }
 
-        if ($inPortfolios === 0 && $inDivisions === 0 && $inOtherMat <= 1) {
-            @unlink($fullPath);
+            $inDivisions = 0;
+            if ($this->db->tableExists('divisions')) {
+                if ($this->db->fieldExists('cover_image', 'divisions')) {
+                    $inDivisions = $this->db->table('divisions')->where('cover_image', $assetPath)->countAllResults();
+                }
+            }
+
+            $inOtherMat = 0;
+            if ($this->db->tableExists('learning_materials')) {
+                $inOtherMat = $this->db->table('learning_materials')->where('thumbnail', $assetPath)->orWhere('banner', $assetPath)->countAllResults();
+            }
+
+            if ($inPortfolios === 0 && $inDivisions === 0 && $inOtherMat <= 1) {
+                @unlink($fullPath);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'Error in safeUnlinkAsset: ' . $e->getMessage());
         }
     }
 
