@@ -72,92 +72,63 @@
         </div>
     </div>
 
-    <!-- User Status Posts List Feed -->
-    <h5 class="text-body font-heading fw-bold mb-3 style-tiny">
-        <i class="fa-solid fa-newspaper text-danger me-1.5"></i> Status Dipublikasikan oleh <?= esc($profileData['user']['full_name']) ?>
-    </h5>
+    <!-- Profile Content Navigation Tabs (Instagram Style) -->
+    <div class="saas-card p-2 mb-4 border border-secondary border-opacity-25 bg-body-tertiary">
+        <ul class="nav nav-pills nav-fill gap-2" id="profileFeedTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active rounded-3 py-2 px-3 style-tiny fw-bold d-flex align-items-center justify-content-center gap-2" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts-tab-pane" type="button" role="tab" aria-controls="posts-tab-pane" aria-selected="true">
+                    <i class="fa-solid fa-grid-2 text-danger fs-6"></i>
+                    <span>Status Dipublikasikan</span>
+                    <span class="badge bg-danger bg-opacity-25 text-danger rounded-pill px-2 font-monospace style-tiny"><?= count($profileData['posts'] ?? []) ?></span>
+                </button>
+            </li>
 
-    <?php if (empty($profileData['posts'])): ?>
-        <div class="saas-card text-center py-5 border border-secondary border-opacity-25 bg-body-tertiary">
-            <i class="fa-solid fa-comments text-secondary opacity-25 display-3 mb-3"></i>
-            <h5 class="text-body font-heading">Belum Ada Status</h5>
-            <p class="text-secondary style-tiny">Anggota ini belum mempublikasikan status apa pun di Beranda Feed MMC.</p>
-        </div>
-    <?php else: ?>
-        <div class="d-flex flex-column gap-4 max-w-3xl">
-            <?php foreach ($profileData['posts'] as $post): ?>
-                <div class="saas-card p-3 p-md-4 border border-secondary border-opacity-25 bg-body-tertiary" id="post-<?= $post['id'] ?>">
-                    
-                    <!-- Post Header -->
-                    <div class="d-flex align-items-center justify-content-between mb-3 gap-2" style="min-width: 0;">
-                        <div class="d-flex align-items-center gap-2.5 overflow-hidden" style="min-width: 0; flex-grow: 1;">
-                            <?php if (!empty($post['author_avatar'])): ?>
-                                <img src="<?= base_url($post['author_avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-secondary border-opacity-50 flex-shrink-0" style="width: 42px; height: 42px;" onerror="this.onerror=null; this.src='<?= base_url('assets/logo-mm-2023.png') ?>';">
-                            <?php else: ?>
-                                <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold fs-6 flex-shrink-0" style="width: 42px; height: 42px;">
-                                    <?= strtoupper(substr($post['author_name'], 0, 1)) ?>
-                                </div>
-                            <?php endif; ?>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link rounded-3 py-2 px-3 style-tiny fw-bold text-secondary d-flex align-items-center justify-content-center gap-2" id="bookmarks-tab" data-bs-toggle="tab" data-bs-target="#bookmarks-tab-pane" type="button" role="tab" aria-controls="bookmarks-tab-pane" aria-selected="false">
+                    <i class="fa-solid fa-bookmark text-warning fs-6"></i>
+                    <span>Status Disimpan (Bookmark)</span>
+                    <span class="badge bg-warning bg-opacity-25 text-warning rounded-pill px-2 font-monospace style-tiny"><?= count($profileData['bookmarked_posts'] ?? []) ?></span>
+                </button>
+            </li>
+        </ul>
+    </div>
 
-                            <div style="min-width: 0; flex-grow: 1;" class="overflow-hidden">
-                                <div class="d-flex align-items-center gap-1.5 overflow-hidden">
-                                    <strong class="text-body style-tiny fw-bold text-truncate d-inline-block" style="max-width: 100%;"><?= esc($post['author_name']) ?></strong>
-                                    <?php if (!empty($post['author_verified'])): ?>
-                                        <i class="fa-solid fa-circle-check text-primary style-tiny flex-shrink-0" title="Akun Terverifikasi"></i>
-                                    <?php endif; ?>
-                                </div>
-                                <small class="text-secondary style-tiny opacity-75 font-monospace d-block text-truncate" style="font-size: 0.65rem;">
-                                    <?= esc($post['time_ago']) ?>
-                                </small>
-                            </div>
-                        </div>
-
-                        <?php if ($post['is_own_post'] || in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph'])): ?>
-                            <a href="<?= base_url('feed/delete/' . $post['id']) ?>" onclick="return confirm('Hapus postingan ini?')" class="btn btn-sm btn-saas-dark text-danger border-0 p-1 rounded-circle">
-                                <i class="fa-solid fa-trash-can style-tiny"></i>
-                            </a>
-                        <?php endif; ?>
-                    </div>
-
-                    <!-- Post Text Content -->
-                    <?php if (!empty($post['content'])): ?>
-                        <p class="text-body style-tiny mb-3 lh-base" style="white-space: pre-line;"><?= esc($post['content']) ?></p>
-                    <?php endif; ?>
-
-                    <!-- Post Media Attachment -->
-                    <?php if (!empty($post['media_url'])): ?>
-                        <div class="mb-3 rounded-3 overflow-hidden bg-black border border-secondary border-opacity-25 text-center">
-                            <?php if ($post['media_type'] === 'image'): ?>
-                                <div class="position-relative overflow-hidden cursor-pointer" onclick="openMediaLightbox('<?= base_url($post['media_url']) ?>', 'image')" title="Klik untuk lihat gambar penuh (Fullscreen)">
-                                    <img src="<?= base_url($post['media_url']) ?>" alt="Media" class="img-fluid object-fit-contain transition-all hover-scale" style="max-height: 450px; width: 100%;">
-                                    <div class="position-absolute bottom-0 end-0 m-2.5 badge bg-black bg-opacity-75 text-white style-tiny py-1 px-2.5 rounded-2 border border-secondary border-opacity-50">
-                                        <i class="fa-solid fa-expand me-1 text-info"></i> Perbesar
-                                    </div>
-                                </div>
-                            <?php elseif ($post['media_type'] === 'video'): ?>
-                                <video src="<?= base_url($post['media_url']) ?>" controls class="w-100 rounded-3" style="max-height: 450px;"></video>
-                            <?php else: ?>
-                                <div class="p-3 d-flex align-items-center justify-content-between bg-black">
-                                    <span class="text-white style-tiny fw-bold"><?= esc(basename($post['media_url'])) ?></span>
-                                    <a href="<?= base_url($post['media_url']) ?>" target="_blank" class="btn btn-sm btn-danger rounded-pill style-tiny px-3">Unduh Berkas</a>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Action Bar -->
-                    <div class="d-flex align-items-center gap-4 pt-2 border-top border-secondary border-opacity-25 style-tiny">
-                        <button type="button" class="btn btn-link text-decoration-none p-0 border-0 d-flex align-items-center gap-1.5 <?= $post['is_liked'] ? 'text-danger fw-bold' : 'text-secondary hover-white' ?>" onclick="toggleLikePost(<?= $post['id'] ?>, this)">
-                            <i class="<?= $post['is_liked'] ? 'fa-solid text-danger' : 'fa-regular' ?> fa-heart fs-6"></i>
-                            <span class="like-count"><?= $post['likes_count'] ?></span> Suka
-                        </button>
-                        <span class="text-secondary style-tiny"><i class="fa-regular fa-comment fs-6 me-1"></i> <?= $post['comments_count'] ?> Komentar</span>
-                    </div>
-
+    <!-- Tab Content -->
+    <div class="tab-content" id="profileFeedTabsContent">
+        <!-- Tab 1: Published Posts -->
+        <div class="tab-pane fade show active" id="posts-tab-pane" role="tabpanel" aria-labelledby="posts-tab" tabindex="0">
+            <?php if (empty($profileData['posts'])): ?>
+                <div class="saas-card text-center py-5 border border-secondary border-opacity-25 bg-body-tertiary">
+                    <i class="fa-solid fa-comments text-secondary opacity-25 display-3 mb-3"></i>
+                    <h5 class="text-body font-heading">Belum Ada Status</h5>
+                    <p class="text-secondary style-tiny">Anggota ini belum mempublikasikan status apa pun di Beranda Feed MMC.</p>
                 </div>
-            <?php endforeach; ?>
+            <?php else: ?>
+                <div class="d-flex flex-column gap-4 max-w-3xl">
+                    <?php foreach ($profileData['posts'] as $post): ?>
+                        <?= view('App\Modules\Feed\Views\_post_card', ['post' => $post]) ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
-    <?php endif; ?>
+
+        <!-- Tab 2: Bookmarked / Saved Posts -->
+        <div class="tab-pane fade" id="bookmarks-tab-pane" role="tabpanel" aria-labelledby="bookmarks-tab" tabindex="0">
+            <?php if (empty($profileData['bookmarked_posts'])): ?>
+                <div class="saas-card text-center py-5 border border-secondary border-opacity-25 bg-body-tertiary">
+                    <i class="fa-regular fa-bookmark text-warning opacity-50 display-3 mb-3"></i>
+                    <h5 class="text-body font-heading">Belum Ada Status Tersimpan</h5>
+                    <p class="text-secondary style-tiny">Status yang Anda simpan dengan tombol bookmark akan muncul di sini.</p>
+                </div>
+            <?php else: ?>
+                <div class="d-flex flex-column gap-4 max-w-3xl">
+                    <?php foreach ($profileData['bookmarked_posts'] as $post): ?>
+                        <?= view('App\Modules\Feed\Views\_post_card', ['post' => $post]) ?>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
 
 </div>
 
@@ -331,6 +302,56 @@
             }
         });
     }
+
+    // Seamless AJAX Like on User Wall
+    function toggleLikePost(postId, btn, e) {
+        if (e) e.preventDefault();
+        if (!postId) return;
+
+        const heartIcon = btn.querySelector('i');
+        const countSpan = btn.querySelector('.like-count');
+        let currentCount = parseInt(countSpan.textContent) || 0;
+        const isCurrentlyLiked = heartIcon.classList.contains('fa-solid');
+
+        if (isCurrentlyLiked) {
+            btn.classList.remove('text-danger', 'fw-bold');
+            btn.classList.add('text-secondary');
+            heartIcon.classList.remove('fa-solid', 'text-danger');
+            heartIcon.classList.add('fa-regular');
+            countSpan.textContent = Math.max(0, currentCount - 1);
+        } else {
+            btn.classList.add('text-danger', 'fw-bold');
+            btn.classList.remove('text-secondary');
+            heartIcon.classList.remove('fa-regular');
+            heartIcon.classList.add('fa-solid', 'text-danger');
+            countSpan.textContent = currentCount + 1;
+        }
+
+        fetch('<?= base_url('feed/like/') ?>' + postId, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success' && data.data) {
+                countSpan.textContent = data.data.likes_count;
+            }
+        });
+    }
+
+    // Auto active bookmarks tab if requested via URL Hash #bookmarks-tab-pane
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.location.hash === '#bookmarks-tab-pane') {
+            const bookmarkTabBtn = document.getElementById('bookmarks-tab');
+            if (bookmarkTabBtn) {
+                const tab = new bootstrap.Tab(bookmarkTabBtn);
+                tab.show();
+            }
+        }
+    });
 </script>
 
 <?= $this->endSection() ?>

@@ -228,7 +228,18 @@
 
             <!-- 4. Mode Pemeliharaan (Maintenance Mode) -->
             <div class="tab-pane fade" id="maintenance-pane" role="tabpanel">
-                <h5 class="text-white font-heading mb-3"><i class="fa-solid fa-screwdriver-wrench text-danger me-2"></i> Status Pemeliharaan Website (Maintenance Mode)</h5>
+                <h5 class="text-white font-heading mb-3"><i class="fa-solid fa-screwdriver-wrench text-danger me-2"></i> Status Pemeliharaan Website & Kontrol Akses Fitur</h5>
+
+                <!-- Member Activity Freeze Toggle -->
+                <div class="form-check form-switch p-3.5 rounded-3 bg-dark border border-warning border-opacity-50 mb-4 shadow-sm">
+                    <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="lock_member_activities" id="lock_member_activities" value="1" <?= ($settings['lock_member_activities'] ?? '0') === '1' ? 'checked' : '' ?> style="width: 2.5em; height: 1.3em;">
+                    <label class="form-check-label text-white fw-bold cursor-pointer" for="lock_member_activities">
+                        <i class="fa-solid fa-lock text-warning me-1.5"></i> Nonaktifkan Seluruh Aktivitas Anggota (Member Activity Freeze Mode)
+                        <span class="d-block text-secondary small fw-normal mt-1 style-tiny">
+                            Jika switch ini diaktifkan (ON), seluruh akun bertipe <strong>Anggota (Member)</strong> tidak dapat melakukan pengiriman aktivitas di portal (seperti presensi QR/PIN, kirim tugas, buat postingan beranda, kirim chat, komentar, edit profil, dll). Hanya pengurus (<strong>Superadmin, BPH, dan Pembina</strong>) yang dapat beraktivitas secara penuh.
+                        </span>
+                    </label>
+                </div>
 
                 <div class="form-check form-switch p-3 rounded-3 bg-dark border border-danger border-opacity-50 mb-3">
                     <input class="form-check-input ms-0 me-3" type="checkbox" name="maintenance_mode" id="maintenance_mode" value="1" <?= ($settings['maintenance_mode'] ?? '0') === '1' ? 'checked' : '' ?>>
@@ -320,6 +331,120 @@
                                 <label class="form-check-label text-white small fw-bold" for="m_page_achievements">
                                     Prestasi Juara (/achievements)
                                     <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman penghargaan & kejuaraan.</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kontrol On/Off Akses Per-Halaman Khusus Anggota (Member Role Page Lock) -->
+                <?php
+                    $disabledMemberPages = json_decode($settings['disabled_member_pages'] ?? '[]', true) ?: [];
+                ?>
+                <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+                    <h6 class="text-white font-heading mb-2">
+                        <i class="fa-solid fa-user-lock text-danger me-2"></i> Nonaktifkan Halaman Fitur Khusus Anggota (Member Specific Page Lock)
+                    </h6>
+                    <p class="text-secondary style-tiny mb-3">
+                        Pilih halaman fitur tertentu yang ingin Anda nonaktifkan khusus untuk pengguna bertipe <strong>Anggota (Member)</strong>. Pengurus (Superadmin, BPH, Pembina) tetap berhak mengakses seluruh halaman.
+                    </p>
+
+                    <div class="row g-3">
+                        <!-- Presensi QR / PIN -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="attendance_scan" id="m_lock_attendance_scan" <?= in_array('attendance_scan', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_attendance_scan">
+                                    Presensi QR / PIN (/attendance/scan)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman scan presensi anggota.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Riwayat Presensi -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="attendance_history" id="m_lock_attendance_history" <?= in_array('attendance_history', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_attendance_history">
+                                    Riwayat Presensi (/attendance/history)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci riwayat presensi anggota.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Tugas Saya -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="tasks" id="m_lock_tasks" <?= in_array('tasks', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_tasks">
+                                    Tugas Saya (/member/tasks)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman pengumpulan & tugas anggota.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Materi Pembelajaran -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="learning" id="m_lock_learning" <?= in_array('learning', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_learning">
+                                    Materi Pembelajaran (/member/learning)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman modul pembelajaran anggota.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Beranda MM / Feed -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="feed" id="m_lock_feed" <?= in_array('feed', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_feed">
+                                    Beranda MM (/feed)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman linimasa beranda MMC.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Inbox Obrolan -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="inbox" id="m_lock_inbox" <?= in_array('inbox', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_inbox">
+                                    Inbox Obrolan (/inbox)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci pesan obrolan perpesanan anggota.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Menu Informasi -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="information" id="m_lock_information" <?= in_array('information', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_information">
+                                    Menu Informasi (/informasi)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman pusat informasi pengumuman.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Kritik & Saran -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="messages" id="m_lock_messages" <?= in_array('messages', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_messages">
+                                    Kritik & Saran (/admin/cms/messages)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci form pengiriman kritik & saran.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Profil & QR -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="profile" id="m_lock_profile" <?= in_array('profile', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_profile">
+                                    Profil & QR (/profile)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci halaman profil anggota.</span>
                                 </label>
                             </div>
                         </div>

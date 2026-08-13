@@ -57,39 +57,52 @@
         $totalPresent = count(array_filter($attendances, fn($a) => $a['status'] === 'present'));
         $totalLate    = count(array_filter($attendances, fn($a) => $a['status'] === 'late'));
         $totalPermit  = count(array_filter($attendances, fn($a) => $a['status'] === 'permitted' || $a['status'] === 'sick'));
+        $totalAlpha   = count(array_filter($attendances, fn($a) => $a['status'] === 'alpha'));
     ?>
-    <div class="col-md-4">
+    <div class="col-6 col-md-3">
         <div class="saas-card p-3 d-flex align-items-center gap-3">
-            <div class="bg-success bg-opacity-10 text-success p-3 rounded-3 fs-3">
+            <div class="bg-success bg-opacity-10 text-success p-3 rounded-3 fs-3 flex-shrink-0">
                 <i class="fa-solid fa-user-check"></i>
             </div>
-            <div>
-                <div class="text-secondary small font-monospace">Hadir Tepat Waktu</div>
+            <div class="overflow-hidden">
+                <div class="text-secondary small font-monospace text-truncate">Hadir Tepat Waktu</div>
                 <div class="fs-4 fw-bold text-white font-heading"><?= $totalPresent ?> Siswa</div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-6 col-md-3">
         <div class="saas-card p-3 d-flex align-items-center gap-3">
-            <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-3 fs-3">
+            <div class="bg-warning bg-opacity-10 text-warning p-3 rounded-3 fs-3 flex-shrink-0">
                 <i class="fa-solid fa-clock"></i>
             </div>
-            <div>
-                <div class="text-secondary small font-monospace">Hadir Terlambat</div>
+            <div class="overflow-hidden">
+                <div class="text-secondary small font-monospace text-truncate">Hadir Terlambat</div>
                 <div class="fs-4 fw-bold text-white font-heading"><?= $totalLate ?> Siswa</div>
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-6 col-md-3">
         <div class="saas-card p-3 d-flex align-items-center gap-3">
-            <div class="bg-info bg-opacity-10 text-info p-3 rounded-3 fs-3">
+            <div class="bg-info bg-opacity-10 text-info p-3 rounded-3 fs-3 flex-shrink-0">
                 <i class="fa-solid fa-notes-medical"></i>
             </div>
-            <div>
-                <div class="text-secondary small font-monospace">Izin / Sakit</div>
+            <div class="overflow-hidden">
+                <div class="text-secondary small font-monospace text-truncate">Izin / Sakit</div>
                 <div class="fs-4 fw-bold text-white font-heading"><?= $totalPermit ?> Siswa</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-6 col-md-3">
+        <div class="saas-card p-3 d-flex align-items-center gap-3">
+            <div class="bg-danger bg-opacity-10 text-danger p-3 rounded-3 fs-3 flex-shrink-0">
+                <i class="fa-solid fa-user-xmark"></i>
+            </div>
+            <div class="overflow-hidden">
+                <div class="text-secondary small font-monospace text-truncate">Alpa / tidak Hadir</div>
+                <div class="fs-4 fw-bold text-white font-heading"><?= $totalAlpha ?> Siswa</div>
             </div>
         </div>
     </div>
@@ -143,8 +156,28 @@
                             </td>
                             <td class="font-monospace small"><?= date('H:i:s, d M Y', strtotime($a['scan_time'])) ?></td>
                             <td>
-                                <span class="badge badge-<?= esc($a['status']) ?>">
-                                    <?= strtoupper(esc($a['status'])) ?>
+                                <?php
+                                    $statusClass = 'secondary';
+                                    $statusLabel = 'Tanpa Keterangan';
+                                    if ($a['status'] === 'present') {
+                                        $statusClass = 'present';
+                                        $statusLabel = 'Hadir Tepat Waktu';
+                                    } elseif ($a['status'] === 'late') {
+                                        $statusClass = 'late';
+                                        $statusLabel = 'Hadir Terlambat';
+                                    } elseif ($a['status'] === 'permitted') {
+                                        $statusClass = 'permitted';
+                                        $statusLabel = 'Izin';
+                                    } elseif ($a['status'] === 'sick') {
+                                        $statusClass = 'sick';
+                                        $statusLabel = 'Sakit';
+                                    } elseif ($a['status'] === 'alpha') {
+                                        $statusClass = 'alpha';
+                                        $statusLabel = 'Alpa / tidak hadir';
+                                    }
+                                ?>
+                                <span class="badge badge-<?= $statusClass ?>">
+                                    <?= esc($statusLabel) ?>
                                 </span>
                             </td>
                             <td class="small text-secondary">
@@ -216,11 +249,11 @@
                     <div class="mb-3">
                         <label class="form-label text-secondary small">Status Kehadiran</label>
                         <select name="status" class="form-select" required>
-                            <option value="present">Present (Hadir)</option>
-                            <option value="late">Late (Terlambat)</option>
-                            <option value="permitted">Permitted (Izin)</option>
-                            <option value="sick">Sick (Sakit)</option>
-                            <option value="alpha">Alpha (Tanpa Keterangan)</option>
+                            <option value="present">Hadir Tepat Waktu</option>
+                            <option value="late">Hadir Terlambat</option>
+                            <option value="permitted">Izin</option>
+                            <option value="sick">Sakit</option>
+                            <option value="alpha">Alpa / tidak Hadir</option>
                         </select>
                     </div>
 
@@ -263,11 +296,11 @@
                     <div class="mb-3">
                         <label class="form-label text-secondary small">Status Kehadiran</label>
                         <select name="status" id="edit-status" class="form-select" required>
-                            <option value="present">Present (Hadir)</option>
-                            <option value="late">Late (Terlambat)</option>
-                            <option value="permitted">Permitted (Izin)</option>
-                            <option value="sick">Sick (Sakit)</option>
-                            <option value="alpha">Alpha (Tanpa Keterangan)</option>
+                            <option value="present">Hadir Tepat Waktu</option>
+                            <option value="late">Hadir Terlambat</option>
+                            <option value="permitted">Izin</option>
+                            <option value="sick">Sakit</option>
+                            <option value="alpha">Alpa / tidak hadir</option>
                         </select>
                     </div>
 

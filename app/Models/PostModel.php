@@ -18,6 +18,8 @@ class PostModel extends Model
         'media_type',
         'likes_count',
         'comments_count',
+        'reposts_count',
+        'bookmarks_count',
     ];
 
     protected $useTimestamps = true;

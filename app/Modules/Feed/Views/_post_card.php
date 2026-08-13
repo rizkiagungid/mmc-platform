@@ -33,18 +33,24 @@ $isAdmin  = in_array($roleSlug, ['superadmin', 'pembina', 'bph']);
                                         </div>
                                         
                                         <small class="text-secondary style-tiny opacity-75 font-monospace d-block text-truncate" style="font-size: 0.65rem;">
-                                            <?= esc($post['author_class'] ?: 'Anggota Klub MMC') ?> • <?= esc($post['time_ago']) ?>
+                                            <?= esc($post['author_class'] ?: 'Anggota Klub MMC') ?> • <a href="<?= base_url('feed/post/' . $post['id']) ?>" class="text-secondary hover-text-danger text-decoration-none"><?= esc($post['time_ago']) ?></a>
                                         </small>
                                     </div>
                                 </div>
 
                                 <div class="d-flex align-items-center gap-1.5 flex-shrink-0 ms-auto">
+
                                     <!-- Follow Button if not self -->
                                     <?php if (!$post['is_own_post']): ?>
-                                        <button type="button" class="btn btn-sm <?= $post['is_following_author'] ? 'btn-saas-dark text-secondary' : 'btn-outline-info' ?> rounded-pill style-tiny py-1 px-2.5 text-nowrap" onclick="toggleFollowUser(<?= $post['user_id'] ?>, this)">
-                                            <i class="fa-solid <?= $post['is_following_author'] ? 'fa-user-check' : 'fa-user-plus' ?> me-1"></i>
-                                            <span><?= $post['is_following_author'] ? 'Diikuti' : 'Ikuti' ?></span>
-                                        </button>
+                                        <?php $isFollowingAuthor = !empty($post['is_following_author']); ?>
+                                        <form action="<?= base_url('feed/follow/' . $post['user_id']) ?>" method="POST" class="d-inline">
+                                            <?= csrf_field() ?>
+                                            <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
+                                            <button type="submit" class="btn btn-sm <?= $isFollowingAuthor ? 'btn-saas-dark text-secondary' : 'btn-outline-info' ?> rounded-pill style-tiny py-1 px-2.5 text-nowrap">
+                                                <i class="fa-solid <?= $isFollowingAuthor ? 'fa-user-check' : 'fa-user-plus' ?> me-1"></i>
+                                                <span><?= $isFollowingAuthor ? 'Diikuti' : 'Ikuti' ?></span>
+                                            </button>
+                                        </form>
                                     <?php endif; ?>
 
                                     <!-- Delete Post Button -->
@@ -58,7 +64,9 @@ $isAdmin  = in_array($roleSlug, ['superadmin', 'pembina', 'bph']);
 
                             <!-- Post Text Content -->
                             <?php if (!empty($post['content'])): ?>
-                                <p class="text-body style-tiny mb-3 lh-base" style="white-space: pre-line;"><?= esc($post['content']) ?></p>
+                                <a href="<?= base_url('feed/post/' . $post['id']) ?>" class="text-body style-tiny mb-3 lh-base d-block text-decoration-none hover-text-main" title="Buka Detail Postingan">
+                                    <span style="white-space: pre-line;"><?= esc($post['content']) ?></span>
+                                </a>
                             <?php endif; ?>
 
                             <!-- Post Media Attachment -->
@@ -87,21 +95,64 @@ $isAdmin  = in_array($roleSlug, ['superadmin', 'pembina', 'bph']);
                                 </div>
                             <?php endif; ?>
 
-                            <!-- Interaction Stats & Actions Bar -->
-                            <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25 style-tiny">
-                                <div class="d-flex align-items-center gap-4">
-                                    <!-- Like Button -->
-                                    <button type="button" class="btn btn-link text-decoration-none p-0 border-0 d-flex align-items-center gap-1.5 <?= $post['is_liked'] ? 'text-danger fw-bold' : 'text-secondary hover-white' ?>" onclick="toggleLikePost(<?= $post['id'] ?>, this)">
-                                        <i class="<?= $post['is_liked'] ? 'fa-solid text-danger' : 'fa-regular' ?> fa-heart fs-6 transition-all"></i>
-                                        <span class="like-count"><?= $post['likes_count'] ?></span> Suka
+                            <!-- Interaction Stats & Actions Bar (Instagram Style) -->
+                            <div class="d-flex align-items-center justify-content-between pt-3 mt-2 border-top border-secondary border-opacity-25 style-tiny">
+                                <div class="d-flex align-items-center gap-2 gap-sm-3">
+                                    <!-- Like Button (Form POST Direct with Scroll Anchor #post-ID) -->
+                                    <form action="<?= base_url('feed/like/' . $post['id']) ?>" method="POST" class="d-inline">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-sm btn-saas-dark text-decoration-none border border-secondary border-opacity-25 d-inline-flex align-items-center justify-content-center gap-1.5 rounded-circle px-2 <?= !empty($post['is_liked']) ? 'text-danger fw-bold' : 'text-secondary hover-white' ?>" style="height: 36px; min-width: 36px;" title="Suka Postingan">
+                                            <i class="<?= !empty($post['is_liked']) ? 'fa-solid text-danger' : 'fa-regular' ?> fa-heart fs-6 transition-all"></i>
+                                            <span class="like-count font-monospace fw-bold" style="font-size: 0.75rem;"><?= $post['likes_count'] ?></span>
+                                        </button>
+                                    </form>
+
+                                    <!-- Comment Button (Instagram Style) -->
+                                    <button type="button" class="btn btn-sm btn-saas-dark text-decoration-none border border-secondary border-opacity-25 text-secondary hover-white d-inline-flex align-items-center justify-content-center gap-1.5 rounded-circle px-2" style="height: 36px; min-width: 36px;" onclick="focusCommentInput(<?= $post['id'] ?>)" title="Tulis Komentar">
+                                        <i class="fa-regular fa-comment fs-6"></i>
+                                        <span class="font-monospace fw-bold" style="font-size: 0.75rem;"><?= $post['comments_count'] ?></span>
                                     </button>
 
-                                    <!-- Comment Count Button -->
-                                    <button type="button" class="btn btn-link text-decoration-none p-0 border-0 text-secondary hover-white d-flex align-items-center gap-1.5" onclick="focusCommentInput(<?= $post['id'] ?>)">
-                                        <i class="fa-regular fa-comment fs-6"></i>
-                                        <span><?= $post['comments_count'] ?></span> Komentar
-                                    </button>
+                                    <!-- Repost Button (Form POST Direct & Instagram Style) -->
+                                    <form action="<?= base_url('feed/repost/' . $post['id']) ?>" method="POST" class="d-inline" onsubmit="return confirm('Unggah ulang (repost) status ini ke beranda Anda?')">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-sm btn-saas-dark text-decoration-none border border-secondary border-opacity-25 text-secondary hover-success d-inline-flex align-items-center justify-content-center rounded-circle p-0" style="width: 36px; height: 36px;" title="Unggah Ulang (Repost)">
+                                            <i class="fa-solid fa-repeat fs-6"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Share Dropdown Button (Instagram Style Paper Plane) -->
+                                    <div class="dropdown d-inline-block">
+                                        <button type="button" class="btn btn-sm btn-saas-dark text-decoration-none border border-secondary border-opacity-25 text-secondary hover-info p-0 rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" data-bs-toggle="dropdown" aria-expanded="false" title="Bagikan Status">
+                                            <i class="fa-regular fa-paper-plane fs-6"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-dark shadow-lg border border-secondary border-opacity-50 style-tiny p-1">
+                                            <li>
+                                                <button type="button" class="dropdown-item rounded style-tiny py-1.5" onclick="navigator.clipboard.writeText('<?= base_url('feed/post/' . $post['id']) ?>'); alert('📋 Tautan postingan berhasil disalin ke papan klip!');">
+                                                    <i class="fa-solid fa-link text-info me-2"></i> Salin Tautan Postingan
+                                                </button>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item rounded style-tiny py-1.5" href="https://api.whatsapp.com/send?text=<?= urlencode('Lihat status MMC dari ' . $post['author_name'] . ': ' . base_url('feed/post/' . $post['id'])) ?>" target="_blank">
+                                                    <i class="fa-brands fa-whatsapp text-success me-2"></i> Bagikan ke WhatsApp
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Bookmark / Save Button (Form POST Direct & Database Integrated) -->
+                                    <form action="<?= base_url('feed/save/' . $post['id']) ?>" method="POST" class="d-inline">
+                                        <?= csrf_field() ?>
+                                        <button type="submit" class="btn btn-sm btn-saas-dark text-decoration-none border border-secondary border-opacity-25 d-inline-flex align-items-center justify-content-center rounded-circle p-0 <?= !empty($post['is_bookmarked']) ? 'text-warning' : 'text-secondary' ?> hover-warning" style="width: 36px; height: 36px;" title="Simpan Postingan (Bookmark Database)">
+                                            <i class="<?= !empty($post['is_bookmarked']) ? 'fa-solid text-warning' : 'fa-regular' ?> fa-bookmark fs-6"></i>
+                                        </button>
+                                    </form>
                                 </div>
+
+                                <!-- Direct Link Button to Single Post Page -->
+                                <a href="<?= base_url('feed/post/' . $post['id']) ?>" class="btn btn-sm btn-saas-dark text-secondary hover-white border border-secondary border-opacity-25 rounded-circle p-0 style-tiny text-decoration-none d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px;" title="Buka Detail Postingan">
+                                    <i class="fa-solid fa-arrow-up-right-from-square style-tiny"></i>
+                                </a>
                             </div>
 
                             <!-- Comment Section Accordion / Container -->

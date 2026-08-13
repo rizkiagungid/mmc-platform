@@ -20,7 +20,7 @@
     <?php endif; ?>
 
     <!-- Header Banner -->
-    <div class="saas-card mb-4 p-4 position-relative overflow-hidden border border-secondary border-opacity-25 bg-body-tertiary">
+    <div class="saas-card mb-4 p-4 position-relative border border-secondary border-opacity-25 bg-body-tertiary" style="z-index: 1050;">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative style-tiny">
             <div>
                 <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 py-1 px-2.5 rounded-pill font-monospace mb-2">
@@ -34,7 +34,52 @@
                 </p>
             </div>
 
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
+                <!-- Search Member Input Box (Live Floating Dropdown) -->
+                <div class="position-relative w-100" style="max-width: 320px; z-index: 1060;">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-body border-secondary border-opacity-50 text-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="feedSearchMemberInput" class="form-control bg-body border-secondary border-opacity-50 text-body style-tiny rounded-end-pill" placeholder="Cari anggota / pengurus..." autocomplete="off">
+                    </div>
+                    <!-- Live Search Results Dropdown -->
+                    <div id="feedSearchDropdown" class="position-absolute top-100 start-0 end-0 mt-1 rounded-3 bg-body border border-secondary border-opacity-50 shadow-lg p-2 d-none" style="z-index: 1070; width: 100%; max-height: 360px; overflow-y: auto;">
+                        <?php if (!empty($allMembers)): ?>
+                            <?php foreach ($allMembers as $m): ?>
+                                <?php 
+                                    $isVerifiedRole = in_array(strtolower((string)$m['role_slug']), ['superadmin', 'pembina', 'bph']);
+                                    $searchKeyword  = strtolower(($m['full_name'] ?? '') . ' ' . ($m['username'] ?? '') . ' ' . ($m['nis_nip'] ?? '') . ' ' . ($m['class_dept'] ?? '') . ' ' . ($m['role_name'] ?? ''));
+                                ?>
+                                <a href="<?= base_url('feed/user/' . $m['id']) ?>" class="feed-search-member-item d-flex align-items-center gap-2 p-2 rounded-2 text-decoration-none text-body hover-bg-body-secondary transition-all mb-1" style="min-width: 0;" data-search="<?= esc($searchKeyword) ?>">
+                                    <?php if (!empty($m['avatar'])): ?>
+                                        <img src="<?= base_url($m['avatar']) ?>" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 32px; height: 32px;" onerror="this.onerror=null; this.src='<?= base_url('assets/logo-mm-2023.png') ?>';">
+                                    <?php else: ?>
+                                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold style-tiny flex-shrink-0" style="width: 32px; height: 32px;">
+                                            <?= strtoupper(substr($m['full_name'], 0, 1)) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="overflow-hidden flex-grow-1" style="min-width: 0;">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="style-tiny fw-bold text-truncate hover-text-danger member-name"><?= esc($m['full_name']) ?></span>
+                                            <?php if ($isVerifiedRole): ?>
+                                                <i class="fa-solid fa-circle-check text-primary style-tiny flex-shrink-0" title="Akun Terverifikasi"></i>
+                                            <?php endif; ?>
+                                        </div>
+                                        <small class="text-secondary style-tiny d-block opacity-75 text-truncate member-info" style="font-size: 0.65rem;">
+                                            <?= esc(($m['username'] ? '@' . $m['username'] . ' • ' : '') . ($m['class_dept'] ?: $m['role_name'])) ?>
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-secondary bg-opacity-25 text-secondary style-tiny rounded-pill px-2 py-0.5 font-monospace flex-shrink-0" style="font-size: 0.60rem;">Lihat</span>
+                                </a>
+                            <?php endforeach; ?>
+                            <div id="feedSearchNoResults" class="text-center py-3 text-secondary style-tiny d-none">
+                                <i class="fa-solid fa-user-slash me-1 opacity-50"></i> Anggota tidak ditemukan.
+                            </div>
+                        <?php else: ?>
+                            <div class="text-center py-2 text-secondary style-tiny">Belum ada data anggota.</div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
                 <a href="<?= base_url('feed') ?>" class="btn btn-sm <?= $activeFilter === 'all' ? 'btn-red' : 'btn-saas-dark text-secondary' ?> px-3 rounded-pill">
                     <i class="fa-solid fa-globe me-1"></i> Semua Status
                 </a>
@@ -63,7 +108,7 @@
                             </div>
                         <?php endif; ?>
 
-                        <div class="flex-grow-1">
+                        <div class="flex-grow-1 overflow-hidden" style="min-width: 0;">
                             <div class="d-flex align-items-center gap-1.5 mb-1.5">
                                 <strong class="text-body style-tiny fw-bold"><?= esc($myProfile['user']['full_name'] ?? '') ?></strong>
                                 <?php if (!empty($myProfile['user']['is_verified'])): ?>
@@ -74,12 +119,12 @@
                             <textarea name="content" class="form-control bg-body border-secondary border-opacity-50 text-body rounded-3 p-3 style-tiny" rows="3" placeholder="Apa yang sedang Anda kerjakan atau pikirkan hari ini, <?= esc($myProfile['user']['full_name'] ?? '') ?>?" required style="resize: none;"></textarea>
 
                             <!-- Attachment Media Preview Box -->
-                            <div id="feedMediaPreviewBox" class="d-none mt-2.5 p-2.5 rounded-3 bg-black border border-warning border-opacity-50 align-items-center justify-content-between gap-3 shadow-lg">
-                                <div class="d-flex align-items-center gap-3 overflow-hidden" style="min-width: 0;">
+                            <div id="feedMediaPreviewBox" class="d-none mt-2.5 p-2.5 rounded-3 bg-black border border-warning border-opacity-50 align-items-center justify-content-between gap-2 shadow-lg w-100" style="min-width: 0;">
+                                <div class="d-flex align-items-center gap-2.5 overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
                                     <div id="feedMediaThumbnailWrapper" class="flex-shrink-0"></div>
-                                    <div class="text-truncate">
+                                    <div class="overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
                                         <span class="badge bg-warning text-dark font-monospace style-tiny py-0.5 px-1.5 mb-1 d-inline-block">Media Lampiran Siap Diposting</span>
-                                        <span id="feedMediaFileName" class="text-white style-tiny fw-bold d-block text-truncate"></span>
+                                        <span id="feedMediaFileName" class="text-white style-tiny fw-bold d-block text-truncate" style="max-width: 100%;"></span>
                                         <small id="feedMediaFileSize" class="text-secondary font-monospace style-tiny opacity-75 d-block" style="font-size: 0.65rem;"></small>
                                     </div>
                                 </div>
@@ -126,160 +171,7 @@
 
             <div class="d-flex flex-column gap-4" id="feedPostsContainer">
                     <?php foreach ($posts as $post): ?>
-                        <div class="saas-card p-3 p-md-4 border border-secondary border-opacity-25 bg-body-tertiary" id="post-<?= $post['id'] ?>">
-                            
-                            <!-- Post Author Header -->
-                            <div class="d-flex align-items-start justify-content-between mb-3 gap-2" style="min-width: 0;">
-                                <div class="d-flex align-items-center gap-2.5 overflow-hidden" style="min-width: 0; flex-grow: 1;">
-                                    <a href="<?= base_url('feed/user/' . $post['user_id']) ?>" class="flex-shrink-0">
-                                        <?php if (!empty($post['author_avatar'])): ?>
-                                            <img src="<?= base_url($post['author_avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover img-fluid border border-secondary border-opacity-50" style="width: 42px; height: 42px;" onerror="this.onerror=null; this.src='<?= base_url('assets/logo-mm-2023.png') ?>';">
-                                        <?php else: ?>
-                                            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold fs-6" style="width: 42px; height: 42px;">
-                                                <?= strtoupper(substr($post['author_name'], 0, 1)) ?>
-                                            </div>
-                                        <?php endif; ?>
-                                    </a>
-
-                                    <div style="min-width: 0; flex-grow: 1;" class="overflow-hidden">
-                                        <div class="d-flex align-items-center flex-wrap gap-1 style-tiny">
-                                            <a href="<?= base_url('feed/user/' . $post['user_id']) ?>" class="text-body fw-bold text-decoration-none hover-text-danger text-truncate d-inline-block" style="max-width: 100%;">
-                                                <?= esc($post['author_name']) ?>
-                                            </a>
-                                            
-                                            <!-- Verified Blue Checkmark Badge for Superadmin/Pembina/BPH -->
-                                            <?php if (!empty($post['author_verified'])): ?>
-                                                <i class="fa-solid fa-circle-check text-primary flex-shrink-0" style="font-size: 0.75rem;" title="Akun Terverifikasi (Pengurus / Pembina MMC)"></i>
-                                            <?php endif; ?>
-
-                                            <span class="badge bg-secondary bg-opacity-25 text-secondary style-tiny flex-shrink-0" style="font-size: 0.65rem;"><?= esc($post['author_role_name']) ?></span>
-                                        </div>
-                                        
-                                        <small class="text-secondary style-tiny opacity-75 font-monospace d-block text-truncate" style="font-size: 0.65rem;">
-                                            <?= esc($post['author_class'] ?: 'Anggota Klub MMC') ?> • <?= esc($post['time_ago']) ?>
-                                        </small>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex align-items-center gap-1.5 flex-shrink-0 ms-auto">
-                                    <!-- Follow Button if not self -->
-                                    <?php if (!$post['is_own_post']): ?>
-                                        <button type="button" class="btn btn-sm <?= $post['is_following_author'] ? 'btn-saas-dark text-secondary' : 'btn-outline-info' ?> rounded-pill style-tiny py-1 px-2.5 text-nowrap" onclick="toggleFollowUser(<?= $post['user_id'] ?>, this)">
-                                            <i class="fa-solid <?= $post['is_following_author'] ? 'fa-user-check' : 'fa-user-plus' ?> me-1"></i>
-                                            <span><?= $post['is_following_author'] ? 'Diikuti' : 'Ikuti' ?></span>
-                                        </button>
-                                    <?php endif; ?>
-
-                                    <!-- Delete Post Button -->
-                                    <?php if ($post['is_own_post'] || in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph'])): ?>
-                                        <a href="<?= base_url('feed/delete/' . $post['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus postingan status ini?')" class="btn btn-sm btn-saas-dark text-danger border-0 p-1.5 rounded-circle flex-shrink-0" title="Hapus Status">
-                                            <i class="fa-solid fa-trash-can style-tiny"></i>
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-
-                            <!-- Post Text Content -->
-                            <?php if (!empty($post['content'])): ?>
-                                <p class="text-body style-tiny mb-3 lh-base" style="white-space: pre-line;"><?= esc($post['content']) ?></p>
-                            <?php endif; ?>
-
-                            <!-- Post Media Attachment -->
-                            <?php if (!empty($post['media_url'])): ?>
-                                <div class="mb-3 rounded-3 overflow-hidden bg-black border border-secondary border-opacity-25 text-center">
-                                    <?php if ($post['media_type'] === 'image'): ?>
-                                        <div class="position-relative overflow-hidden cursor-pointer" onclick="openMediaLightbox('<?= base_url($post['media_url']) ?>', 'image')" title="Klik untuk lihat gambar penuh (Fullscreen)">
-                                            <img src="<?= base_url($post['media_url']) ?>" alt="Post Media" class="img-fluid object-fit-contain transition-all hover-scale" style="max-height: 450px; width: 100%;">
-                                            <div class="position-absolute bottom-0 end-0 m-2.5 badge bg-black bg-opacity-75 text-white style-tiny py-1 px-2.5 rounded-2 border border-secondary border-opacity-50">
-                                                <i class="fa-solid fa-expand me-1 text-info"></i> Perbesar
-                                            </div>
-                                        </div>
-                                    <?php elseif ($post['media_type'] === 'video'): ?>
-                                        <video src="<?= base_url($post['media_url']) ?>" controls class="w-100 rounded-3" style="max-height: 450px;"></video>
-                                    <?php else: ?>
-                                        <div class="p-3 d-flex align-items-center justify-content-between bg-black">
-                                            <div class="d-flex align-items-center gap-2.5 overflow-hidden">
-                                                <i class="fa-solid fa-file-pdf fs-3 text-danger"></i>
-                                                <span class="text-white style-tiny fw-bold text-truncate"><?= esc(basename($post['media_url'])) ?></span>
-                                            </div>
-                                            <a href="<?= base_url($post['media_url']) ?>" target="_blank" class="btn btn-sm btn-danger rounded-pill style-tiny px-3">
-                                                <i class="fa-solid fa-download me-1"></i> Unduh Berkas
-                                            </a>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <!-- Interaction Stats & Actions Bar -->
-                            <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25 style-tiny">
-                                <div class="d-flex align-items-center gap-4">
-                                    <!-- Like Button -->
-                                    <button type="button" class="btn btn-link text-decoration-none p-0 border-0 d-flex align-items-center gap-1.5 <?= $post['is_liked'] ? 'text-danger fw-bold' : 'text-secondary hover-white' ?>" onclick="toggleLikePost(<?= $post['id'] ?>, this)">
-                                        <i class="<?= $post['is_liked'] ? 'fa-solid text-danger' : 'fa-regular' ?> fa-heart fs-6 transition-all"></i>
-                                        <span class="like-count"><?= $post['likes_count'] ?></span> Suka
-                                    </button>
-
-                                    <!-- Comment Count Button -->
-                                    <button type="button" class="btn btn-link text-decoration-none p-0 border-0 text-secondary hover-white d-flex align-items-center gap-1.5" onclick="focusCommentInput(<?= $post['id'] ?>)">
-                                        <i class="fa-regular fa-comment fs-6"></i>
-                                        <span><?= $post['comments_count'] ?></span> Komentar
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Comment Section Accordion / Container -->
-                            <div class="mt-3 pt-3 border-top border-secondary border-opacity-10">
-                                
-                                <!-- Existing Comments Feed -->
-                                <div class="d-flex flex-column gap-2 mb-3" id="comments-list-<?= $post['id'] ?>">
-                                    <?php foreach ($post['comments'] as $comment): ?>
-                                        <div class="d-flex align-items-start gap-2.5 p-2.5 rounded-3 bg-body-secondary border border-secondary border-opacity-25" id="comment-<?= $comment['id'] ?>">
-                                            <a href="<?= base_url('feed/user/' . $comment['user_id']) ?>">
-                                                <?php if (!empty($comment['commenter_avatar'])): ?>
-                                                    <img src="<?= base_url($comment['commenter_avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover" style="width: 30px; height: 30px;">
-                                                <?php else: ?>
-                                                    <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold style-tiny" style="width: 30px; height: 30px;">
-                                                        <?= strtoupper(substr($comment['commenter_name'], 0, 1)) ?>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </a>
-
-                                            <div class="flex-grow-1 style-tiny">
-                                                <div class="d-flex align-items-center justify-content-between">
-                                                    <div class="d-flex align-items-center gap-1">
-                                                        <a href="<?= base_url('feed/user/' . $comment['user_id']) ?>" class="text-body fw-bold text-decoration-none hover-text-danger">
-                                                            <?= esc($comment['commenter_name']) ?>
-                                                        </a>
-                                                        <?php if (!empty($comment['commenter_verified'])): ?>
-                                                            <i class="fa-solid fa-circle-check text-primary" style="font-size: 0.65rem;" title="Akun Terverifikasi (Pengurus / Pembina MMC)"></i>
-                                                        <?php endif; ?>
-                                                        <small class="text-secondary opacity-75 ms-1" style="font-size: 0.65rem;"><?= esc($comment['time_ago']) ?></small>
-                                                    </div>
-
-                                                    <?php if ($comment['is_own_comment'] || $post['is_own_post'] || in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph'])): ?>
-                                                        <a href="<?= base_url('feed/delete-comment/' . $comment['id']) ?>" onclick="return confirm('Hapus komentar ini?')" class="text-danger style-tiny p-0 border-0 opacity-75 hover-opacity-100" title="Hapus Komentar">
-                                                            <i class="fa-solid fa-xmark"></i>
-                                                        </a>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <p class="text-body m-0 mt-0.5" style="font-size: 0.825rem;"><?= esc($comment['comment']) ?></p>
-                                            </div>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-
-                                <!-- Add Comment Form -->
-                                <form action="<?= base_url('feed/comment/' . $post['id']) ?>" method="POST" class="d-flex align-items-center gap-2" id="comment-form-<?= $post['id'] ?>">
-                                    <?= csrf_field() ?>
-                                    <input type="text" name="comment" class="form-control bg-body border-secondary border-opacity-50 text-body rounded-pill px-3 py-1.5 style-tiny" placeholder="Tulis komentar..." required autocomplete="off">
-                                    <button type="submit" class="btn btn-sm btn-red rounded-circle p-2 flex-shrink-0" style="width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center;">
-                                        <i class="fa-solid fa-paper-plane style-tiny"></i>
-                                    </button>
-                                </form>
-
-                            </div>
-
-                        </div>
+                        <?= view('App\Modules\Feed\Views\_post_card', ['post' => $post]) ?>
                     <?php endforeach; ?>
             </div>
 
@@ -347,9 +239,12 @@
                     </div>
                 </div>
 
-                <div class="mt-3 pt-3 border-top border-secondary border-opacity-25">
+                <div class="mt-3 pt-3 border-top border-secondary border-opacity-25 d-flex flex-column gap-2">
                     <a href="<?= base_url('feed/user/' . session()->get('user_id')) ?>" class="btn btn-sm btn-red w-100 rounded-pill style-tiny font-monospace">
                         <i class="fa-solid fa-user me-1"></i> Lihat Feed Saya
+                    </a>
+                    <a href="<?= base_url('feed/user/' . session()->get('user_id')) ?>#bookmarks-tab-pane" onclick="setTimeout(() => { const bTab = document.getElementById('bookmarks-tab'); if(bTab) bTab.click(); }, 300);" class="btn btn-sm btn-saas-dark text-warning border border-warning border-opacity-25 w-100 rounded-pill style-tiny font-monospace">
+                        <i class="fa-solid fa-bookmark me-1 text-warning"></i> Status Disimpan (Bookmark)
                     </a>
                 </div>
             </div>
@@ -448,9 +343,12 @@
                                     </div>
                                 </div>
 
-                                <button type="button" class="btn btn-sm btn-outline-info rounded-pill style-tiny py-1 px-2.5 flex-shrink-0 text-nowrap" onclick="toggleFollowUser(<?= $rec['id'] ?>, this)">
-                                    <i class="fa-solid fa-user-plus me-1"></i> <span>Ikuti</span>
-                                </button>
+                                <form action="<?= base_url('feed/follow/' . $rec['id']) ?>" method="POST" class="d-inline flex-shrink-0">
+                                    <?= csrf_field() ?>
+                                    <button type="submit" class="btn btn-sm btn-outline-info rounded-pill style-tiny py-1 px-2.5 text-nowrap">
+                                        <i class="fa-solid fa-user-plus me-1"></i> <span>Ikuti</span>
+                                    </button>
+                                </form>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -478,6 +376,76 @@
                     <div class="text-center py-4 text-secondary style-tiny">
                         <span class="spinner-border spinner-border-sm me-1 text-danger"></span> Memuat daftar...
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: All Members Directory -->
+<div class="modal fade" id="allMembersDirectoryModal" tabindex="-1" aria-labelledby="allMembersDirectoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-body text-body border border-secondary border-opacity-50 shadow-lg">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-2.5">
+                <h5 class="modal-title font-heading style-tiny fw-bold" id="allMembersDirectoryModalTitle">
+                    <i class="fa-solid fa-address-book text-warning me-1.5"></i> Direktori Semua Anggota Klub MMC
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <div class="mb-3">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-body border-secondary border-opacity-50 text-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="directorySearchInput" class="form-control bg-body border-secondary border-opacity-50 text-body style-tiny" placeholder="Ketik nama atau kelas anggota..." onkeyup="filterDirectoryMembers()">
+                    </div>
+                </div>
+                <div class="row g-2 overflow-y-auto pe-1" id="directoryMembersContainer" style="max-height: 420px;">
+                    <div class="text-center py-4 text-secondary style-tiny">
+                        <span class="spinner-border spinner-border-sm me-1 text-danger"></span> Memuat anggota...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Share to Chat Inbox -->
+<div class="modal fade" id="shareToChatModal" tabindex="-1" aria-labelledby="shareToChatModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-body text-body border border-secondary border-opacity-50 shadow-lg">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-2.5">
+                <h5 class="modal-title font-heading style-tiny fw-bold" id="shareToChatModalLabel">
+                    <i class="fa-solid fa-paper-plane text-danger me-1.5"></i> Bagikan Status ke Chat Inbox
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-3">
+                <p class="text-secondary style-tiny mb-3">Pilih anggota atau grup obrolan tujuan untuk membagikan postingan ini:</p>
+                <div class="d-flex flex-column gap-2 overflow-y-auto pe-1" style="max-height: 320px;">
+                    <?php if (!empty($allMembers)): ?>
+                        <?php foreach ($allMembers as $m): ?>
+                            <?php if ($m['id'] != session()->get('user_id')): ?>
+                                <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-body-secondary border border-secondary border-opacity-25">
+                                    <div class="d-flex align-items-center gap-2.5 overflow-hidden" style="min-width: 0;">
+                                        <?php if (!empty($m['avatar'])): ?>
+                                            <img src="<?= base_url($m['avatar']) ?>" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 34px; height: 34px;" onerror="this.onerror=null; this.src='<?= base_url('assets/logo-mm-2023.png') ?>';">
+                                        <?php else: ?>
+                                            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold style-tiny flex-shrink-0" style="width: 34px; height: 34px;">
+                                                <?= strtoupper(substr($m['full_name'], 0, 1)) ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <div class="overflow-hidden" style="min-width: 0;">
+                                            <span class="text-body style-tiny fw-bold d-block text-truncate"><?= esc($m['full_name']) ?></span>
+                                            <small class="text-secondary style-tiny opacity-75 d-block text-truncate" style="font-size: 0.65rem;"><?= esc($m['class_dept'] ?: $m['role_name']) ?></small>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-red rounded-pill style-tiny py-1 px-3" onclick="sendShareToChat('personal', <?= $m['id'] ?>)">
+                                        <i class="fa-solid fa-paper-plane me-1"></i> Kirim
+                                    </button>
+                                </div>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -562,7 +530,6 @@
             previewBox.classList.add('d-flex');
         }
     }
-
     // Cancel Feed Media
     function cancelFeedMedia() {
         const input = document.getElementById('feedMediaInput');
@@ -574,8 +541,31 @@
         }
     }
 
-    // AJAX Toggle Like
-    function toggleLikePost(postId, btn) {
+    // AJAX Toggle Like (Seamless without refresh)
+    function toggleLikePost(postId, btn, e) {
+        if (e) e.preventDefault();
+        if (!postId || btn.disabled) return;
+
+        const heartIcon = btn.querySelector('i');
+        const countSpan = btn.querySelector('.like-count');
+        let currentCount = parseInt(countSpan.textContent) || 0;
+        const isCurrentlyLiked = heartIcon.classList.contains('fa-solid');
+
+        // Optimistic UI update (Instant feedback)
+        if (isCurrentlyLiked) {
+            btn.classList.remove('text-danger', 'fw-bold');
+            btn.classList.add('text-secondary');
+            heartIcon.classList.remove('fa-solid', 'text-danger');
+            heartIcon.classList.add('fa-regular');
+            countSpan.textContent = Math.max(0, currentCount - 1);
+        } else {
+            btn.classList.add('text-danger', 'fw-bold');
+            btn.classList.remove('text-secondary');
+            heartIcon.classList.remove('fa-regular');
+            heartIcon.classList.add('fa-solid', 'text-danger');
+            countSpan.textContent = currentCount + 1;
+        }
+
         fetch('<?= base_url('feed/like/') ?>' + postId, {
             method: 'POST',
             headers: {
@@ -585,12 +575,8 @@
         })
         .then(res => res.json())
         .then(data => {
-            if (data.status === 'success') {
-                const heartIcon = btn.querySelector('i');
-                const countSpan = btn.querySelector('.like-count');
-
+            if (data.status === 'success' && data.data) {
                 countSpan.textContent = data.data.likes_count;
-
                 if (data.data.is_liked) {
                     btn.classList.add('text-danger', 'fw-bold');
                     btn.classList.remove('text-secondary');
@@ -603,11 +589,19 @@
                     heartIcon.classList.add('fa-regular');
                 }
             }
+        })
+        .catch(err => {
+            console.error('Like error:', err);
         });
     }
 
-    // AJAX Toggle Follow User
+    // AJAX Toggle Follow User (Updates ALL follow buttons on the page for this user)
     function toggleFollowUser(targetUserId, btn) {
+        if (!targetUserId) return;
+        
+        // Temporarily disable clicked button to prevent duplicate clicks
+        if (btn) btn.disabled = true;
+
         fetch('<?= base_url('feed/follow/') ?>' + targetUserId, {
             method: 'POST',
             headers: {
@@ -617,23 +611,42 @@
         })
         .then(res => res.json())
         .then(data => {
-            if (data.status === 'success') {
-                const isFollowing = data.data.is_following;
-                const icon = btn.querySelector('i');
-                const textSpan = btn.querySelector('span');
+            if (btn) btn.disabled = false;
 
-                if (isFollowing) {
-                    btn.classList.remove('btn-outline-info');
-                    btn.classList.add('btn-saas-dark', 'text-secondary');
-                    if (icon) icon.className = 'fa-solid fa-user-check me-1';
-                    if (textSpan) textSpan.textContent = 'Diikuti';
-                } else {
-                    btn.classList.remove('btn-saas-dark', 'text-secondary');
-                    btn.classList.add('btn-outline-info');
-                    if (icon) icon.className = 'fa-solid fa-user-plus me-1';
-                    if (textSpan) textSpan.textContent = 'Ikuti';
+            if (data.status === 'success' && data.data) {
+                const isFollowing = data.data.is_following;
+
+                // Find ALL follow buttons targeting this targetUserId across the entire page
+                const allButtons = document.querySelectorAll(`button[onclick*="toggleFollowUser(${targetUserId}"]`);
+                allButtons.forEach(b => {
+                    const icon = b.querySelector('i');
+                    const textSpan = b.querySelector('span');
+
+                    if (isFollowing) {
+                        b.classList.remove('btn-outline-info');
+                        b.classList.add('btn-saas-dark', 'text-secondary');
+                        if (icon) icon.className = 'fa-solid fa-user-check me-1';
+                        if (textSpan) textSpan.textContent = 'Diikuti';
+                    } else {
+                        b.classList.remove('btn-saas-dark', 'text-secondary');
+                        b.classList.add('btn-outline-info');
+                        if (icon) icon.className = 'fa-solid fa-user-plus me-1';
+                        if (textSpan) textSpan.textContent = 'Ikuti';
+                    }
+                });
+
+                // Show toast or alert message if available
+                if (data.message) {
+                    alert(data.message);
                 }
+            } else {
+                alert(data.message || 'Gagal mengubah status ikuti.');
             }
+        })
+        .catch(err => {
+            if (btn) btn.disabled = false;
+            console.error('Follow error:', err);
+            alert('Terjadi kesalahan saat memproses status ikuti.');
         });
     }
 
@@ -641,6 +654,113 @@
     function focusCommentInput(postId) {
         const input = document.querySelector('#comment-form-' + postId + ' input[name="comment"]');
         if (input) input.focus();
+    }
+
+    // Repost Handler
+    function repostPost(postId) {
+        if (!confirm('Unggah ulang (repost) status ini ke beranda Anda?')) return;
+        fetch('<?= base_url('feed/repost/') ?>' + postId, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            alert(data.message || 'Status berhasil di-repost!');
+            if (data.status === 'success') {
+                window.location.reload();
+            }
+        });
+    }
+
+    // Copy Post Link to Clipboard
+    function copyPostLink(url) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('📋 Tautan postingan berhasil disalin ke papan klip!');
+            });
+        } else {
+            const input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            alert('📋 Tautan postingan berhasil disalin!');
+        }
+    }
+
+    // AJAX Toggle Bookmark Post (Persisted to Database)
+    function toggleBookmarkPost(postId, btn) {
+        if (!postId) return;
+        fetch('<?= base_url('feed/save/') ?>' + postId, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const icon = btn.querySelector('i');
+                if (data.data.is_bookmarked) {
+                    btn.classList.add('text-warning');
+                    btn.classList.remove('text-secondary');
+                    icon.classList.remove('fa-regular');
+                    icon.classList.add('fa-solid', 'text-warning');
+                    alert('📌 Status berhasil disimpan ke markah (bookmark) Anda!');
+                } else {
+                    btn.classList.remove('text-warning');
+                    btn.classList.add('text-secondary');
+                    icon.classList.remove('fa-solid', 'text-warning');
+                    icon.classList.add('fa-regular');
+                    alert('Batal menyimpan status.');
+                }
+            } else {
+                alert(data.message || 'Gagal menyimpan status.');
+            }
+        })
+        .catch(() => {
+            alert('Terjadi kesalahan jaringan.');
+        });
+    }
+
+    // Open Share to Chat Modal
+    let activeSharePostId = null;
+    function openShareToChatModal(postId) {
+        activeSharePostId = postId;
+        const modalEl = document.getElementById('shareToChatModal');
+        if (!modalEl) return;
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+    }
+
+    function sendShareToChat(targetType, targetId) {
+        if (!activeSharePostId) return;
+        const formData = new FormData();
+        formData.append('target_type', targetType);
+        formData.append('target_id', targetId);
+
+        fetch('<?= base_url('feed/share-chat/') ?>' + activeSharePostId, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            const modalEl = document.getElementById('shareToChatModal');
+            if (modalEl) {
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+            }
+            alert(data.message || 'Status berhasil dikirim ke obrolan!');
+        });
     }
 
     // Show Followers / Following List Modal
@@ -699,14 +819,98 @@
         });
     }
 
-    // Auto fill status textarea with birthday wish
-    function writeBirthdayWish(text) {
-        const textarea = document.querySelector('textarea[name="content"]');
-        if (textarea) {
-            textarea.value = text;
-            textarea.focus();
-            window.scrollTo({ top: textarea.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
+    // Show All Members Directory Modal
+    function showAllMembersDirectoryModal() {
+        const container = document.getElementById('directoryMembersContainer');
+        container.innerHTML = `<div class="text-center py-4 text-secondary style-tiny"><span class="spinner-border spinner-border-sm me-1 text-danger"></span> Memuat data semua anggota...</div>`;
+
+        const modal = new bootstrap.Modal(document.getElementById('allMembersDirectoryModal'));
+        modal.show();
+
+        fetch(`${baseUrl}feed/search-users?q=`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                renderDirectoryMembers(data.data || []);
+            } else {
+                container.innerHTML = `<div class="text-center py-4 text-danger style-tiny">${escapeHtml(data.message || 'Gagal memuat direktori anggota.')}</div>`;
+            }
+        })
+        .catch(err => {
+            console.error('Directory Fetch Error:', err);
+            container.innerHTML = `<div class="text-center py-4 text-danger style-tiny">Gagal memuat direktori anggota.</div>`;
+        });
+    }
+
+    function renderDirectoryMembers(members) {
+        const container = document.getElementById('directoryMembersContainer');
+        if (!members || members.length === 0) {
+            container.innerHTML = `<div class="text-center py-4 text-secondary style-tiny">Belum ada anggota ditemukan.</div>`;
+            return;
         }
+
+        let html = '';
+        members.forEach(u => {
+            let avatarUrl = '';
+            if (u.avatar) {
+                avatarUrl = u.avatar.startsWith('http') ? u.avatar : baseUrl + u.avatar.replace(/^\//, '');
+            }
+            const avatarHtml = avatarUrl 
+                ? `<img src="${avatarUrl}" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 40px; height: 40px;" onerror="this.onerror=null; this.src='${baseUrl}assets/logo-mm-2023.png';">`
+                : `<div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold style-tiny flex-shrink-0" style="width: 40px; height: 40px;">${(u.full_name || 'U').charAt(0).toUpperCase()}</div>`;
+
+            const verifiedBadge = u.is_verified ? `<i class="fa-solid fa-circle-check text-primary style-tiny flex-shrink-0" title="Akun Terverifikasi"></i>` : '';
+
+            let followBtnHtml = '';
+            if (!u.is_self) {
+                followBtnHtml = u.is_following 
+                    ? `<button class="btn btn-sm btn-saas-dark text-secondary rounded-pill style-tiny py-1 px-2.5" onclick="toggleFollowUser(${u.id}, this)"><i class="fa-solid fa-user-check me-1"></i> <span>Diikuti</span></button>`
+                    : `<button class="btn btn-sm btn-outline-info rounded-pill style-tiny py-1 px-2.5" onclick="toggleFollowUser(${u.id}, this)"><i class="fa-solid fa-user-plus me-1"></i> <span>Ikuti</span></button>`;
+            }
+
+            const userKeyword = ((u.full_name || '') + ' ' + (u.username || '') + ' ' + (u.nis_nip || '') + ' ' + (u.class_dept || '') + ' ' + (u.role_name || '')).toLowerCase();
+            html += `
+                <div class="col-12 col-md-6 directory-member-card" data-name="${escapeHtml((u.full_name || '').toLowerCase())}" data-class="${escapeHtml((u.class_dept || u.role_name || '').toLowerCase())}" data-search="${escapeHtml(userKeyword)}">
+                    <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3 bg-body-secondary border border-secondary border-opacity-25 gap-2" style="min-width: 0;">
+                        <div class="d-flex align-items-center gap-2.5 overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
+                            <a href="${baseUrl}feed/user/${u.id}">${avatarHtml}</a>
+                            <div class="overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
+                                <div class="d-flex align-items-center gap-1">
+                                    <a href="${baseUrl}feed/user/${u.id}" class="text-body style-tiny fw-bold text-decoration-none hover-text-danger text-truncate">${escapeHtml(u.full_name)}</a>
+                                    ${verifiedBadge}
+                                </div>
+                                <small class="text-secondary style-tiny d-block opacity-75 text-truncate" style="font-size: 0.65rem;">${escapeHtml((u.username ? '@' + u.username + ' • ' : '') + (u.class_dept || u.role_name))}</small>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0">${followBtnHtml}</div>
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+    function filterDirectoryMembers() {
+        const input = document.getElementById('directorySearchInput');
+        if (!input) return;
+        let filter = input.value.toLowerCase().trim();
+        if (filter.startsWith('@')) {
+            filter = filter.substring(1).trim();
+        }
+        const cards = document.querySelectorAll('.directory-member-card');
+
+        cards.forEach(card => {
+            const searchData = card.getAttribute('data-search') || '';
+            const name = card.getAttribute('data-name') || '';
+            const classDept = card.getAttribute('data-class') || '';
+            if (searchData.includes(filter) || name.includes(filter) || classDept.includes(filter)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
     }
 
     /* =============================
@@ -716,7 +920,7 @@
     let feedFilter       = '<?= $activeFilter ?>';
     let feedLatestTime   = '<?= date('Y-m-d H:i:s') ?>';
     let feedPollingTimer = null;
-    const baseUrl        = '<?= base_url() ?>';
+    const baseUrl        = '<?= rtrim(base_url(), '/') . '/' ?>';
 
     // --- Load More Posts ---
     function loadMorePosts() {
@@ -757,74 +961,70 @@
         });
     }
 
-    // --- Refresh Feed (full reload from top) ---
-    function refreshFeed() {
-        const bar      = document.getElementById('feedNewPostsBar');
-        const spin     = document.getElementById('refreshSpinIcon');
-        const dot      = document.getElementById('newPostDotIcon');
-        const text     = document.getElementById('feedNewPostsText');
-        if (spin) { spin.style.display = 'inline-block'; }
-        if (dot)  { dot.style.display  = 'none'; }
-        if (text) { text.textContent   = 'Memuat ulang feed...'; }
+    // Auto polling turned off as requested
+    // document.addEventListener('DOMContentLoaded', startFeedPolling);
 
-        fetch(`${baseUrl}feed/load-more?filter=${feedFilter}&offset=0`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'success') {
-                const container = document.getElementById('feedPostsContainer');
-                if (container) container.innerHTML = data.html;
-                feedNextOffset = data.next_offset;
-                feedLatestTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
-                if (bar) bar.classList.add('d-none');
+    /* =============================
+       LIVE FLOATING SEARCH MEMBER HANDLER
+    ============================= */
+    const searchInput = document.getElementById('feedSearchMemberInput');
+    const searchDropdown = document.getElementById('feedSearchDropdown');
 
-                // Update show-more button
-                const wrapper = document.getElementById('feedLoadMoreWrapper');
-                if (wrapper) {
-                    if (data.has_more) {
-                        wrapper.classList.remove('d-none');
-                        const btn = document.getElementById('feedLoadMoreBtn');
-                        if (btn) btn.disabled = false;
-                    } else {
-                        wrapper.classList.add('d-none');
-                    }
+    if (searchInput && searchDropdown) {
+        function filterFeedSearchMembers() {
+            let query = searchInput.value.toLowerCase().trim();
+            if (query.startsWith('@')) {
+                query = query.substring(1).trim();
+            }
+
+            const items = searchDropdown.querySelectorAll('.feed-search-member-item');
+            const noResults = document.getElementById('feedSearchNoResults');
+
+            if (query.length > 0) {
+                searchDropdown.classList.remove('d-none');
+            } else {
+                searchDropdown.classList.add('d-none');
+                return;
+            }
+
+            let found = 0;
+            items.forEach(item => {
+                const searchData = (item.getAttribute('data-search') || '').toLowerCase();
+                const name = (item.querySelector('.member-name')?.textContent || '').toLowerCase();
+                const info = (item.querySelector('.member-info')?.textContent || '').toLowerCase();
+
+                if (searchData.includes(query) || name.includes(query) || info.includes(query)) {
+                    item.style.setProperty('display', 'flex', 'important');
+                    found++;
+                } else {
+                    item.style.setProperty('display', 'none', 'important');
+                }
+            });
+
+            if (noResults) {
+                if (found === 0) {
+                    noResults.classList.remove('d-none');
+                } else {
+                    noResults.classList.add('d-none');
                 }
             }
-        })
-        .catch(() => {
-            if (bar) bar.classList.add('d-none');
+        }
+
+        searchInput.addEventListener('input', filterFeedSearchMembers);
+        searchInput.addEventListener('keyup', filterFeedSearchMembers);
+        searchInput.addEventListener('focus', function() {
+            if (this.value.trim().length > 0) {
+                filterFeedSearchMembers();
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
+                searchDropdown.classList.add('d-none');
+            }
         });
     }
-
-    // --- Auto-poll for new posts every 30 seconds ---
-    function startFeedPolling() {
-        feedPollingTimer = setInterval(() => {
-            fetch(`${baseUrl}feed/check-new?filter=${feedFilter}&since=${encodeURIComponent(feedLatestTime)}`, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(r => r.json())
-            .then(data => {
-                const bar   = document.getElementById('feedNewPostsBar');
-                const badge = document.getElementById('feedNewPostsCount');
-                const text  = document.getElementById('feedNewPostsText');
-                if (data.count && data.count > 0 && bar) {
-                    if (badge) badge.textContent = data.count;
-                    if (text)  text.textContent  = `Ada ${data.count} postingan baru! Klik untuk refresh.`;
-                    bar.classList.remove('d-none');
-                    // Reset spin icon
-                    const spin = document.getElementById('refreshSpinIcon');
-                    const dot  = document.getElementById('newPostDotIcon');
-                    if (spin) spin.style.display = 'none';
-                    if (dot)  dot.style.display  = 'inline-block';
-                }
-            })
-            .catch(() => {}); // silent fail
-        }, 30000); // every 30 seconds
-    }
-
-    // Start polling when page loads
-    document.addEventListener('DOMContentLoaded', startFeedPolling);
 </script>
 
 <?= $this->endSection() ?>

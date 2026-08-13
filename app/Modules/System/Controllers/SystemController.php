@@ -116,14 +116,22 @@ class SystemController extends BaseController
         $posts = $this->request->getPost();
 
         // Handle switch checkboxes
-        $posts['enable_registration'] = isset($posts['enable_registration']) ? '1' : '0';
-        $posts['maintenance_mode']    = isset($posts['maintenance_mode']) ? '1' : '0';
+        $posts['enable_registration']   = isset($posts['enable_registration']) ? '1' : '0';
+        $posts['maintenance_mode']      = isset($posts['maintenance_mode']) ? '1' : '0';
+        $posts['lock_member_activities'] = isset($posts['lock_member_activities']) ? '1' : '0';
 
         // Handle maintenance_pages array
         if (isset($posts['maintenance_pages']) && is_array($posts['maintenance_pages'])) {
             $posts['maintenance_pages'] = json_encode(array_values($posts['maintenance_pages']));
         } else {
             $posts['maintenance_pages'] = '[]';
+        }
+
+        // Handle disabled_member_pages array
+        if (isset($posts['disabled_member_pages']) && is_array($posts['disabled_member_pages'])) {
+            $posts['disabled_member_pages'] = json_encode(array_values($posts['disabled_member_pages']));
+        } else {
+            $posts['disabled_member_pages'] = '[]';
         }
 
         // Handle Logo file upload

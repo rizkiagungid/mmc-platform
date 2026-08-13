@@ -128,6 +128,10 @@
                         <i class="fa-solid fa-circle-question text-warning me-1"></i> Kelola FAQ
                     </a>
 
+                    <a href="<?= base_url('admin/informasi') ?>" class="sidebar-link <?= (url_is('admin/informasi*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-bullhorn text-warning me-1"></i> Kelola Informasi
+                    </a>
+
                     <a href="<?= base_url('admin/cms/messages') ?>" class="sidebar-link <?= (url_is('admin/cms/messages*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-comments text-info me-1"></i> Kritik & Saran
                     </a>
@@ -154,24 +158,43 @@
 
                 <?php else: ?>
                     <!-- Member Links -->
+                    <?php
+                        $navDisabledPagesRaw = get_setting('disabled_member_pages', '[]');
+                        $navDisabledPages    = json_decode($navDisabledPagesRaw, true) ?: [];
+                    ?>
                     <a href="<?= base_url('attendance/scan') ?>" class="sidebar-link <?= (url_is('attendance/scan*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-qrcode text-danger me-1"></i> Presensi QR / PIN
+                        <?php if (in_array('attendance_scan', $navDisabledPages)): ?>
+                            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary style-tiny ms-auto">Off</span>
+                        <?php endif; ?>
                     </a>
 
                     <a href="<?= base_url('attendance/history') ?>" class="sidebar-link <?= (url_is('attendance/history*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-clock-rotate-left text-warning me-1"></i> Riwayat Presensi
+                        <?php if (in_array('attendance_history', $navDisabledPages)): ?>
+                            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary style-tiny ms-auto">Off</span>
+                        <?php endif; ?>
                     </a>
 
                     <a href="<?= base_url('member/tasks') ?>" class="sidebar-link <?= (url_is('member/tasks*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-file-arrow-up text-info me-1"></i> Tugas Saya
+                        <?php if (in_array('tasks', $navDisabledPages)): ?>
+                            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary style-tiny ms-auto">Off</span>
+                        <?php endif; ?>
                     </a>
 
                     <a href="<?= base_url('member/learning') ?>" class="sidebar-link <?= (url_is('member/learning*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-book-bookmark text-danger me-1"></i> Materi Pembelajaran
+                        <?php if (in_array('learning', $navDisabledPages)): ?>
+                            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary style-tiny ms-auto">Off</span>
+                        <?php endif; ?>
                     </a>
 
                     <a href="<?= base_url('admin/cms/messages') ?>" class="sidebar-link <?= (url_is('admin/cms/messages*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-comments text-info me-1"></i> Kritik & Saran
+                        <?php if (in_array('messages', $navDisabledPages)): ?>
+                            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary style-tiny ms-auto">Off</span>
+                        <?php endif; ?>
                     </a>
                 <?php endif; ?>
 
@@ -197,6 +220,10 @@
                         }
                     }
                 ?>
+
+                <a href="<?= base_url('informasi') ?>" class="sidebar-link <?= (url_is('informasi*')) ? 'active' : '' ?>">
+                    <i class="fa-solid fa-circle-info text-warning me-1"></i> Informasi
+                </a>
 
                 <a href="<?= base_url('feed') ?>" class="sidebar-link <?= (url_is('feed*')) ? 'active' : '' ?>">
                     <i class="fa-solid fa-square-rss text-info me-1"></i> Beranda MM
@@ -226,25 +253,48 @@
             </nav>
         </div>
 
-        <!-- User Profile Card Sidebar Footer -->
+        <!-- User Profile Card Sidebar Footer (Interactive Dropdown Menu) -->
         <div class="pt-3 mt-auto border-top border-secondary border-opacity-25 flex-shrink-0">
-            <div class="d-flex align-items-center gap-2 p-2 rounded-3 bg-dark">
-                <?php if (session()->get('avatar')): ?>
-                    <img src="<?= base_url(session()->get('avatar')) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 36px; height: 36px; min-width: 36px;">
-                <?php else: ?>
-                    <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; min-width: 36px;">
-                        <?= strtoupper(substr(session()->get('full_name') ?: 'U', 0, 1)) ?>
+            <div class="dropup position-relative">
+                <div class="d-flex align-items-center gap-2 p-2 rounded-3 bg-dark cursor-pointer user-select-none hover-bg-body-secondary transition-all" data-bs-toggle="dropdown" aria-expanded="false" role="button">
+                    <?php if (session()->get('avatar')): ?>
+                        <img src="<?= base_url(session()->get('avatar')) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 36px; height: 36px; min-width: 36px;">
+                    <?php else: ?>
+                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; min-width: 36px;">
+                            <?= strtoupper(substr(session()->get('full_name') ?: 'U', 0, 1)) ?>
                     </div>
-                <?php endif; ?>
-                <div class="d-flex flex-column text-truncate">
-                    <span class="fw-semibold text-white small text-truncate"><?= esc(session()->get('full_name')) ?></span>
-                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 py-0 px-2 rounded-pill font-monospace" style="font-size: 0.65rem; width: fit-content;">
-                        <?= esc(session()->get('role_name')) ?>
-                    </span>
+                    <?php endif; ?>
+                    <div class="d-flex flex-column text-truncate overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
+                        <span class="fw-semibold text-white small text-truncate"><?= esc(session()->get('full_name')) ?></span>
+                        <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 py-0 px-2 rounded-pill font-monospace" style="font-size: 0.65rem; width: fit-content;">
+                            <?= esc(session()->get('role_name')) ?>
+                        </span>
+                    </div>
+                    <i class="fa-solid fa-chevron-up text-secondary style-tiny ms-auto opacity-75"></i>
                 </div>
-                <a href="<?= base_url('logout') ?>" class="btn btn-sm text-secondary hover-white ms-auto" title="Keluar">
-                    <i class="fa-solid fa-right-from-bracket"></i>
-                </a>
+
+                <!-- Dropdown Menu Options -->
+                <ul class="dropdown-menu dropdown-menu-dark w-100 shadow-lg border border-secondary border-opacity-50 p-1.5 style-tiny mb-1">
+                    <li>
+                        <a class="dropdown-item py-2 rounded-2 d-flex align-items-center gap-2" href="<?= base_url('profile') ?>">
+                            <i class="fa-solid fa-id-card text-info"></i>
+                            <div>
+                                <span class="fw-bold d-block">Lihat Profil</span>
+                                <small class="text-secondary style-tiny d-block opacity-75">Profile saya</small>
+                            </div>
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider border-secondary border-opacity-25 my-1"></li>
+                    <li>
+                        <a class="dropdown-item py-2 rounded-2 d-flex align-items-center gap-2 text-danger" href="<?= base_url('logout') ?>" onclick="return confirm('Apakah Anda yakin ingin keluar dari akun?')">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                            <div>
+                                <span class="fw-bold d-block">Keluar (Logout)</span>
+                                <small class="text-danger opacity-75 style-tiny d-block">Keluar dari sesi aplikasi</small>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </aside>
@@ -317,6 +367,7 @@
                                             elseif ($nn['type'] === 'profile') $nnIcon = 'fa-solid fa-user-gear text-info';
                                             elseif ($nn['type'] === 'feedback') $nnIcon = 'fa-solid fa-comments text-danger';
                                             elseif ($nn['type'] === 'attendance') $nnIcon = 'fa-solid fa-qrcode text-success';
+                                            elseif ($nn['type'] === 'information') $nnIcon = 'fa-solid fa-bullhorn text-warning';
                                         ?>
                                         <a href="<?= !empty($nn['link']) ? base_url('notifications/mark-read/' . $nn['id']) : base_url('notifications') ?>" class="dropdown-item py-2 px-3 border-bottom border-secondary border-opacity-10 d-flex align-items-start gap-2 <?= empty($nn['is_read']) ? 'bg-dark bg-opacity-75' : '' ?>">
                                             <i class="<?= $nnIcon ?> style-tiny mt-1 flex-shrink-0"></i>
@@ -350,12 +401,91 @@
 
         <!-- Page Content -->
         <main class="p-3 p-md-4 flex-grow-1" style="min-width: 0;">
+            <?php
+                $lockMemberAct = get_setting('lock_member_activities', '0');
+                $userRoleSlug  = session()->get('role_slug');
+            ?>
+            <?php if ($lockMemberAct === '1' && !in_array($userRoleSlug, ['superadmin', 'pembina', 'bph'])): ?>
+                <div class="alert alert-warning border border-warning border-opacity-50 bg-warning bg-opacity-10 text-warning d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 shadow-sm" role="alert">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 bg-warning bg-opacity-25 rounded-circle text-warning flex-shrink-0">
+                            <i class="fa-solid fa-lock fs-5"></i>
+                        </div>
+                        <div>
+                            <strong class="font-heading d-block style-tiny">Aktivitas Anggota Sedang Dinonaktifkan oleh Pengurus (Freeze Mode)</strong>
+                            <span class="style-tiny opacity-90 d-block">
+                                Saat ini seluruh pengiriman presensi, tugas, posting beranda, komentar, dan obrolan anggota dibekukan sementara oleh Pengurus / Admin. Anda tetap dapat membaca materi dan informasi.
+                            </span>
+                        </div>
+                    </div>
+                    <span class="badge bg-warning text-dark font-monospace style-tiny px-2.5 py-1 rounded-pill flex-shrink-0 d-none d-md-inline-block">READ-ONLY</span>
+                </div>
+            <?php endif; ?>
+
             <?= $this->renderSection('content') ?>
         </main>
 
-        <footer class="p-3 border-top border-secondary border-opacity-25 text-center text-secondary small">
-            MMC SMAN 1 Tamansari Platform &copy; <?= date('Y') ?>. Modern Dark SaaS Architecture.
+        <footer class="p-3 border-top border-secondary border-opacity-25 text-center text-secondary small pb-5 pb-lg-3">
+            MMC SMAN 1 Tamansari Platform &copy; <?= date('Y') ?>.
         </footer>
+    </div>
+
+    <!-- Floating Mobile Bottom Navigation Bar (Sleek Modern SaaS UI) -->
+    <?php
+        $roleSlug = session()->get('role_slug');
+        $isAdminRole = in_array($roleSlug, ['superadmin', 'pembina', 'bph']);
+        
+        $urlDashboard  = base_url('dashboard');
+        $urlAttendance = $isAdminRole ? base_url('admin/attendance') : base_url('attendance/scan');
+        $urlTasks      = $isAdminRole ? base_url('admin/tasks') : base_url('member/tasks');
+        $urlLearning   = $isAdminRole ? base_url('admin/learning') : base_url('member/learning');
+        $urlFeed       = base_url('feed');
+        $urlProfile    = base_url('profile');
+    ?>
+    <!-- Floating Restore Button (Hanya Muncul Saat Bottom Nav Di-Minimize) -->
+    <button type="button" id="btnRestoreBottomNav" onclick="toggleBottomNavMinimize(false)" class="btn btn-danger rounded-circle shadow-lg d-none align-items-center justify-content-center border border-white border-opacity-50 d-lg-none" style="width: 44px; height: 44px; position: fixed; bottom: calc(1rem + env(safe-area-inset-bottom, 0px)); right: 1rem; z-index: 1070; pointer-events: auto;" title="Buka Menu Navigasi Bawah">
+        <i class="fa-solid fa-compass fs-5"></i>
+    </button>
+
+    <div class="mobile-bottom-nav d-lg-none" id="mobileBottomNavWrapper">
+        <div class="mobile-bottom-nav-inner position-relative">
+            <!-- Toggle Minimize Button (X) -->
+            <button type="button" onclick="toggleBottomNavMinimize(true)" class="btn-close-nav-mini" title="Sembunyikan Navigasi Bawah">
+                <i class="fa-solid fa-chevron-down"></i>
+            </button>
+
+            <a href="<?= $urlDashboard ?>" class="bottom-nav-item <?= url_is('dashboard*') ? 'active' : '' ?>">
+                <div class="bottom-nav-icon p-05 d-flex align-items-center justify-content-center">
+                    <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="MMC Logo" style="height: 20px; width: 20px; object-fit: contain;" class="rounded-1 bg-white p-0.5">
+                </div>
+                <span class="bottom-nav-label">Dashboard</span>
+            </a>
+
+            <a href="<?= $urlAttendance ?>" class="bottom-nav-item <?= (url_is('attendance*') || url_is('admin/attendance*')) ? 'active' : '' ?>">
+                <div class="bottom-nav-icon"><i class="fa-solid fa-qrcode"></i></div>
+                <span class="bottom-nav-label">Absensi</span>
+            </a>
+
+            <a href="<?= $urlTasks ?>" class="bottom-nav-item <?= (url_is('member/tasks*') || url_is('admin/tasks*')) ? 'active' : '' ?>">
+                <div class="bottom-nav-icon"><i class="fa-solid fa-list-check"></i></div>
+                <span class="bottom-nav-label">Tugas</span>
+            </a>
+
+            <a href="<?= $urlLearning ?>" class="bottom-nav-item <?= (url_is('member/learning*') || url_is('admin/learning*')) ? 'active' : '' ?>">
+                <div class="bottom-nav-icon"><i class="fa-solid fa-book-bookmark"></i></div>
+                <span class="bottom-nav-label">Materi</span>
+            </a>
+
+            <a href="<?= $urlFeed ?>" class="bottom-nav-item <?= url_is('feed*') ? 'active' : '' ?>">
+                <div class="bottom-nav-icon"><i class="fa-solid fa-square-rss"></i></div>
+                <span class="bottom-nav-label">Beranda</span>
+            </a>
+
+            <a href="<?= $urlProfile ?>" class="bottom-nav-item <?= url_is('profile*') ? 'active' : '' ?>">
+                <div class="bottom-nav-icon"><i class="fa-solid fa-user"></i></div>
+                <span class="bottom-nav-label">Profil</span>
+            </a>
+        </div>
     </div>
 
     <!-- Local Vendor Scripts -->
@@ -400,12 +530,90 @@
                 });
             <?php endif; ?>
 
+            // Smart Scroll Topbar Auto Hide / Show on Mobile
+            let lastScrollTop = 0;
+            const topbar = document.querySelector('.admin-topbar');
+
+            window.addEventListener('scroll', function() {
+                if (window.innerWidth >= 992 || !topbar) return;
+
+                let st = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Kalau di bagian paling atas halaman (st <= 20px)
+                if (st <= 20) {
+                    topbar.classList.remove('nav-hidden');
+                    topbar.classList.add('nav-visible');
+                    lastScrollTop = st;
+                    return;
+                }
+
+                // Scroll Down -> Sembunyikan Topbar
+                if (st > lastScrollTop && st > 60) {
+                    topbar.classList.remove('nav-visible');
+                    topbar.classList.add('nav-hidden');
+                } 
+                // Scroll Up -> Tampilkan Topbar
+                else if (st < lastScrollTop) {
+                    topbar.classList.remove('nav-hidden');
+                    topbar.classList.add('nav-visible');
+                }
+                
+                lastScrollTop = st <= 0 ? 0 : st;
+            }, { passive: true });
+
             <?php if (session()->getFlashdata('warning')): ?>
                 Toast.fire({
                     icon: 'warning',
                     title: '<?= session()->getFlashdata('warning') ?>'
                 });
             <?php endif; ?>
+
+            // Toggle Hide / Restore Bottom Nav Bar (with localStorage state persistence)
+            window.toggleBottomNavMinimize = function(isHide) {
+                const navWrapper = document.getElementById('mobileBottomNavWrapper');
+                const btnRestore = document.getElementById('btnRestoreBottomNav');
+                
+                if (isHide) {
+                    if (navWrapper) navWrapper.classList.add('d-none');
+                    if (btnRestore) {
+                        btnRestore.classList.remove('d-none');
+                        btnRestore.classList.add('d-flex');
+                    }
+                    localStorage.setItem('bottomNavHidden', 'true');
+                } else {
+                    if (navWrapper) navWrapper.classList.remove('d-none');
+                    if (btnRestore) {
+                        btnRestore.classList.remove('d-flex');
+                        btnRestore.classList.add('d-none');
+                    }
+                    localStorage.removeItem('bottomNavHidden');
+                }
+            };
+
+            // Restore state from localStorage on page load
+            if (localStorage.getItem('bottomNavHidden') === 'true') {
+                window.toggleBottomNavMinimize(true);
+            }
+
+            // Toggle Mobile Bottom Nav Visibility when Offcanvas Sidebar Opens / Closes
+            const sidebarOffcanvas = document.getElementById('adminSidebar');
+            const bottomNavWrapper = document.getElementById('mobileBottomNavWrapper');
+            const btnRestoreNav = document.getElementById('btnRestoreBottomNav');
+            
+            if (sidebarOffcanvas) {
+                sidebarOffcanvas.addEventListener('show.bs.offcanvas', function () {
+                    if (bottomNavWrapper) bottomNavWrapper.style.setProperty('display', 'none', 'important');
+                    if (btnRestoreNav) btnRestoreNav.style.setProperty('display', 'none', 'important');
+                });
+                sidebarOffcanvas.addEventListener('hidden.bs.offcanvas', function () {
+                    const isHiddenByUser = localStorage.getItem('bottomNavHidden') === 'true';
+                    if (isHiddenByUser) {
+                        if (btnRestoreNav) btnRestoreNav.style.removeProperty('display');
+                    } else {
+                        if (bottomNavWrapper) bottomNavWrapper.style.removeProperty('display');
+                    }
+                });
+            }
 
             // Auto close offcanvas sidebar on mobile when link is clicked
             $('.sidebar-link').on('click', function() {
@@ -556,5 +764,99 @@
             updateAdminThemeIcon(currentTheme);
         });
     </script>
+    <!-- Global Information Popup Modal (Non-blocking Popup System) -->
+    <?php
+        $globalUserId = session()->get('user_id');
+        $globalUnreadPopups = [];
+        if ($globalUserId) {
+            $globalInfoModel = new \App\Models\InformationModel();
+            $globalUnreadPopups = $globalInfoModel->getUnreadPopupsForUser((int)$globalUserId);
+        }
+    ?>
+    <?php if (!empty($globalUnreadPopups)): ?>
+        <?php $popupItem = $globalUnreadPopups[0]; ?>
+        <div class="modal fade" id="globalInformationPopupModal" tabindex="-1" aria-labelledby="globalInformationPopupModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content bg-body text-body border border-danger border-opacity-50 shadow-lg" style="box-shadow: 0 0 40px rgba(220, 53, 69, 0.25) !important;">
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 py-2.5 px-3 bg-danger bg-opacity-10">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-danger text-white font-monospace style-tiny py-1 px-2.5 rounded-pill">
+                                <i class="fa-solid fa-bell me-1"></i> PENGUMUMAN PENTING
+                            </span>
+                            <span class="badge bg-secondary bg-opacity-25 text-light border border-secondary style-tiny rounded-pill font-monospace">
+                                <?= esc($popupItem['category']) ?>
+                            </span>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <h4 class="text-body font-heading fw-bold mb-2">
+                            <?= esc($popupItem['title']) ?>
+                        </h4>
+
+                        <div class="d-flex align-items-center gap-3 text-secondary style-tiny font-monospace mb-3 pb-3 border-bottom border-secondary border-opacity-25 flex-wrap">
+                            <div>
+                                <i class="fa-solid fa-calendar-day text-danger me-1"></i>
+                                <?= date('d M Y, H:i', strtotime($popupItem['date_time'])) ?> WIB
+                            </div>
+                            <div>
+                                <i class="fa-solid fa-user-pen text-info me-1"></i>
+                                <?= esc($popupItem['author_name']) ?> (<?= esc($popupItem['author_role']) ?>)
+                            </div>
+                        </div>
+
+                        <div class="text-body style-tiny whitespace-pre-line" style="font-size: 0.92rem; line-height: 1.7;">
+                            <?= esc($popupItem['description']) ?>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top border-secondary border-opacity-25 py-2.5 justify-content-between">
+                        <button type="button" class="btn btn-sm btn-saas-dark text-secondary border border-secondary border-opacity-25 rounded-pill px-4" data-bs-dismiss="modal">
+                            <i class="fa-solid fa-xmark me-1"></i> Tutup
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success rounded-pill px-4" onclick="markGlobalPopupAsRead(<?= $popupItem['id'] ?>)">
+                            <i class="fa-solid fa-circle-check me-1"></i> Sudah Dibaca
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const popupModalEl = document.getElementById('globalInformationPopupModal');
+                if (popupModalEl) {
+                    const popupModal = bootstrap.Modal.getOrCreateInstance(popupModalEl);
+                    popupModal.show();
+                }
+            });
+
+            function markGlobalPopupAsRead(infoId) {
+                if (!infoId) return;
+                fetch('<?= base_url('informasi/mark-read/') ?>' + infoId, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    const popupModalEl = document.getElementById('globalInformationPopupModal');
+                    if (popupModalEl) {
+                        const popupModal = bootstrap.Modal.getInstance(popupModalEl);
+                        if (popupModal) popupModal.hide();
+                    }
+                })
+                .catch(() => {
+                    const popupModalEl = document.getElementById('globalInformationPopupModal');
+                    if (popupModalEl) {
+                        const popupModal = bootstrap.Modal.getInstance(popupModalEl);
+                        if (popupModal) popupModal.hide();
+                    }
+                });
+            }
+        </script>
+    <?php endif; ?>
+
 </body>
 </html>

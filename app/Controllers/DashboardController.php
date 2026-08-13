@@ -115,6 +115,9 @@ class DashboardController extends BaseController
             'recommendation'     => $aiRecommendation,
         ];
 
+        $infoModel = new \App\Models\InformationModel();
+        $latestInformations = $infoModel->getInformationsForMember($userId, null, 6);
+
         $data = [
             'title'              => 'Dashboard Portal - Multimedia Club',
             'user'               => $userModel->find($userId),
@@ -122,6 +125,7 @@ class DashboardController extends BaseController
             'myActiveAttendance' => $myActiveAttendance,
             'aiSummary'          => $aiSummary,
             'todayBirthdays'     => $userModel->getTodayBirthdayUsers(),
+            'latestInformations' => $latestInformations,
         ];
 
         if (in_array($userRole, ['superadmin', 'pembina', 'bph'])) {

@@ -216,6 +216,157 @@ class FeedService extends BaseService
     }
 
     /**
+     * Repost a status
+     */
+    public function repost(int $originalPostId, int $userId): array
+    {
+        $orig = $this->postModel->find($originalPostId);
+        if (!$orig) {
+            return $this->error('Postingan tidak ditemukan.');
+        }
+
+        $author = $this->userModel->find($orig['user_id']);
+        $authorName = $author ? $author['full_name'] : 'Anggota MMC';
+
+        $repostContent = "🔁 *Mengunggah Ulang (Repost) status dari {$authorName}:*\n\n" . $orig['content'];
+
+        $newPostId = $this->postModel->insert([
+            'user_id'        => $userId,
+            'content'        => $repostContent,
+            'media_url'      => $orig['media_url'],
+            'media_type'     => $orig['media_type'],
+            'likes_count'    => 0,
+            'comments_count' => 0,
+            'reposts_count'  => 0,
+            'bookmarks_count'=> 0,
+        ]);
+
+        // Increment reposts_count on original post
+        $currentRepostsCount = (int)($orig['reposts_count'] ?? 0) + 1;
+        $this->postModel->update($originalPostId, ['reposts_count' => $currentRepostsCount]);
+
+        // Notify original author
+        if ((int)$orig['user_id'] !== $userId) {
+            $user = $this->userModel->find($userId);
+            $userName = $user ? $user['full_name'] : 'Seseorang';
+            $this->notificationModel->insert([
+                'user_id'    => $orig['user_id'],
+                'title'      => '🔁 Status Anda Di-repost',
+                'message'    => "{$userName} mengunggah ulang (repost) status karya Anda.",
+                'type'       => 'system',
+                'link'       => 'feed/post/' . $newPostId,
+                'is_read'    => 0,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        $this->auditLogModel->recordLog($userId, 'FEED_POST_REPOST', "Meng-repost status ID {$originalPostId}");
+
+        return $this->success('Status berhasil di-repost ke beranda Anda!');
+    }
+
+    /**
+     * Share post content directly to Chat Inbox conversation
+     */
+    public function shareToChat(int $postId, int $userId, string $targetType, int $targetId): array
+    {
+        $post = $this->postModel->find($postId);
+        if (!$post) {
+            return $this->error('Postingan tidak ditemukan.');
+        }
+
+        $author = $this->userModel->find($post['user_id']);
+        $authorName = $author ? $author['full_name'] : 'Anggota MMC';
+        $postLink = base_url('feed/post/' . $postId);
+
+        $chatMsg = "📢 *Membagikan Status Feed MMC dari {$authorName}:*\n" . mb_strimwidth($post['content'] ?? '', 0, 150, '...') . "\n\n🔗 Lihat selengkapnya: " . $postLink;
+
+        $chatMessageModel = new \App\Models\ChatMessageModel();
+        $chatConvModel    = new \App\Models\ChatConversationModel();
+
+        if ($targetType === 'group') {
+            $chatMessageModel->insert([
+                'conversation_id' => $targetId,
+                'sender_id'       => $userId,
+                'message'         => $chatMsg,
+                'attachment_url'  => $post['media_url'],
+                'attachment_type' => $post['media_type'] !== 'none' ? $post['media_type'] : null,
+                'created_at'      => date('Y-m-d H:i:s'),
+            ]);
+            $chatConvModel->update($targetId, ['updated_at' => date('Y-m-d H:i:s')]);
+        } else {
+            // Personal user chat: find or create conversation
+            $conv = $this->db->table('chat_conversations')
+                             ->where('type', 'personal')
+                             ->groupStart()
+                                 ->where('user_one_id', $userId)->where('user_two_id', $targetId)
+                                 ->orGroupStart()->where('user_one_id', $targetId)->where('user_two_id', $userId)->groupEnd()
+                             ->groupEnd()
+                             ->get()->getRowArray();
+
+            if ($conv) {
+                $convId = $conv['id'];
+            } else {
+                $convId = $chatConvModel->insert([
+                    'type'        => 'personal',
+                    'user_one_id' => $userId,
+                    'user_two_id' => $targetId,
+                    'created_at'  => date('Y-m-d H:i:s'),
+                    'updated_at'  => date('Y-m-d H:i:s'),
+                ]);
+            }
+
+            $chatMessageModel->insert([
+                'conversation_id' => $convId,
+                'sender_id'       => $userId,
+                'message'         => $chatMsg,
+                'attachment_url'  => $post['media_url'],
+                'attachment_type' => $post['media_type'] !== 'none' ? $post['media_type'] : null,
+                'created_at'      => date('Y-m-d H:i:s'),
+            ]);
+
+            $chatConvModel->update($convId, ['updated_at' => date('Y-m-d H:i:s')]);
+        }
+
+        return $this->success('Status berhasil dibagikan ke obrolan Inbox!');
+    }
+
+    /**
+     * Toggle Bookmark / Save Post (Persisted to Database)
+     */
+    public function toggleBookmark(int $postId, int $userId): array
+    {
+        $post = $this->postModel->find($postId);
+        if (!$post) {
+            return $this->error('Postingan tidak ditemukan.');
+        }
+
+        $bookmarkModel = new \App\Models\PostBookmarkModel();
+        $existing = $bookmarkModel->where('post_id', $postId)->where('user_id', $userId)->first();
+        $isBookmarked = false;
+
+        if ($existing) {
+            $bookmarkModel->delete($existing['id']);
+            $isBookmarked = false;
+        } else {
+            $bookmarkModel->insert([
+                'post_id'    => $postId,
+                'user_id'    => $userId,
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+            $isBookmarked = true;
+        }
+
+        $bmCount = $bookmarkModel->where('post_id', $postId)->countAllResults();
+        $this->postModel->update($postId, ['bookmarks_count' => $bmCount]);
+
+        return $this->success($isBookmarked ? 'Status disimpan ke markah!' : 'Batal menyimpan status.', [
+            'is_bookmarked'   => $isBookmarked,
+            'bookmarks_count' => $bmCount,
+        ]);
+    }
+
+    /**
      * Delete Comment
      */
     public function deleteComment(int $commentId, int $userId): array
@@ -333,8 +484,15 @@ class FeedService extends BaseService
             $p['is_liked'] = !empty($liked);
 
             // Is Following Author
-            $following = $this->followModel->where('follower_id', $currentUserId)->where('following_id', $authorId)->first();
-            $p['is_following_author'] = !empty($following);
+            $p['is_following_author'] = !empty($this->followModel->where('follower_id', $currentUserId)->where('following_id', $authorId)->first());
+
+            // Is Bookmarked by Me & Total Bookmarks Count
+            $bookmarkModel = new \App\Models\PostBookmarkModel();
+            $bookmarked = $bookmarkModel->where('post_id', $pId)->where('user_id', $currentUserId)->first();
+            $p['is_bookmarked']    = !empty($bookmarked);
+            // Reposts Count & Bookmarks Count from database column directly
+            $p['reposts_count']  = (int)($p['reposts_count'] ?? 0);
+            $p['bookmarks_count'] = (int)($p['bookmarks_count'] ?? 0);
 
             // Time formatted
             $p['time_ago'] = $this->timeAgo($p['created_at']);
@@ -357,6 +515,52 @@ class FeedService extends BaseService
         }
 
         return $posts;
+    }
+
+    /**
+     * Get Single Post By ID
+     */
+    public function getSinglePostById(int $postId, int $currentUserId): ?array
+    {
+        $posts = $this->db->table('posts')
+                          ->select('posts.*, users.full_name as author_name, users.avatar as author_avatar, users.class_dept as author_class, roles.name as author_role_name, roles.slug as author_role_slug')
+                          ->join('users', 'users.id = posts.user_id')
+                          ->join('roles', 'roles.id = users.role_id', 'left')
+                          ->where('posts.id', $postId)
+                          ->where('posts.deleted_at IS NULL')
+                          ->get()->getResultArray();
+
+        if (empty($posts)) {
+            return null;
+        }
+
+        $p = $posts[0];
+        $p['author_verified']    = $this->isRoleVerified($p['author_role_slug']);
+        $p['is_own_post']        = ((int)$p['user_id'] === $currentUserId);
+        $p['is_liked']           = (bool)$this->likeModel->where('post_id', $postId)->where('user_id', $currentUserId)->first();
+        $bookmarkModel = new \App\Models\PostBookmarkModel();
+        $p['is_bookmarked']       = (bool)$bookmarkModel->where('post_id', $postId)->where('user_id', $currentUserId)->first();
+        $p['bookmarks_count']     = (int)($p['bookmarks_count'] ?? 0);
+        $p['reposts_count']       = (int)($p['reposts_count'] ?? 0);
+        $p['is_following_author'] = (bool)$this->followModel->where('follower_id', $currentUserId)->where('following_id', $p['user_id'])->first();
+        $p['time_ago']           = $this->timeAgo($p['created_at']);
+
+        $comments = $this->db->table('post_comments')
+                             ->select('post_comments.*, users.full_name as commenter_name, users.avatar as commenter_avatar, roles.name as commenter_role_name, roles.slug as commenter_role_slug')
+                             ->join('users', 'users.id = post_comments.user_id')
+                             ->join('roles', 'roles.id = users.role_id', 'left')
+                             ->where('post_comments.post_id', $postId)
+                             ->orderBy('post_comments.created_at', 'ASC')
+                             ->get()->getResultArray();
+
+        foreach ($comments as &$c) {
+            $c['commenter_verified'] = $this->isRoleVerified($c['commenter_role_slug']);
+            $c['is_own_comment']     = ((int)$c['user_id'] === $currentUserId);
+            $c['time_ago']           = $this->timeAgo($c['created_at']);
+        }
+        $p['comments'] = $comments;
+
+        return $p;
     }
 
     /**
@@ -463,11 +667,14 @@ class FeedService extends BaseService
 
         foreach ($posts as &$p) {
             $pId = (int)$p['id'];
-            $p['author_verified'] = $user['is_verified'];
-            $p['is_own_post']     = ((int)$p['user_id'] === $currentUserId);
-            $p['is_liked']        = !empty($this->likeModel->where('post_id', $pId)->where('user_id', $currentUserId)->first());
-            $p['time_ago']        = $this->timeAgo($p['created_at']);
-
+            $p['author_verified']     = $user['is_verified'];
+            $p['is_own_post']         = ((int)$p['user_id'] === $currentUserId);
+            $p['is_following_author'] = $isFollowing;
+            $p['is_liked']            = !empty($this->likeModel->where('post_id', $pId)->where('user_id', $currentUserId)->first());
+            $p['time_ago']            = $this->timeAgo($p['created_at']);
+            $p['is_bookmarked']       = !empty($this->db->table('post_bookmarks')->where('post_id', $pId)->where('user_id', $currentUserId)->get()->getRowArray());
+            $p['reposts_count']       = (int)($p['reposts_count'] ?? 0);
+            $p['bookmarks_count']     = (int)($p['bookmarks_count'] ?? 0);
             $comments = $this->db->table('post_comments')
                                  ->select('post_comments.*, users.full_name as commenter_name, users.avatar as commenter_avatar, roles.name as commenter_role_name, roles.slug as commenter_role_slug')
                                  ->join('users', 'users.id = post_comments.user_id')
@@ -484,13 +691,57 @@ class FeedService extends BaseService
             $p['comments'] = $comments;
         }
 
+        // Get user's bookmarked posts (if viewing own profile)
+        $bookmarkedPosts = [];
+        if ($targetUserId === $currentUserId) {
+            $bmRows = $this->db->table('post_bookmarks')
+                               ->select('posts.*, users.full_name as author_name, users.avatar as author_avatar, users.class_dept as author_class, roles.name as author_role_name, roles.slug as author_role_slug')
+                               ->join('posts', 'posts.id = post_bookmarks.post_id')
+                               ->join('users', 'users.id = posts.user_id')
+                               ->join('roles', 'roles.id = users.role_id', 'left')
+                               ->where('post_bookmarks.user_id', $currentUserId)
+                               ->where('posts.deleted_at IS NULL')
+                               ->orderBy('post_bookmarks.created_at', 'DESC')
+                               ->get()->getResultArray();
+
+            foreach ($bmRows as $bm) {
+                $bmId = (int)$bm['id'];
+                $bmAuthorId = (int)$bm['user_id'];
+                $bm['author_verified']     = $this->isRoleVerified($bm['author_role_slug']);
+                $bm['is_own_post']         = ($bmAuthorId === $currentUserId);
+                $bm['is_following_author'] = !empty($this->followModel->where('follower_id', $currentUserId)->where('following_id', $bmAuthorId)->first());
+                $bm['is_liked']            = !empty($this->likeModel->where('post_id', $bmId)->where('user_id', $currentUserId)->first());
+                $bm['is_bookmarked']       = true;
+                $bm['reposts_count']       = (int)($bm['reposts_count'] ?? 0);
+                $bm['bookmarks_count']     = (int)($bm['bookmarks_count'] ?? 0);
+                $bm['time_ago']            = $this->timeAgo($bm['created_at']);
+
+                $bmComments = $this->db->table('post_comments')
+                                       ->select('post_comments.*, users.full_name as commenter_name, users.avatar as commenter_avatar, roles.name as commenter_role_name, roles.slug as commenter_role_slug')
+                                       ->join('users', 'users.id = post_comments.user_id')
+                                       ->join('roles', 'roles.id = users.role_id', 'left')
+                                       ->where('post_comments.post_id', $bmId)
+                                       ->orderBy('post_comments.created_at', 'ASC')
+                                       ->get()->getResultArray();
+
+                foreach ($bmComments as &$bmc) {
+                    $bmc['commenter_verified'] = $this->isRoleVerified($bmc['commenter_role_slug']);
+                    $bmc['is_own_comment']     = ((int)$bmc['user_id'] === $currentUserId);
+                    $bmc['time_ago']           = $this->timeAgo($bmc['created_at']);
+                }
+                $bm['comments'] = $bmComments;
+                $bookmarkedPosts[] = $bm;
+            }
+        }
+
         return $this->success('Profile loaded', [
-            'user'            => $user,
-            'follower_count'  => $followerCount,
-            'following_count' => $followingCount,
-            'posts_count'     => $postsCount,
-            'is_following'    => $isFollowing,
-            'posts'           => $posts,
+            'user'             => $user,
+            'follower_count'   => $followerCount,
+            'following_count'  => $followingCount,
+            'posts_count'      => $postsCount,
+            'is_following'     => $isFollowing,
+            'posts'            => $posts,
+            'bookmarked_posts' => $bookmarkedPosts,
         ]);
     }
 
@@ -537,6 +788,42 @@ class FeedService extends BaseService
     }
 
     /**
+     * Search Users
+     */
+    public function searchUsers(string $query, int $currentUserId): array
+    {
+        $query = trim($query);
+        if (str_starts_with($query, '@')) {
+            $query = ltrim($query, '@');
+        }
+
+        $builder = $this->db->table('users')
+                            ->select('users.id, users.username, users.full_name, users.avatar, users.class_dept, users.nis_nip, roles.name as role_name, roles.slug as role_slug')
+                            ->join('roles', 'roles.id = users.role_id', 'left')
+                            ->where('users.status', 'active');
+
+        if (!empty($query)) {
+            $builder->groupStart()
+                        ->like('users.full_name', $query)
+                        ->orLike('users.username', $query)
+                        ->orLike('users.nis_nip', $query)
+                        ->orLike('users.class_dept', $query)
+                        ->orLike('roles.name', $query)
+                    ->groupEnd();
+        }
+
+        $results = $builder->limit(50)->get()->getResultArray();
+
+        foreach ($results as &$u) {
+            $u['is_verified']  = $this->isRoleVerified($u['role_slug']);
+            $u['is_self']      = ((int)$u['id'] === $currentUserId);
+            $u['is_following'] = !empty($this->followModel->where('follower_id', $currentUserId)->where('following_id', $u['id'])->first());
+        }
+
+        return $results;
+    }
+
+    /**
      * Time ago helper
      */
     private function timeAgo(?string $datetime): string
@@ -545,7 +832,8 @@ class FeedService extends BaseService
         $time = strtotime($datetime);
         $diff = time() - $time;
 
-        if ($diff < 60) return 'Baru saja';
+        if ($diff < 10) return 'Baru saja';
+        if ($diff < 60) return max(1, (int)$diff) . ' dtk lalu';
         if ($diff < 3600) return floor($diff / 60) . ' mnt lalu';
         if ($diff < 86400) return floor($diff / 3600) . ' jam lalu';
         if ($diff < 2592000) return floor($diff / 86400) . ' hr lalu';

@@ -40,6 +40,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->post('profile', '\App\Modules\User\Controllers\UserController::updateProfile');
     $routes->get('inbox', '\App\Modules\Chat\Controllers\ChatController::index');
     $routes->get('feed', '\App\Modules\Feed\Controllers\FeedController::index');
+    $routes->get('feed/search-users', '\App\Modules\Feed\Controllers\FeedController::searchUsers');
+    $routes->get('feed/user/(:num)', '\App\Modules\Feed\Controllers\FeedController::userWall/$1');
 });
 
 // 4. Admin CMS Routes (Super Admin, Pembina, BPH)
@@ -118,7 +120,7 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
 });
 
 // Load Modular Routes
-$modules = ['Auth', 'User', 'Meeting', 'Attendance', 'Task', 'Cms', 'Learning', 'System', 'Notification', 'Chat', 'Feed'];
+$modules = ['Auth', 'User', 'Meeting', 'Attendance', 'Task', 'Cms', 'Learning', 'System', 'Notification', 'Chat', 'Feed', 'Information'];
 foreach ($modules as $module) {
     $routeFile = APPPATH . 'Modules/' . $module . '/Config/Routes.php';
     if (file_exists($routeFile)) {

@@ -6,8 +6,8 @@
     <div class="row g-3" style="min-height: calc(100vh - 120px);">
 
         <!-- Left Sidebar: Conversations List -->
-        <div class="col-12 col-lg-4 col-xl-3 <?= ($activeConvId > 0) ? 'd-none d-lg-block' : 'd-block' ?>">
-            <div class="saas-card h-100 d-flex flex-column p-0 overflow-hidden" style="max-height: calc(100vh - 120px);">
+        <div class="col-12 col-lg-3 col-xl-3 <?= ($activeConvId > 0) ? 'd-none d-lg-block' : 'd-block' ?>">
+            <div class="saas-card h-100 d-flex flex-column p-0 overflow-hidden" style="max-height: calc(100vh - 110px);">
                 
                 <!-- Header Actions -->
                 <div class="p-3 border-bottom border-secondary border-opacity-25 bg-dark bg-opacity-50">
@@ -95,7 +95,7 @@
         </div>
 
         <!-- Right Main Chat Workspace -->
-        <div class="col-12 col-lg-8 col-xl-9 <?= ($activeConvId === 0) ? 'd-none d-lg-block' : 'd-block' ?>">
+        <div class="col-12 col-lg-9 col-xl-9 <?= ($activeConvId === 0) ? 'd-none d-lg-block' : 'd-block' ?>">
             <?php
                 $activeConv = null;
                 if (!empty($conversations)) {
@@ -123,69 +123,75 @@
                 <div class="saas-card h-100 d-flex flex-column p-0 overflow-hidden" style="max-height: calc(100vh - 120px);">
                     
                     <!-- Active Chat Header Bar -->
-                    <div class="p-3 border-bottom border-secondary border-opacity-25 bg-dark bg-opacity-75 d-flex align-items-center justify-content-between gap-3">
-                        <div class="d-flex align-items-center gap-2.5">
+                    <div class="p-2.5 p-md-3 border-bottom border-secondary border-opacity-25 bg-dark bg-opacity-75 d-flex align-items-center justify-content-between gap-2 overflow-hidden" style="min-width: 0;">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
                             <!-- Mobile Back Button to Conversation List -->
-                            <a href="<?= base_url('inbox') ?>" class="btn btn-sm btn-saas-dark text-white rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0 d-lg-none" style="width: 36px; height: 36px;" title="Kembali ke Daftar Obrolan">
+                            <a href="<?= base_url('inbox') ?>" class="btn btn-sm btn-saas-dark text-white rounded-circle p-0 d-flex align-items-center justify-content-center flex-shrink-0 d-lg-none me-1" style="width: 36px; height: 36px; min-width: 36px;" title="Kembali ke Daftar Obrolan">
                                 <i class="fa-solid fa-arrow-left"></i>
                             </a>
 
                             <?php if (!empty($activeConv['display_avatar'])): ?>
-                                <img src="<?= base_url($activeConv['display_avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 flex-shrink-0" style="width: 44px; height: 44px;">
+                                <img src="<?= base_url($activeConv['display_avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 flex-shrink-0" style="width: 40px; height: 40px;">
                             <?php else: ?>
-                                <div class="rounded-circle <?= $activeConv['type'] === 'group' ? 'bg-warning text-dark' : 'bg-danger text-white' ?> d-flex align-items-center justify-content-center fw-bold fs-5 flex-shrink-0" style="width: 44px; height: 44px;">
+                                <div class="rounded-circle <?= $activeConv['type'] === 'group' ? 'bg-warning text-dark' : 'bg-danger text-white' ?> d-flex align-items-center justify-content-center fw-bold fs-6 flex-shrink-0" style="width: 40px; height: 40px;">
                                     <?= $activeConv['type'] === 'group' ? '<i class="fa-solid fa-users"></i>' : strtoupper(substr($activeConv['display_name'], 0, 1)) ?>
                                 </div>
                             <?php endif; ?>
 
-                            <div class="text-truncate">
-                                <h6 class="text-white font-heading m-0 fw-bold d-flex align-items-center gap-2 text-truncate">
-                                    <span class="text-truncate"><?= esc($activeConv['display_name']) ?></span>
+                            <div class="overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
+                                <h6 class="text-white font-heading m-0 fw-bold d-flex align-items-center gap-1.5 style-tiny">
+                                    <span class="text-truncate" style="max-width: 100%;"><?= esc($activeConv['display_name']) ?></span>
                                     <?php if ($activeConv['type'] === 'group'): ?>
-                                        <span class="badge bg-warning text-dark font-monospace style-tiny flex-shrink-0">Grup</span>
+                                        <span class="badge bg-warning text-dark font-monospace style-tiny flex-shrink-0" style="font-size: 0.60rem;">Grup</span>
                                     <?php endif; ?>
                                 </h6>
-                                <small class="text-secondary style-tiny d-block opacity-75 text-truncate">
+                                <small class="text-secondary style-tiny d-block opacity-75 text-truncate" style="font-size: 0.68rem;">
                                     <?= esc($activeConv['display_sub']) ?>
                                 </small>
                             </div>
                         </div>
 
                         <!-- Header Action Buttons -->
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-1.5 flex-shrink-0 ms-auto">
                             <?php if ($activeConv['type'] === 'group'): ?>
-                                <button type="button" class="btn btn-sm btn-saas-dark text-warning border border-secondary border-opacity-25" data-bs-toggle="modal" data-bs-target="#groupInfoModal" title="Detail & Info Grup">
-                                    <i class="fa-solid fa-circle-info me-1"></i> Info Grup
+                                <button type="button" class="btn btn-sm btn-saas-dark text-warning border border-secondary border-opacity-25 px-2.5 py-1.5 style-tiny" data-bs-toggle="modal" data-bs-target="#groupInfoModal" title="Detail & Info Grup">
+                                    <i class="fa-solid fa-circle-info me-1"></i> <span class="d-none d-sm-inline">Info Grup</span>
                                 </button>
-                                <a href="<?= base_url('inbox/leave-group/' . $activeConv['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin keluar dari grup obrolan ini?')" class="btn btn-sm btn-saas-dark text-warning border border-warning border-opacity-25" title="Keluar dari Grup Ini">
+                                <a href="<?= base_url('inbox/leave-group/' . $activeConv['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin keluar dari grup obrolan ini?')" class="btn btn-sm btn-saas-dark text-warning border border-warning border-opacity-25 p-1.5 rounded-circle d-sm-none" title="Keluar dari Grup Ini">
+                                    <i class="fa-solid fa-right-from-bracket"></i>
+                                </a>
+                                <a href="<?= base_url('inbox/leave-group/' . $activeConv['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin keluar dari grup obrolan ini?')" class="btn btn-sm btn-saas-dark text-warning border border-warning border-opacity-25 px-2.5 py-1.5 style-tiny d-none d-sm-inline-flex align-items-center" title="Keluar dari Grup Ini">
                                     <i class="fa-solid fa-right-from-bracket me-1"></i> Keluar
                                 </a>
                             <?php endif; ?>
 
                             <?php if ($activeConv['type'] === 'direct' || ($activeConv['type'] === 'group' && !empty($activeConv['is_group_admin']))): ?>
-                                <a href="<?= base_url('inbox/delete-conv/' . $activeConv['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus seluruh obrolan <?= $activeConv['type'] === 'group' ? 'grup' : '' ?> ini?')" class="btn btn-sm btn-saas-dark text-danger border border-danger border-opacity-25" title="Hapus Obrolan Ini">
-                                    <i class="fa-solid fa-trash-can me-1"></i> Hapus Obrolan
+                                <a href="<?= base_url('inbox/delete-conv/' . $activeConv['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus seluruh obrolan <?= $activeConv['type'] === 'group' ? 'grup' : '' ?> ini?')" class="btn btn-sm btn-saas-dark text-danger border border-danger border-opacity-25 p-1.5 rounded-circle d-sm-none" title="Hapus Obrolan Ini">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </a>
+                                <a href="<?= base_url('inbox/delete-conv/' . $activeConv['id']) ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus seluruh obrolan <?= $activeConv['type'] === 'group' ? 'grup' : '' ?> ini?')" class="btn btn-sm btn-saas-dark text-danger border border-danger border-opacity-25 px-2.5 py-1.5 style-tiny d-none d-sm-inline-flex align-items-center" title="Hapus Obrolan Ini">
+                                    <i class="fa-solid fa-trash-can me-1"></i> Hapus
                                 </a>
                             <?php endif; ?>
                         </div>
                     </div>
 
                     <!-- Messages Feed Container -->
-                    <div class="flex-grow-1 overflow-y-auto p-3 p-md-4 d-flex flex-column gap-3" id="messagesFeedContainer" style="background-color: rgba(10, 10, 10, 0.4);">
+                    <div class="flex-grow-1 overflow-y-auto p-2.5 p-md-4 d-flex flex-column gap-3" id="messagesFeedContainer" style="background-color: rgba(10, 10, 10, 0.4);">
                         <div class="text-center py-4 text-secondary style-tiny">
                             <span class="spinner-border spinner-border-sm me-1 text-danger"></span> Memuat pesan obrolan...
                         </div>
                     </div>
 
                     <!-- Message Input Form Bar -->
-                    <div class="p-3 border-top border-secondary border-opacity-25 bg-dark">
+                    <div class="p-2.5 p-md-3 border-top border-secondary border-opacity-25 bg-dark">
                         <!-- Attachment Preview Box Indicator -->
-                        <div id="attachmentPreviewBox" class="d-none mb-2.5 p-2.5 rounded-3 bg-black border border-warning border-opacity-50 align-items-center justify-content-between gap-3 shadow-lg">
-                            <div class="d-flex align-items-center gap-3 overflow-hidden" style="min-width: 0;">
+                        <div id="attachmentPreviewBox" class="d-none mb-2.5 p-2.5 rounded-3 bg-black border border-warning border-opacity-50 align-items-center justify-content-between gap-2 shadow-lg w-100" style="min-width: 0;">
+                            <div class="d-flex align-items-center gap-2.5 overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
                                 <div id="attachmentThumbnailWrapper" class="flex-shrink-0"></div>
-                                <div class="text-truncate">
-                                    <span class="badge bg-warning text-dark font-monospace style-tiny py-0.5 px-1.5 mb-1 d-inline-block">Lampiran Berkas / Gambar Siap Dikirim</span>
-                                    <span id="attachmentFileName" class="text-white style-tiny fw-bold d-block text-truncate"></span>
+                                <div class="overflow-hidden" style="min-width: 0; flex: 1 1 0%;">
+                                    <span class="badge bg-warning text-dark font-monospace style-tiny py-0.5 px-1.5 mb-1 d-inline-block">Lampiran Berkas Siap Dikirim</span>
+                                    <span id="attachmentFileName" class="text-white style-tiny fw-bold d-block text-truncate" style="max-width: 100%;"></span>
                                     <small id="attachmentFileSize" class="text-secondary font-monospace style-tiny opacity-75 d-block" style="font-size: 0.65rem;"></small>
                                 </div>
                             </div>
@@ -194,21 +200,21 @@
                             </button>
                         </div>
 
-                        <form id="sendMessageForm" enctype="multipart/form-data" class="d-flex align-items-center gap-2">
+                        <form id="sendMessageForm" enctype="multipart/form-data" class="d-flex align-items-center gap-1.5 gap-md-2" style="min-width: 0;">
                             <input type="hidden" name="conversation_id" id="activeConvIdInput" value="<?= $activeConv['id'] ?>">
                             
                             <!-- File Attachment Button -->
-                            <label class="btn btn-saas-dark border border-secondary border-opacity-25 text-secondary hover-white p-2.5 rounded-3 mb-0" style="cursor: pointer;" title="Lampirkan File / Gambar">
+                            <label class="btn btn-saas-dark border border-secondary border-opacity-25 text-secondary hover-white p-2 rounded-3 mb-0 flex-shrink-0 d-flex align-items-center justify-content-center" style="cursor: pointer; width: 40px; height: 40px; min-width: 40px;" title="Lampirkan File / Gambar">
                                 <i class="fa-solid fa-paperclip fs-6"></i>
                                 <input type="file" name="attachment" id="attachmentInput" class="d-none" onchange="previewAttachment(this)">
                             </label>
 
                             <!-- Text Message Input -->
-                            <input type="text" name="message" id="messageInput" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-3 py-2 px-3" placeholder="Ketik pesan Anda di sini..." autocomplete="off">
+                            <input type="text" name="message" id="messageInput" class="form-control bg-black border-secondary border-opacity-50 text-white rounded-3 py-2 px-3 style-tiny" placeholder="Ketik pesan Anda di sini..." autocomplete="off" style="min-width: 0;">
 
                             <!-- Send Button -->
-                            <button type="submit" class="btn btn-red px-3.5 rounded-3 d-flex align-items-center gap-1.5 flex-shrink-0" id="sendBtn">
-                                <span>Kirim</span> <i class="fa-solid fa-paper-plane small"></i>
+                            <button type="submit" class="btn btn-red rounded-3 px-3 py-2 d-flex align-items-center justify-content-center gap-1.5 flex-shrink-0 style-tiny fw-bold" id="sendBtn">
+                                <span class="d-none d-sm-inline">Kirim</span> <i class="fa-solid fa-paper-plane"></i>
                             </button>
                         </form>
                     </div>
@@ -972,8 +978,16 @@
 
     function formatTime(dateStr) {
         if (!dateStr) return '';
+        // String dari MySQL (Asia/Jakarta) format YYYY-MM-DD HH:MM:SS
+        const parts = dateStr.split(' ');
+        if (parts.length === 2) {
+            const timeParts = parts[1].split(':');
+            if (timeParts.length >= 2) {
+                return timeParts[0] + ':' + timeParts[1];
+            }
+        }
         const d = new Date(dateStr);
-        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     }
 
     // Handle tab switching trigger when opening modal via button data-bs-tab

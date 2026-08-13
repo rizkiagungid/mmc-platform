@@ -29,8 +29,61 @@ class MaintenanceFilter implements FilterInterface
             return;
         }
 
-        // Allow logged-in admin roles to bypass maintenance mode
         $roleSlug = session()->get('role_slug');
+
+        // Check Member Activity Lock setting (Freeze member actions)
+        $lockMemberActivities = get_setting('lock_member_activities', '0');
+        if ($lockMemberActivities === '1' && !in_array($roleSlug, ['superadmin', 'pembina', 'bph'])) {
+            $httpMethod = strtolower((string)$request->getMethod());
+            if (in_array($httpMethod, ['post', 'put', 'delete', 'patch'], true)) {
+                if ($request->isAJAX() || str_contains($request->getHeaderLine('Accept'), 'application/json')) {
+                    return response()->setStatusCode(403)->setJSON([
+                        'status'  => 'error',
+                        'message' => 'Aktivitas anggota sedang dinonaktifkan oleh Administrator / BPH.'
+                    ]);
+                }
+                return redirect()->back()->with('error', 'Aktivitas anggota sedang dibekukan / dinonaktifkan oleh Administrator / BPH.');
+            }
+        }
+        // Check Page-Specific Lock for Members (Nonaktifkan Halaman Tertentu Anggota)
+        $disabledMemberPagesRaw = get_setting('disabled_member_pages', '[]');
+        $disabledMemberPages    = json_decode($disabledMemberPagesRaw, true) ?: [];
+
+        if (!empty($disabledMemberPages) && !in_array($roleSlug, ['superadmin', 'pembina', 'bph'])) {
+            $isMemberPageLocked = false;
+
+            if (in_array('attendance_scan', $disabledMemberPages) && url_is('attendance/scan*')) {
+                $isMemberPageLocked = true;
+            } elseif (in_array('attendance_history', $disabledMemberPages) && url_is('attendance/history*')) {
+                $isMemberPageLocked = true;
+            } elseif (in_array('tasks', $disabledMemberPages) && (url_is('member/tasks*') || url_is('tasks*'))) {
+                $isMemberPageLocked = true;
+            } elseif (in_array('learning', $disabledMemberPages) && (url_is('member/learning*') || url_is('learning*'))) {
+                $isMemberPageLocked = true;
+            } elseif (in_array('feed', $disabledMemberPages) && url_is('feed*')) {
+                $isMemberPageLocked = true;
+            } elseif (in_array('inbox', $disabledMemberPages) && url_is('inbox*')) {
+                $isMemberPageLocked = true;
+            } elseif (in_array('information', $disabledMemberPages) && url_is('informasi*')) {
+                $isMemberPageLocked = true;
+            } elseif (in_array('messages', $disabledMemberPages) && url_is('admin/cms/messages*')) {
+                $isMemberPageLocked = true;
+            } elseif (in_array('profile', $disabledMemberPages) && url_is('profile*')) {
+                $isMemberPageLocked = true;
+            }
+
+            if ($isMemberPageLocked) {
+                if ($request->isAJAX() || str_contains($request->getHeaderLine('Accept'), 'application/json')) {
+                    return response()->setStatusCode(403)->setJSON([
+                        'status'  => 'error',
+                        'message' => 'Halaman ini sedang dinonaktifkan sementara oleh Pengurus / Admin.'
+                    ]);
+                }
+                return redirect()->to('/dashboard')->with('error', 'Halaman yang Anda akses sedang dinonaktifkan sementara oleh Pengurus / Admin.');
+            }
+        }
+
+        // Allow logged-in admin roles to bypass maintenance mode
         if (in_array($roleSlug, ['superadmin', 'pembina', 'bph'])) {
             return;
         }

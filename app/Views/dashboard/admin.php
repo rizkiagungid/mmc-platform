@@ -438,6 +438,52 @@
     </div>
 </div>
 
+<!-- Informasi Terbaru MMC Section (Admin Dashboard Bottom) -->
+<div class="saas-card p-4 mt-4 border border-secondary border-opacity-25 bg-body-tertiary">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <h5 class="text-body font-heading m-0 d-flex align-items-center gap-2">
+            <i class="fa-solid fa-bullhorn text-warning"></i> Informasi Terbaru MMC
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <a href="<?= base_url('admin/informasi') ?>" class="btn btn-sm btn-saas-dark text-secondary style-tiny rounded-pill">
+                <i class="fa-solid fa-sliders me-1"></i> Kelola
+            </a>
+            <a href="<?= base_url('informasi') ?>" class="small text-danger text-decoration-none">
+                Lihat Semua <i class="fa-solid fa-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <?php if (empty($latestInformations)): ?>
+        <div class="text-center py-4 text-secondary style-tiny">Belum ada informasi atau pengumuman terbaru saat ini.</div>
+    <?php else: ?>
+        <div class="row g-3">
+            <?php foreach (array_slice($latestInformations, 0, 3) as $info): ?>
+                <div class="col-12 col-md-4">
+                    <div class="p-3 rounded-3 bg-body-secondary border border-secondary border-opacity-25 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                                <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 style-tiny font-monospace">
+                                    <?= esc($info['category']) ?>
+                                </span>
+                                <small class="text-secondary style-tiny font-monospace" style="font-size: 0.68rem;">
+                                    <?= date('d M Y', strtotime($info['date_time'])) ?>
+                                </small>
+                            </div>
+                            <h6 class="text-body font-heading fw-bold mb-2 style-tiny line-clamp-2"><?= esc($info['title']) ?></h6>
+                            <p class="text-secondary style-tiny line-clamp-2 m-0 opacity-75" style="font-size: 0.75rem;"><?= esc($info['description']) ?></p>
+                        </div>
+                        <div class="pt-2 mt-3 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between">
+                            <small class="text-secondary style-tiny"><i class="fa-solid fa-user-pen me-1"></i> <?= esc($info['author_name']) ?></small>
+                            <a href="<?= base_url('informasi') ?>" class="btn btn-sm btn-saas-dark text-info style-tiny py-0.5 px-2 rounded-pill">Lihat</a>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>

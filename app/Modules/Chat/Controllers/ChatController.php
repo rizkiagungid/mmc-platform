@@ -34,7 +34,7 @@ class ChatController extends BaseController
                                    ->orderBy('users.full_name', 'ASC')
                                    ->findAll();
 
-        $activeConvId = (int)($this->request->getGet('conv') ?: ($conversations[0]['id'] ?? 0));
+        $activeConvId = (int)($this->request->getGet('conv') ?? 0);
 
         return view('App\Modules\Chat\Views\index', [
             'title'         => 'Inbox Pesan & Chat Grup - Multimedia Club',

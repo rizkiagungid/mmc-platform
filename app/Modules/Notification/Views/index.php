@@ -38,6 +38,9 @@
         <a href="<?= base_url('notifications?type=feedback') ?>" class="btn btn-sm <?= ($filterType === 'feedback') ? 'btn-danger' : 'btn-saas-dark' ?> text-nowrap">
             <i class="fa-solid fa-comments me-1"></i> Kritik & Saran
         </a>
+        <a href="<?= base_url('notifications?type=information') ?>" class="btn btn-sm <?= ($filterType === 'information') ? 'btn-danger' : 'btn-saas-dark' ?> text-nowrap">
+            <i class="fa-solid fa-bullhorn me-1"></i> Informasi MMC
+        </a>
         <a href="<?= base_url('notifications?type=attendance') ?>" class="btn btn-sm <?= ($filterType === 'attendance') ? 'btn-success text-dark fw-bold' : 'btn-saas-dark' ?> text-nowrap">
             <i class="fa-solid fa-qrcode me-1"></i> Presensi & Absen
         </a>
@@ -67,6 +70,10 @@
                         $iconClass = 'fa-solid fa-list-check text-warning';
                         $badgeClass = 'bg-warning text-dark';
                         $categoryName = 'Task';
+                    } elseif ($n['type'] === 'information') {
+                        $iconClass = 'fa-solid fa-bullhorn text-warning';
+                        $badgeClass = 'bg-warning text-dark';
+                        $categoryName = 'Informasi';
                     } elseif ($n['type'] === 'profile') {
                         $iconClass = 'fa-solid fa-user-gear text-info';
                         $badgeClass = 'bg-info text-dark';
