@@ -20,7 +20,7 @@
     <?php endif; ?>
 
     <!-- Header Banner -->
-    <div class="saas-card mb-4 p-4 position-relative border border-secondary border-opacity-25 bg-body-tertiary" style="z-index: 1050;">
+    <div class="saas-card mb-4 p-4 position-relative border border-secondary border-opacity-25 bg-body-tertiary" style="z-index: 10;">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative style-tiny">
             <div>
                 <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 py-1 px-2.5 rounded-pill font-monospace mb-2">
@@ -36,13 +36,13 @@
 
             <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
                 <!-- Search Member Input Box (Live Floating Dropdown) -->
-                <div class="position-relative w-100" style="max-width: 320px; z-index: 1060;">
+                <div class="position-relative w-100" style="max-width: 320px; z-index: 15;">
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-body border-secondary border-opacity-50 text-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
                         <input type="text" id="feedSearchMemberInput" class="form-control bg-body border-secondary border-opacity-50 text-body style-tiny rounded-end-pill" placeholder="Cari anggota / pengurus..." autocomplete="off">
                     </div>
                     <!-- Live Search Results Dropdown -->
-                    <div id="feedSearchDropdown" class="position-absolute top-100 start-0 end-0 mt-1 rounded-3 bg-body border border-secondary border-opacity-50 shadow-lg p-2 d-none" style="z-index: 1070; width: 100%; max-height: 360px; overflow-y: auto;">
+                    <div id="feedSearchDropdown" class="position-absolute top-100 start-0 end-0 mt-1 rounded-3 bg-body border border-secondary border-opacity-50 shadow-lg p-2 d-none" style="z-index: 20; width: 100%; max-height: 360px; overflow-y: auto;">
                         <?php if (!empty($allMembers)): ?>
                             <?php foreach ($allMembers as $m): ?>
                                 <?php 

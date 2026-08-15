@@ -302,7 +302,7 @@
     <!-- Main Content Area -->
     <div class="flex-grow-1 d-flex flex-column min-vh-100 w-100" style="background-color: var(--bg-main); min-width: 0;">
         <!-- Top Bar -->
-        <header class="navbar navbar-expand border-bottom border-secondary border-opacity-25 px-3 px-lg-4 admin-topbar" style="position: sticky; top: 0; z-index: 1050; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(13,13,18,0.96); overflow: visible;">
+        <header class="navbar navbar-expand border-bottom border-secondary border-opacity-25 px-3 px-lg-4 admin-topbar" style="backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); background: rgba(13,13,18,0.96); overflow: visible;">
             <div class="container-fluid p-0 d-flex align-items-center justify-content-between">
                 
                 <div class="d-flex align-items-center gap-2">
