@@ -61,6 +61,12 @@ class UserService extends BaseService
                               ->where('deleted_at IS NULL')
                               ->countAllResults();
 
+        $alumniCount = $db->table('users')
+                          ->join('roles', 'roles.id = users.role_id')
+                          ->where('roles.slug', 'alumni')
+                          ->where('users.deleted_at IS NULL')
+                          ->countAllResults();
+
         return [
             'all_users_count'    => $allUsersCount,
             'total_members'      => $totalMembers,
@@ -68,6 +74,7 @@ class UserService extends BaseService
             'programming_count'  => $programmingCount,
             'bph_count'          => $bphCount,
             'admin_count'        => $superAdminCount,
+            'alumni_count'       => $alumniCount,
         ];
     }
 

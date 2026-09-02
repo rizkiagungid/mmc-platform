@@ -123,13 +123,13 @@
                     <input type="hidden" name="task_id" value="<?= $t['id'] ?>">
 
                     <div class="mb-3">
-                        <label class="form-label text-secondary small fw-medium">Tautan / Link Berkas Hasil Karya (Google Drive, Figma, GitHub, Premiere project)</label>
+                        <label class="form-label text-secondary small fw-medium">Tautan / Link Berkas Tugas (Google Drive, Figma, GitHub, dll.)</label>
                         <input type="url" name="attachment_url" class="form-control" placeholder="https://drive.google.com/..." value="<?= esc($t['my_submission']['attachment_url'] ?? '') ?>">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label text-secondary small fw-medium">Catatan Penjelasan Pengerjaan</label>
-                        <textarea name="submission_text" class="form-control" rows="3" placeholder="Jelaskan versi hasil karya yang dikumpulkan..."><?= esc($t['my_submission']['submission_text'] ?? '') ?></textarea>
+                        <textarea name="submission_text" class="form-control" rows="3" placeholder="Tuliskan catatan atau jawaban tugas kamu..."><?= esc($t['my_submission']['submission_text'] ?? '') ?></textarea>
                     </div>
 
                     <button type="submit" class="btn btn-red px-4">Kirim Pengumpulan</button>

@@ -83,10 +83,13 @@
                     <tr>
                         <td><?= $i + 1 ?></td>
                         <td>
-                            <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="fw-semibold text-white text-decoration-none">
-                                <?= esc($t['title']) ?>
+                            <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="fw-bold text-white text-decoration-none hover-text-danger d-inline-flex align-items-center mb-1" title="Lihat detail tugas: <?= esc($t['title']) ?>">
+                                <span><?= esc($t['title']) ?></span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-danger opacity-75 ms-2" style="font-size: 0.72rem;"></i>
                             </a>
-                            <div class="text-secondary small text-truncate" style="max-width: 250px;"><?= esc($t['description']) ?></div>
+                            <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="text-secondary small text-truncate text-decoration-none d-block opacity-75 hover-text-danger" style="max-width: 250px;" title="<?= esc($t['description']) ?>">
+                                <?= esc($t['description']) ?>
+                            </a>
                         </td>
                         <td>
                             <form action="<?= base_url('admin/tasks/update-priority/' . $t['id']) ?>" method="POST" class="m-0">

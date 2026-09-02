@@ -68,6 +68,8 @@ class MaintenanceFilter implements FilterInterface
                 $isMemberPageLocked = true;
             } elseif (in_array('messages', $disabledMemberPages) && url_is('admin/cms/messages*')) {
                 $isMemberPageLocked = true;
+            } elseif (in_array('ranking', $disabledMemberPages) && url_is('ranking*')) {
+                $isMemberPageLocked = true;
             } elseif (in_array('profile', $disabledMemberPages) && url_is('profile*')) {
                 $isMemberPageLocked = true;
             }

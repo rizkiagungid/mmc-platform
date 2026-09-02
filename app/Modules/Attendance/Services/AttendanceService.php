@@ -28,16 +28,16 @@ class AttendanceService extends BaseService
     {
         $nowStr = date('Y-m-d H:i:s');
         
-        // Clean up any attendance records belonging to superadmin
-        $superAdminUserIds = array_column(
+        // Clean up any attendance records belonging to superadmin and alumni
+        $exemptUserIds = array_column(
             $this->userModel->select('users.id')
                             ->join('roles', 'roles.id = users.role_id')
-                            ->where('roles.slug', 'superadmin')
+                            ->whereIn('roles.slug', ['superadmin', 'alumni'])
                             ->findAll(),
             'id'
         );
-        if (!empty($superAdminUserIds)) {
-            $this->db->table('attendances')->whereIn('user_id', $superAdminUserIds)->delete();
+        if (!empty($exemptUserIds)) {
+            $this->db->table('attendances')->whereIn('user_id', $exemptUserIds)->delete();
         }
 
         $meetings = $this->meetingModel->where('deleted_at IS NULL')->findAll();
@@ -45,7 +45,7 @@ class AttendanceService extends BaseService
                                     ->join('roles', 'roles.id = users.role_id', 'left')
                                     ->where('users.deleted_at IS NULL')
                                     ->where('users.status', 'active')
-                                    ->where('roles.slug !=', 'superadmin')
+                                    ->whereNotIn('roles.slug', ['superadmin', 'alumni'])
                                     ->findAll();
 
         if (empty($meetings) || empty($allUsers)) {
@@ -180,6 +180,10 @@ class AttendanceService extends BaseService
                 return $this->error('Pengguna dengan role Super Admin adalah pengelola web dan tidak diwajibkan mencatat presensi.');
             }
 
+            if ($actorUser && ($actorUser['role_slug'] ?? '') === 'alumni') {
+                return $this->error('Pengguna dengan role Alumni adalah anggota kehormatan dan tidak memiliki kewajiban presensi.');
+            }
+
             $targetUserId = $actorUserId;
             $adminId      = null;
             $method       = 'meeting_qr';
@@ -192,6 +196,10 @@ class AttendanceService extends BaseService
 
             if (($member['role_slug'] ?? '') === 'superadmin') {
                 return $this->error('Anggota dengan role Super Admin adalah pengelola web dan tidak diwajibkan mengikuti presensi.');
+            }
+
+            if (($member['role_slug'] ?? '') === 'alumni') {
+                return $this->error('Anggota dengan role Alumni adalah anggota kehormatan dan tidak memiliki kewajiban presensi.');
             }
 
             if (($member['status'] ?? '') !== 'active') {
@@ -258,6 +266,10 @@ class AttendanceService extends BaseService
             return $this->error('Pengguna dengan role Super Admin adalah pengelola web dan tidak diwajibkan mencatat presensi.');
         }
 
+        if ($user && ($user['role_slug'] ?? '') === 'alumni') {
+            return $this->error('Pengguna dengan role Alumni adalah anggota kehormatan dan tidak memiliki kewajiban presensi.');
+        }
+
         $activeMeeting = $this->meetingModel->getActiveMeeting();
         if (!$activeMeeting) {
             return $this->error('Tidak ada sesi pertemuan yang sedang aktif saat ini.');
@@ -316,6 +328,10 @@ class AttendanceService extends BaseService
         $targetUser = $this->userModel->select('users.*, roles.slug as role_slug')->join('roles', 'roles.id = users.role_id')->find($userId);
         if ($targetUser && ($targetUser['role_slug'] ?? '') === 'superadmin') {
             return $this->error('Anggota dengan role Super Admin adalah pengelola web dan tidak dapat dicatat presensinya.');
+        }
+
+        if ($targetUser && ($targetUser['role_slug'] ?? '') === 'alumni') {
+            return $this->error('Anggota dengan role Alumni adalah anggota kehormatan dan tidak dapat dicatat presensinya.');
         }
 
         $this->db->transBegin();

@@ -13,3 +13,7 @@
  *
  * @see: https://codeigniter.com/user_guide/extending/common.html
  */
+
+if (file_exists(APPPATH . 'Helpers/media_helper.php')) {
+    require_once APPPATH . 'Helpers/media_helper.php';
+}

@@ -22,3 +22,14 @@ if (!function_exists('get_setting')) {
         return array_key_exists($key, $settingsCache) && $settingsCache[$key] !== '' ? $settingsCache[$key] : $default;
     }
 }
+
+if (!function_exists('set_setting')) {
+    /**
+     * Set or update system setting value by key
+     */
+    function set_setting(string $key, string $value)
+    {
+        $settingModel = new \App\Models\SettingModel();
+        return $settingModel->setSetting($key, $value);
+    }
+}

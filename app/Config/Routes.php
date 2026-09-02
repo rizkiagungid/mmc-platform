@@ -14,6 +14,11 @@ $routes->get('faq', 'PublicController::faq');
 $routes->get('achievements', 'PublicController::achievements');
 $routes->get('prestasi', 'PublicController::achievements');
 
+// Universal Media Dev Proxy & Dynamic Placeholder / Avatar
+$routes->get('media/proxy', 'MediaController::proxy');
+$routes->get('media/placeholder', 'MediaController::placeholder');
+$routes->get('media/avatar', 'MediaController::avatar');
+
 // 2. Authentication Routes (Modular Auth)
 $routes->get('login', '\App\Modules\Auth\Controllers\AuthController::login');
 $routes->post('login', '\App\Modules\Auth\Controllers\AuthController::attemptLogin');
@@ -42,6 +47,9 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('feed', '\App\Modules\Feed\Controllers\FeedController::index');
     $routes->get('feed/search-users', '\App\Modules\Feed\Controllers\FeedController::searchUsers');
     $routes->get('feed/user/(:num)', '\App\Modules\Feed\Controllers\FeedController::userWall/$1');
+    $routes->get('ranking', '\App\Modules\Ranking\Controllers\RankingController::index');
+    $routes->post('ranking/reset', '\App\Modules\Ranking\Controllers\RankingController::resetPeriod');
+    $routes->post('ranking/cancel-reset', '\App\Modules\Ranking\Controllers\RankingController::cancelResetPeriod');
 });
 
 // 4. Admin CMS Routes (Super Admin, Pembina, BPH)

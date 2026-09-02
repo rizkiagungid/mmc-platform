@@ -41,15 +41,11 @@
                 <!-- Foto Profil Avatar Header -->
                 <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
                     <div class="position-relative cursor-pointer" <?php if (!empty($user['avatar'])): ?>data-bs-toggle="modal" data-bs-target="#avatarFullModal" title="Klik untuk lihat foto ukuran penuh"<?php endif; ?>>
+                        <img src="<?= avatar_url($user['avatar'], $user['full_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-2 shadow-sm" style="width: 76px; height: 76px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($user['full_name'])) ?>';">
                         <?php if (!empty($user['avatar'])): ?>
-                            <img src="<?= base_url($user['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-2 shadow-sm" style="width: 76px; height: 76px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                             <span class="position-absolute bottom-0 end-0 bg-danger text-white rounded-circle p-1 d-flex align-items-center justify-content-center shadow" style="width: 22px; height: 22px; font-size: 0.65rem;" title="Lihat Foto Full">
                                 <i class="fa-solid fa-magnifying-glass-plus"></i>
                             </span>
-                        <?php else: ?>
-                            <div class="rounded-circle bg-danger bg-opacity-25 text-danger fw-bold d-flex align-items-center justify-content-center border border-danger border-opacity-50" style="width: 76px; height: 76px; font-size: 1.8rem;">
-                                <?= strtoupper(substr($user['full_name'], 0, 1)) ?>
-                            </div>
                         <?php endif; ?>
                     </div>
 

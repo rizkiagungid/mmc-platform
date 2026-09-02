@@ -9,13 +9,7 @@ $isAdmin  = in_array($roleSlug, ['superadmin', 'pembina', 'bph']);
                             <div class="d-flex align-items-start justify-content-between mb-3 gap-2" style="min-width: 0;">
                                 <div class="d-flex align-items-center gap-2.5 overflow-hidden" style="min-width: 0; flex-grow: 1;">
                                     <a href="<?= base_url('feed/user/' . $post['user_id']) ?>" class="flex-shrink-0">
-                                        <?php if (!empty($post['author_avatar'])): ?>
-                                            <img src="<?= base_url($post['author_avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover img-fluid border border-secondary border-opacity-50" style="width: 42px; height: 42px;" onerror="this.onerror=null; this.src='<?= base_url('assets/logo-mm-2023.png') ?>';">
-                                        <?php else: ?>
-                                            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold fs-6" style="width: 42px; height: 42px;">
-                                                <?= strtoupper(substr($post['author_name'], 0, 1)) ?>
-                                            </div>
-                                        <?php endif; ?>
+                                        <img src="<?= avatar_url($post['author_avatar'], $post['author_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover img-fluid border border-secondary border-opacity-50" style="width: 42px; height: 42px;" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($post['author_name'])) ?>';">
                                     </a>
 
                                     <div style="min-width: 0; flex-grow: 1;" class="overflow-hidden">
@@ -73,21 +67,21 @@ $isAdmin  = in_array($roleSlug, ['superadmin', 'pembina', 'bph']);
                             <?php if (!empty($post['media_url'])): ?>
                                 <div class="mb-3 rounded-3 overflow-hidden bg-black border border-secondary border-opacity-25 text-center">
                                     <?php if ($post['media_type'] === 'image'): ?>
-                                        <div class="position-relative overflow-hidden cursor-pointer" onclick="openMediaLightbox('<?= base_url($post['media_url']) ?>', 'image')" title="Klik untuk lihat gambar penuh (Fullscreen)">
-                                            <img src="<?= base_url($post['media_url']) ?>" alt="Post Media" class="img-fluid object-fit-contain transition-all hover-scale" style="max-height: 450px; width: 100%;">
+                                        <div class="position-relative overflow-hidden cursor-pointer" onclick="openMediaLightbox('<?= media_url($post['media_url']) ?>', 'image')" title="Klik untuk lihat gambar penuh (Fullscreen)">
+                                            <img src="<?= media_url($post['media_url']) ?>" alt="Post Media" class="img-fluid object-fit-contain transition-all hover-scale" style="max-height: 450px; width: 100%;" onerror="this.onerror=null; this.src='<?= base_url('media/placeholder?path=' . urlencode($post['media_url'])) ?>';">
                                             <div class="position-absolute bottom-0 end-0 m-2.5 badge bg-black bg-opacity-75 text-white style-tiny py-1 px-2.5 rounded-2 border border-secondary border-opacity-50">
                                                 <i class="fa-solid fa-expand me-1 text-info"></i> Perbesar
                                             </div>
                                         </div>
                                     <?php elseif ($post['media_type'] === 'video'): ?>
-                                        <video src="<?= base_url($post['media_url']) ?>" controls class="w-100 rounded-3" style="max-height: 450px;"></video>
+                                        <video src="<?= media_url($post['media_url']) ?>" controls class="w-100 rounded-3" style="max-height: 450px;"></video>
                                     <?php else: ?>
                                         <div class="p-3 d-flex align-items-center justify-content-between bg-black">
                                             <div class="d-flex align-items-center gap-2.5 overflow-hidden">
                                                 <i class="fa-solid fa-file-pdf fs-3 text-danger"></i>
                                                 <span class="text-white style-tiny fw-bold text-truncate"><?= esc(basename($post['media_url'])) ?></span>
                                             </div>
-                                            <a href="<?= base_url($post['media_url']) ?>" target="_blank" class="btn btn-sm btn-danger rounded-pill style-tiny px-3">
+                                            <a href="<?= media_url($post['media_url']) ?>" target="_blank" class="btn btn-sm btn-danger rounded-pill style-tiny px-3">
                                                 <i class="fa-solid fa-download me-1"></i> Unduh Berkas
                                             </a>
                                         </div>
@@ -163,13 +157,7 @@ $isAdmin  = in_array($roleSlug, ['superadmin', 'pembina', 'bph']);
                                     <?php foreach ($post['comments'] as $comment): ?>
                                         <div class="d-flex align-items-start gap-2.5 p-2.5 rounded-3 bg-body-secondary border border-secondary border-opacity-25" id="comment-<?= $comment['id'] ?>">
                                             <a href="<?= base_url('feed/user/' . $comment['user_id']) ?>">
-                                                <?php if (!empty($comment['commenter_avatar'])): ?>
-                                                    <img src="<?= base_url($comment['commenter_avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover" style="width: 30px; height: 30px;">
-                                                <?php else: ?>
-                                                    <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold style-tiny" style="width: 30px; height: 30px;">
-                                                        <?= strtoupper(substr($comment['commenter_name'], 0, 1)) ?>
-                                                    </div>
-                                                <?php endif; ?>
+                                                <img src="<?= avatar_url($comment['commenter_avatar'], $comment['commenter_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover" style="width: 30px; height: 30px;" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($comment['commenter_name'])) ?>';">
                                             </a>
 
                                             <div class="flex-grow-1 style-tiny">

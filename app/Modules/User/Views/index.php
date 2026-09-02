@@ -18,7 +18,7 @@
 </div>
 
 <!-- Division & Member Stats Cards -->
-<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-6 g-3 mb-4">
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-xl-7 g-3 mb-4">
     <!-- Card 1: Total Akun Terdaftar (Semua Role) -->
     <div class="col">
         <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
@@ -45,7 +45,20 @@
         </div>
     </div>
 
-    <!-- Card 3: Divisi Broadcasting -->
+    <!-- Card 3: Total Alumni Club (Role Alumni) -->
+    <div class="col">
+        <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
+            <div class="rounded-3 p-3 bg-warning bg-opacity-25 text-warning fs-4">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+            <div>
+                <div class="text-secondary style-tiny text-uppercase font-monospace">TOTAL ALUMNI</div>
+                <h4 class="fw-bold text-white font-heading m-0"><?= number_format($stats['alumni_count'] ?? 0) ?> <span class="fs-6 text-secondary fw-normal">Alumni</span></h4>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Divisi Broadcasting -->
     <div class="col">
         <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
             <div class="rounded-3 p-3 bg-info bg-opacity-25 text-info fs-4">
@@ -58,7 +71,7 @@
         </div>
     </div>
 
-    <!-- Card 4: Divisi Programming -->
+    <!-- Card 5: Divisi Programming -->
     <div class="col">
         <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
             <div class="rounded-3 p-3 bg-warning bg-opacity-25 text-warning fs-4">
@@ -71,7 +84,7 @@
         </div>
     </div>
 
-    <!-- Card 5: Pengurus BPH -->
+    <!-- Card 6: Pengurus BPH -->
     <div class="col">
         <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
             <div class="rounded-3 p-3 bg-primary bg-opacity-25 text-primary fs-4">
@@ -84,7 +97,7 @@
         </div>
     </div>
 
-    <!-- Card 6: Akun Super Admin -->
+    <!-- Card 7: Akun Super Admin -->
     <div class="col">
         <div class="p-3 rounded-3 bg-dark border border-secondary border-opacity-25 d-flex align-items-center gap-3 h-100">
             <div class="rounded-3 p-3 bg-success bg-opacity-25 text-success fs-4">
@@ -257,13 +270,7 @@
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-3">
-                                <?php if (!empty($u['avatar'])): ?>
-                                    <img src="<?= base_url($u['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 shadow-sm" style="width: 40px; height: 40px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" data-bs-toggle="modal" data-bs-target="#userAvatarModal-<?= $u['id'] ?>" title="Klik untuk lihat foto full">
-                                <?php else: ?>
-                                    <div class="rounded-circle bg-danger bg-opacity-25 text-danger fw-bold d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        <?= strtoupper(substr($u['full_name'], 0, 1)) ?>
-                                    </div>
-                                <?php endif; ?>
+                                <img src="<?= avatar_url($u['avatar'], $u['full_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 shadow-sm" style="width: 40px; height: 40px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" data-bs-toggle="modal" data-bs-target="#userAvatarModal-<?= $u['id'] ?>" title="Klik untuk lihat foto full" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($u['full_name'])) ?>';">
                                 <div>
                                     <div class="fw-semibold text-white"><?= esc($u['full_name']) ?></div>
                                     <small class="text-secondary font-monospace">@<?= esc($u['username']) ?> | <?= esc($u['email']) ?></small>
@@ -294,7 +301,21 @@
                             <?php endif; ?>
                         </td>
                         <td>
-                            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 px-2.5 py-1">
+                            <?php
+                                $rSlug = strtolower((string)($u['role_slug'] ?? ''));
+                                $badgeStyle = 'bg-danger bg-opacity-25 text-danger border-danger';
+                                if ($rSlug === 'superadmin') {
+                                    $badgeStyle = 'bg-success bg-opacity-25 text-success border-success';
+                                } elseif ($rSlug === 'pembina') {
+                                    $badgeStyle = 'bg-info bg-opacity-25 text-info border-info';
+                                } elseif ($rSlug === 'bph') {
+                                    $badgeStyle = 'bg-primary bg-opacity-25 text-primary border-primary';
+                                } elseif ($rSlug === 'alumni') {
+                                    $badgeStyle = 'bg-warning bg-opacity-25 text-warning border-warning';
+                                }
+                            ?>
+                            <span class="badge <?= $badgeStyle ?> border border-opacity-25 px-2.5 py-1">
+                                <?php if ($rSlug === 'alumni'): ?><i class="fa-solid fa-graduation-cap me-1"></i><?php endif; ?>
                                 <?= esc($u['role_name']) ?>
                             </span>
                         </td>

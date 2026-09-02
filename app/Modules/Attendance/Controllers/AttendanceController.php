@@ -43,7 +43,12 @@ class AttendanceController extends BaseController
             }
         }
 
-        $allUsers = $this->userModel->getUsersWithRole(null, null, false);
+        $allUsers = $this->userModel->select('users.*, roles.name as role_name, roles.slug as role_slug')
+                                    ->join('roles', 'roles.id = users.role_id')
+                                    ->whereNotIn('roles.slug', ['superadmin', 'alumni'])
+                                    ->where('users.status', 'active')
+                                    ->orderBy('users.full_name', 'ASC')
+                                    ->findAll();
 
         return view('App\Modules\Attendance\Views\index', [
             'title'             => 'Rekap & Kelola Presensi - Admin CMS',
@@ -59,6 +64,10 @@ class AttendanceController extends BaseController
     {
         if (session()->get('role_slug') === 'superadmin') {
             return redirect()->to('/dashboard')->with('info', 'Sebagai Super Admin (Pengelola Web), Anda tidak diwajibkan melakukan presensi.');
+        }
+
+        if (session()->get('role_slug') === 'alumni') {
+            return redirect()->to('/dashboard')->with('info', 'Sebagai Alumni, Anda tidak memiliki kewajiban presensi.');
         }
 
         $activeMeeting = $this->attendanceService->getActiveMeeting();

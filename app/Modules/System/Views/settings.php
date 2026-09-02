@@ -438,6 +438,17 @@
                             </div>
                         </div>
 
+                        <!-- Ranking MM Leaderboard -->
+                        <div class="col-md-6 col-lg-4">
+                            <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">
+                                <input class="form-check-input ms-0 me-3 cursor-pointer" type="checkbox" name="disabled_member_pages[]" value="ranking" id="m_lock_ranking" <?= in_array('ranking', $disabledMemberPages) ? 'checked' : '' ?>>
+                                <label class="form-check-label text-white small fw-bold cursor-pointer" for="m_lock_ranking">
+                                    Ranking MM (/ranking)
+                                    <span class="d-block text-secondary style-tiny fw-normal">Kunci & sembunyikan papan peringkat keaktifan anggota.</span>
+                                </label>
+                            </div>
+                        </div>
+
                         <!-- Profil & QR -->
                         <div class="col-md-6 col-lg-4">
                             <div class="form-check form-switch p-3 rounded-3 bg-dark border border-secondary border-opacity-25 h-100">

@@ -24,7 +24,7 @@
                     <i class="fa-solid fa-qrcode me-1 text-info"></i> 1. Download Hanya QR Code (PNG)
                 </button>
                 <button type="button" class="btn btn-sm btn-red w-100 font-monospace style-tiny fw-bold shadow-sm" onclick="downloadIDCard()">
-                    <i class="fa-solid fa-id-card me-1"></i> 2. Download ID Card Anggota MMC (PNG)
+                    <i class="fa-solid fa-id-card me-1"></i> 2. Download ID Card Digital Anggota MMC (PNG)
                 </button>
             </div>
         </div>

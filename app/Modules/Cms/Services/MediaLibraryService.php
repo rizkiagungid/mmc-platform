@@ -45,7 +45,7 @@ class MediaLibraryService extends BaseService
         }
 
         $file->move($targetFolder, $newName);
-        $publicPath = base_url('uploads/cms/' . $folder . '/' . $newName);
+        $relativePath = 'uploads/cms/' . $folder . '/' . $newName;
 
         // Get Image Dimensions if Image
         $width  = null;
@@ -64,7 +64,7 @@ class MediaLibraryService extends BaseService
         $this->db->table('media_library')->insert([
             'filename'      => $newName,
             'original_name' => $originalName,
-            'file_path'     => $publicPath,
+            'file_path'     => $relativePath,
             'mime_type'     => $mimeType,
             'extension'     => strtolower($extension),
             'file_size'     => $fileSize,
@@ -82,7 +82,7 @@ class MediaLibraryService extends BaseService
 
         return $this->success('File berhasil diunggah ke Media Library.', [
             'id'        => $mediaId,
-            'url'       => $publicPath,
+            'url'       => media_url($relativePath),
             'filename'  => $originalName,
             'mime_type' => $mimeType,
         ]);
@@ -96,8 +96,8 @@ class MediaLibraryService extends BaseService
         }
 
         // Delete physical file
-        $relativePath = str_replace(base_url(), '', $media['file_path']);
-        $filePath = ROOTPATH . 'public/' . ltrim($relativePath, '/');
+        $cleanPath = clean_media_path($media['file_path']);
+        $filePath = FCPATH . ltrim($cleanPath, '/');
         if (file_exists($filePath)) {
             @unlink($filePath);
         }

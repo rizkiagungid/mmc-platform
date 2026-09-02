@@ -221,6 +221,22 @@
                     }
                 ?>
 
+                <?php
+                    $navDisabledPagesRaw = get_setting('disabled_member_pages', '[]');
+                    $navDisabledPages    = json_decode($navDisabledPagesRaw, true) ?: [];
+                    $isMemberRole        = !in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph']);
+                ?>
+                <?php if (!$isMemberRole || !in_array('ranking', $navDisabledPages)): ?>
+                    <a href="<?= base_url('ranking') ?>" class="sidebar-link <?= (url_is('ranking*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-trophy text-warning me-1"></i> Ranking MM
+                        <?php if (!$isMemberRole && in_array('ranking', $navDisabledPages)): ?>
+                            <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary style-tiny ms-auto">Off</span>
+                        <?php else: ?>
+                            <span class="badge bg-warning text-dark font-monospace style-tiny ms-auto fw-bold">Top 10</span>
+                        <?php endif; ?>
+                    </a>
+                <?php endif; ?>
+
                 <a href="<?= base_url('informasi') ?>" class="sidebar-link <?= (url_is('informasi*')) ? 'active' : '' ?>">
                     <i class="fa-solid fa-circle-info text-warning me-1"></i> Informasi
                 </a>
@@ -258,7 +274,7 @@
             <div class="dropup position-relative">
                 <div class="d-flex align-items-center gap-2 p-2 rounded-3 bg-dark cursor-pointer user-select-none hover-bg-body-secondary transition-all" data-bs-toggle="dropdown" aria-expanded="false" role="button">
                     <?php if (session()->get('avatar')): ?>
-                        <img src="<?= base_url(session()->get('avatar')) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 36px; height: 36px; min-width: 36px;">
+                        <img src="<?= media_url(session()->get('avatar')) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50" style="width: 36px; height: 36px; min-width: 36px;" onerror="this.src='<?= base_url('media/placeholder?type=image') ?>';">
                     <?php else: ?>
                         <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px; min-width: 36px;">
                             <?= strtoupper(substr(session()->get('full_name') ?: 'U', 0, 1)) ?>

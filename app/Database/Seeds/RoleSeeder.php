@@ -41,6 +41,14 @@ class RoleSeeder extends Seeder
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ],
+            [
+                'id'          => 5,
+                'name'        => 'Alumni',
+                'slug'        => 'alumni',
+                'description' => 'Alumni klub: akses portal alumni, riwayat kegiatan, dan komunitas ekskul.',
+                'created_at'  => date('Y-m-d H:i:s'),
+                'updated_at'  => date('Y-m-d H:i:s'),
+            ],
         ];
 
         $this->db->table('roles')->ignore(true)->insertBatch($data);

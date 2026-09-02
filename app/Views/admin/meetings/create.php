@@ -60,15 +60,8 @@
             </div>
 
             <div class="col-md-12">
-                <label class="form-label text-secondary small fw-medium">Link Tautan Materi / Slide (Drive, Notion, PDF) <span class="text-danger">*</span></label>
-                <input type="url" name="learning_material" id="learning_material_input" class="form-control" placeholder="https://drive.google.com/..." value="<?= old('learning_material') ?>" required>
-                
-                <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" id="no_material_check" name="no_material" value="1" <?= old('no_material') ? 'checked' : '' ?>>
-                    <label class="form-check-label text-secondary small" for="no_material_check">
-                        Centang jika ingin mengosongkan link materi (Tanpa Modul / Link)
-                    </label>
-                </div>
+                <label class="form-label text-secondary small fw-medium">Link Tautan Materi / Slide (Opsional)</label>
+                <input type="url" name="learning_material" id="learning_material_input" class="form-control" placeholder="https://drive.google.com/... (Boleh dikosongkan)" value="<?= old('learning_material') ?>">
             </div>
         </div>
 
@@ -81,23 +74,4 @@
     </form>
 </div>
 
-<?= $this->endSection() ?>
-
-<?= $this->section('scripts') ?>
-<script>
-    $(document).ready(function() {
-        function toggleMaterialInput() {
-            const isChecked = $('#no_material_check').is(':checked');
-            const $input = $('#learning_material_input');
-            if (isChecked) {
-                $input.val('').prop('required', false).prop('readonly', true).addClass('opacity-50 bg-black').attr('placeholder', 'Link materi dikosongkan');
-            } else {
-                $input.prop('required', true).prop('readonly', false).removeClass('opacity-50 bg-black').attr('placeholder', 'https://drive.google.com/...');
-            }
-        }
-
-        $('#no_material_check').on('change', toggleMaterialInput);
-        toggleMaterialInput();
-    });
-</script>
 <?= $this->endSection() ?>

@@ -117,6 +117,26 @@ class TaskController extends BaseController
         ]);
     }
 
+    public function submissionDetail(int $submissionId)
+    {
+        $submission = $this->taskService->getSubmissionById($submissionId);
+        if (!$submission) {
+            return redirect()->to('/admin/tasks')->with('error', 'Data pengumpulan tugas tidak ditemukan.');
+        }
+
+        $task     = $this->taskService->getTaskDetails((int)$submission['task_id']);
+        $statuses = $this->taskService->getAllStatuses();
+        $comments = $this->taskService->getTaskComments((int)$submission['task_id']);
+
+        return view('App\Modules\Task\Views\submission_detail', [
+            'title'      => 'Cek Jawaban: ' . ($submission['full_name'] ?? 'Anggota'),
+            'submission' => $submission,
+            'task'       => $task,
+            'statuses'   => $statuses,
+            'comments'   => $comments,
+        ]);
+    }
+
     public function evaluate(int $submissionId)
     {
         $result = $this->taskService->evaluateSubmission($submissionId, $this->request->getPost(), session()->get('user_id'));
@@ -204,6 +224,18 @@ class TaskController extends BaseController
         }
 
         return redirect()->to('/member/tasks')->with('success', $result['body']['message']);
+    }
+
+    public function deleteAttachment(int $taskId)
+    {
+        $userId = session()->get('user_id');
+        $result = $this->taskService->deleteAttachment($taskId, $userId);
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
     }
 
     public function quickUpdateStatus(int $taskId)

@@ -55,7 +55,12 @@ class TaskService extends BaseService
 
     public function getAllMembers(): array
     {
-        return $this->userModel->getUsersWithRole();
+        return $this->userModel->select('users.*, roles.name as role_name, roles.slug as role_slug')
+                               ->join('roles', 'roles.id = users.role_id')
+                               ->whereNotIn('roles.slug', ['superadmin', 'alumni'])
+                               ->where('users.status', 'active')
+                               ->orderBy('users.full_name', 'ASC')
+                               ->findAll();
     }
 
     public function getSubmissionsByTask(int $taskId): array
@@ -68,6 +73,23 @@ class TaskService extends BaseService
         return $this->submissionModel->getUserSubmissionForTask($taskId, $userId);
     }
 
+    private function filterAssignableUserIds(array $assigneeIds): array
+    {
+        $assigneeIds = array_filter(array_map('intval', $assigneeIds));
+        if (empty($assigneeIds)) {
+            return [];
+        }
+
+        $validUsers = $this->userModel->select('users.id')
+                                      ->join('roles', 'roles.id = users.role_id')
+                                      ->whereIn('users.id', $assigneeIds)
+                                      ->whereNotIn('roles.slug', ['superadmin', 'alumni'])
+                                      ->where('users.status', 'active')
+                                      ->findAll();
+
+        return array_column($validUsers, 'id');
+    }
+
     public function createTask(array $data, int $creatorId): array
     {
         $title       = trim($data['title'] ?? '');
@@ -75,14 +97,14 @@ class TaskService extends BaseService
         $priorityId  = (int)($data['priority_id'] ?? 1);
         $statusId    = (int)($data['status_id'] ?? 1);
         $deadline    = !empty($data['deadline']) ? $data['deadline'] : null;
-        $assignees   = $data['assignees'] ?? [];
+        $assignees   = $this->filterAssignableUserIds($data['assignees'] ?? []);
 
         if (empty($title)) {
             return $this->error('Judul tugas wajib diisi.');
         }
 
-        if (empty($assignees) || !is_array($assignees)) {
-            return $this->error('Pilih setidaknya satu anggota sebagai assignee tugas.');
+        if (empty($assignees)) {
+            return $this->error('Pilih setidaknya satu anggota aktif (selain Super Admin dan Alumni) sebagai penerima tugas.');
         }
 
         $this->beginTransaction();
@@ -129,14 +151,14 @@ class TaskService extends BaseService
         $priorityId  = (int)($data['priority_id'] ?? $task['priority_id']);
         $statusId    = (int)($data['status_id'] ?? $task['status_id']);
         $deadline    = !empty($data['deadline']) ? $data['deadline'] : null;
-        $assignees   = $data['assignees'] ?? [];
+        $assignees   = $this->filterAssignableUserIds($data['assignees'] ?? []);
 
         if (empty($title)) {
             return $this->error('Judul tugas wajib diisi.');
         }
 
-        if (empty($assignees) || !is_array($assignees)) {
-            return $this->error('Pilih setidaknya satu anggota sebagai assignee tugas.');
+        if (empty($assignees)) {
+            return $this->error('Pilih setidaknya satu anggota aktif (selain Super Admin dan Alumni) sebagai penerima tugas.');
         }
 
         $this->beginTransaction();
@@ -174,6 +196,18 @@ class TaskService extends BaseService
         $this->beginTransaction();
 
         try {
+            // Clean up any uploaded submission files for this task from server disk
+            $submissions = $this->submissionModel->where('task_id', $id)->findAll();
+            foreach ($submissions as $sub) {
+                if (!empty($sub['attachment_url']) && strpos($sub['attachment_url'], 'uploads/tasks/') !== false) {
+                    $filename = basename(parse_url($sub['attachment_url'], PHP_URL_PATH));
+                    $filePath = ROOTPATH . 'public/uploads/tasks/' . $filename;
+                    if (file_exists($filePath)) {
+                        @unlink($filePath);
+                    }
+                }
+            }
+
             $this->taskModel->delete($id);
             $this->auditLogModel->recordLog($actorId, 'TASK_DELETE', "Menghapus tugas ID {$id}: {$task['title']}");
 
@@ -183,6 +217,11 @@ class TaskService extends BaseService
             $this->db->transRollback();
             return $this->error('Gagal menghapus tugas: ' . $e->getMessage());
         }
+    }
+
+    public function getSubmissionById(int $submissionId)
+    {
+        return $this->submissionModel->getSubmissionById($submissionId);
     }
 
     public function submitTask(int $taskId, int $userId, array $data, $file = null): array
@@ -198,55 +237,43 @@ class TaskService extends BaseService
             return $this->error('Anda tidak ditugaskan pada tugas ini.');
         }
 
-        $text       = trim($data['submission_text'] ?? '');
-        $link       = trim($data['attachment_url'] ?? '');
-        $noLink     = !empty($data['no_link']);
-        $myStatusId = !empty($data['my_status_id']) ? (int)$data['my_status_id'] : null;
+        $existing = $this->submissionModel->where('task_id', $taskId)->where('user_id', $userId)->first();
 
-        if ($noLink) {
-            $link = '';
-        }
+        $text = trim($data['submission_text'] ?? '');
+        $link = trim($data['attachment_url'] ?? '');
 
         // Handle File Upload if present
         if ($file && $file->isValid() && !$file->hasMoved()) {
+            // Delete old uploaded file from server disk if user uploaded a replacement
+            if ($existing && !empty($existing['attachment_url']) && strpos($existing['attachment_url'], 'uploads/tasks/') !== false) {
+                $oldFilename = basename(parse_url($existing['attachment_url'], PHP_URL_PATH));
+                $oldFilePath = ROOTPATH . 'public/uploads/tasks/' . $oldFilename;
+                if (file_exists($oldFilePath)) {
+                    @unlink($oldFilePath);
+                }
+            }
+
             $newName = $file->getRandomName();
             $file->move(ROOTPATH . 'public/uploads/tasks', $newName);
-            $link = base_url('uploads/tasks/' . $newName);
+            $link = 'uploads/tasks/' . $newName;
         }
 
-        // Restrict members from picking status > 3 (Revisi / Selesai are reserved for Admin/BPH/Pembina)
-        if (!in_array(session()->get('role_slug'), ['superadmin', 'bph', 'pembina'])) {
-            if ($myStatusId && $myStatusId > 3) {
-                $myStatusId = 3;
-            }
+        // If everything is completely blank, provide a fallback text
+        if (empty($text) && empty($link) && (!$existing || empty($existing['attachment_url']))) {
+            $text = 'Tugas telah dikirimkan oleh anggota.';
         }
 
-        // If no submission text/link/file is uploaded, but member requested a status update
-        if (empty($text) && empty($link) && $myStatusId) {
-            $this->assigneeModel->updateAssigneeStatus($taskId, $userId, $myStatusId);
-            $this->auditLogModel->recordLog($userId, 'TASK_STATUS_UPDATE', "Memperbarui status tugas pribadi pada '{$task['title']}'");
-            return $this->success('Status tugas Anda berhasil diperbarui.');
-        }
-
-        if (empty($text) && empty($link)) {
-            return $this->error('Harap masukkan deskripsi hasil/catatan karya atau unggah berkas / tautan attachment.');
-        }
-
-        $statusId = $myStatusId ?: 3;
+        // Automatic Status: 3 (In Review / Sedang Ditinjau)
+        $statusId = 3;
 
         $this->beginTransaction();
 
         try {
-            $existing = $this->submissionModel->where('task_id', $taskId)->where('user_id', $userId)->first();
-
-            $finalLink = $link;
-            if (empty($link) && !$noLink && $existing && !empty($existing['attachment_url'])) {
-                $finalLink = $existing['attachment_url'];
-            }
+            $finalLink = !empty($link) ? clean_media_path($link) : ($existing['attachment_url'] ?? '');
 
             if ($existing) {
                 $this->submissionModel->update($existing['id'], [
-                    'submission_text' => $text,
+                    'submission_text' => !empty($text) ? $text : $existing['submission_text'],
                     'attachment_url'  => $finalLink,
                     'status_id'       => $statusId,
                     'submitted_at'    => date('Y-m-d H:i:s'),
@@ -262,20 +289,49 @@ class TaskService extends BaseService
                 ]);
             }
 
-            // Update individual assignee status
+            // Automatically update individual assignee status to 3 (In Review)
             $this->assigneeModel->updateAssigneeStatus($taskId, $userId, $statusId);
 
-            // Update main task status to Review if in Todo / In Progress
-            $this->taskModel->update($taskId, ['status_id' => $statusId]);
+            // Automatically update main task status to In Review if currently in Todo / In Progress
+            if ($task['status_id'] <= 2) {
+                $this->taskModel->update($taskId, ['status_id' => $statusId]);
+            }
 
-            $this->auditLogModel->recordLog($userId, 'TASK_SUBMIT', "Pengiriman karya tugas '{$task['title']}'");
+            $this->auditLogModel->recordLog($userId, 'TASK_SUBMIT', "Pengiriman tugas '{$task['title']}'");
 
             $this->commitTransaction();
-            return $this->success('Karya tugas Anda berhasil dikirim dan status diperbarui.');
+            return $this->success('Tugas anda berhasil dikirim!');
         } catch (\Throwable $e) {
             $this->db->transRollback();
-            return $this->error('Gagal mengirim karya tugas: ' . $e->getMessage());
+            return $this->error('Gagal mengirim tugas: ' . $e->getMessage());
         }
+    }
+
+    public function deleteAttachment(int $taskId, int $userId): array
+    {
+        $submission = $this->submissionModel->where('task_id', $taskId)->where('user_id', $userId)->first();
+        if (!$submission || empty($submission['attachment_url'])) {
+            return $this->error('Berkas lampiran tidak ditemukan.');
+        }
+
+        $url = $submission['attachment_url'];
+
+        // If local file in uploads/tasks, delete from disk
+        if (strpos($url, 'uploads/tasks/') !== false) {
+            $filename = basename(parse_url($url, PHP_URL_PATH));
+            $filePath = ROOTPATH . 'public/uploads/tasks/' . $filename;
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        $this->submissionModel->update($submission['id'], [
+            'attachment_url' => '',
+        ]);
+
+        $this->auditLogModel->recordLog($userId, 'TASK_ATTACHMENT_DELETE', "Menghapus berkas lampiran tugas ID {$taskId}");
+
+        return $this->success('Berkas lampiran tugas berhasil dihapus.');
     }
 
     public function evaluateSubmission(int $submissionId, array $data, int $evaluatorId): array
@@ -325,7 +381,7 @@ class TaskService extends BaseService
             $this->auditLogModel->recordLog($evaluatorId, 'TASK_EVALUATE', "Evaluasi pengiriman tugas ID {$submissionId} (Nilai: {$grade})");
 
             $this->commitTransaction();
-            return $this->success('Evaluasi karya berhasil disimpan.');
+            return $this->success('Evaluasi tugas berhasil disimpan.');
         } catch (\Throwable $e) {
             $this->db->transRollback();
             return $this->error('Gagal menyimpan evaluasi: ' . $e->getMessage());

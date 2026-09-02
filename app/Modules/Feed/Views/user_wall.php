@@ -15,13 +15,7 @@
     <div class="saas-card mb-4 p-4 position-relative overflow-hidden border border-secondary border-opacity-25 bg-body-tertiary">
         <div class="row align-items-center g-4">
             <div class="col-auto">
-                <?php if (!empty($profileData['user']['avatar'])): ?>
-                    <img src="<?= base_url($profileData['user']['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 shadow" style="width: 84px; height: 84px;">
-                <?php else: ?>
-                    <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold display-5 shadow" style="width: 84px; height: 84px;">
-                        <?= strtoupper(substr($profileData['user']['full_name'], 0, 1)) ?>
-                    </div>
-                <?php endif; ?>
+                <img src="<?= avatar_url($profileData['user']['avatar'] ?? null, $profileData['user']['full_name'] ?? 'User') ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 shadow" style="width: 84px; height: 84px;" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($profileData['user']['full_name'] ?? 'User')) ?>';">
             </div>
 
             <div class="col style-tiny">

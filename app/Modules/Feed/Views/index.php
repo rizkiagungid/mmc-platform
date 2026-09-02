@@ -50,13 +50,7 @@
                                     $searchKeyword  = strtolower(($m['full_name'] ?? '') . ' ' . ($m['username'] ?? '') . ' ' . ($m['nis_nip'] ?? '') . ' ' . ($m['class_dept'] ?? '') . ' ' . ($m['role_name'] ?? ''));
                                 ?>
                                 <a href="<?= base_url('feed/user/' . $m['id']) ?>" class="feed-search-member-item d-flex align-items-center gap-2 p-2 rounded-2 text-decoration-none text-body hover-bg-body-secondary transition-all mb-1" style="min-width: 0;" data-search="<?= esc($searchKeyword) ?>">
-                                    <?php if (!empty($m['avatar'])): ?>
-                                        <img src="<?= base_url($m['avatar']) ?>" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 32px; height: 32px;" onerror="this.onerror=null; this.src='<?= base_url('assets/logo-mm-2023.png') ?>';">
-                                    <?php else: ?>
-                                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold style-tiny flex-shrink-0" style="width: 32px; height: 32px;">
-                                            <?= strtoupper(substr($m['full_name'], 0, 1)) ?>
-                                        </div>
-                                    <?php endif; ?>
+                                    <img src="<?= avatar_url($m['avatar'], $m['full_name']) ?>" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 32px; height: 32px;" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($m['full_name'])) ?>';">
                                     <div class="overflow-hidden flex-grow-1" style="min-width: 0;">
                                         <div class="d-flex align-items-center gap-1">
                                             <span class="style-tiny fw-bold text-truncate hover-text-danger member-name"><?= esc($m['full_name']) ?></span>
@@ -100,13 +94,7 @@
                 <form action="<?= base_url('feed/create') ?>" method="POST" enctype="multipart/form-data">
                     <?= csrf_field() ?>
                     <div class="d-flex align-items-start gap-3">
-                        <?php if (!empty($myProfile['user']['avatar'])): ?>
-                            <img src="<?= base_url($myProfile['user']['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 flex-shrink-0" style="width: 46px; height: 46px;">
-                        <?php else: ?>
-                            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold fs-5 flex-shrink-0" style="width: 46px; height: 46px;">
-                                <?= strtoupper(substr($myProfile['user']['full_name'] ?? 'U', 0, 1)) ?>
-                            </div>
-                        <?php endif; ?>
+                        <img src="<?= avatar_url($myProfile['user']['avatar'] ?? null, $myProfile['user']['full_name'] ?? 'User') ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 flex-shrink-0" style="width: 46px; height: 46px;" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($myProfile['user']['full_name'] ?? 'User')) ?>';">
 
                         <div class="flex-grow-1 overflow-hidden" style="min-width: 0;">
                             <div class="d-flex align-items-center gap-1.5 mb-1.5">
@@ -201,13 +189,7 @@
             <!-- My Social Profile Card -->
             <div class="saas-card p-3 p-md-4 mb-4 border border-secondary border-opacity-25 bg-body-tertiary text-center">
                 <div class="position-relative d-inline-block mb-3">
-                    <?php if (!empty($myProfile['user']['avatar'])): ?>
-                        <img src="<?= base_url($myProfile['user']['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 shadow" style="width: 72px; height: 72px;">
-                    <?php else: ?>
-                        <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold display-6 mx-auto shadow" style="width: 72px; height: 72px;">
-                            <?= strtoupper(substr($myProfile['user']['full_name'] ?? 'U', 0, 1)) ?>
-                        </div>
-                    <?php endif; ?>
+                    <img src="<?= avatar_url($myProfile['user']['avatar'] ?? null, $myProfile['user']['full_name'] ?? 'User') ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 shadow" style="width: 72px; height: 72px;" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($myProfile['user']['full_name'] ?? 'User')) ?>';">
                 </div>
 
                 <h5 class="text-body font-heading m-0 fw-bold d-flex align-items-center justify-content-center gap-1.5">
@@ -274,13 +256,7 @@
                             <div class="p-2.5 rounded-3 bg-body border border-warning border-opacity-25 d-flex align-items-center justify-content-between gap-2">
                                 <div class="d-flex align-items-center gap-2.5 overflow-hidden">
                                     <a href="<?= base_url('feed/user/' . $bUser['id']) ?>" class="flex-shrink-0">
-                                        <?php if (!empty($bUser['avatar'])): ?>
-                                            <img src="<?= base_url($bUser['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-warning shadow-sm" style="width: 38px; height: 38px;">
-                                        <?php else: ?>
-                                            <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center fw-bold style-tiny shadow-sm" style="width: 38px; height: 38px;">
-                                                <?= strtoupper(substr($bUser['full_name'], 0, 1)) ?>
-                                            </div>
-                                        <?php endif; ?>
+                                        <img src="<?= avatar_url($bUser['avatar'], $bUser['full_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-warning shadow-sm" style="width: 38px; height: 38px;" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($bUser['full_name'])) ?>';">
                                     </a>
 
                                     <div class="text-truncate">
@@ -321,13 +297,7 @@
                             <div class="d-flex align-items-center justify-content-between p-2 rounded-3 bg-body-secondary border border-secondary border-opacity-25 gap-2" style="min-width: 0;">
                                 <div class="d-flex align-items-center gap-2 overflow-hidden" style="min-width: 0; flex-grow: 1;">
                                     <a href="<?= base_url('feed/user/' . $rec['id']) ?>" class="flex-shrink-0">
-                                        <?php if (!empty($rec['avatar'])): ?>
-                                            <img src="<?= base_url($rec['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-secondary border-opacity-50" style="width: 36px; height: 36px;" onerror="this.onerror=null; this.src='<?= base_url('assets/logo-mm-2023.png') ?>';">
-                                        <?php else: ?>
-                                            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center fw-bold style-tiny" style="width: 36px; height: 36px;">
-                                                <?= strtoupper(substr($rec['full_name'], 0, 1)) ?>
-                                            </div>
-                                        <?php endif; ?>
+                                        <img src="<?= avatar_url($rec['avatar'], $rec['full_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-secondary border-opacity-50" style="width: 36px; height: 36px;" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($rec['full_name'])) ?>';">
                                     </a>
 
                                     <div style="min-width: 0; flex-grow: 1;" class="overflow-hidden">

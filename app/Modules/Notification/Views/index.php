@@ -9,9 +9,6 @@
     </div>
 
     <div class="d-flex align-items-center gap-2 flex-wrap">
-        <button type="button" class="btn btn-sm btn-outline-warning animate-pulse" onclick="window.requestNativeNotificationPermission ? window.requestNativeNotificationPermission() : Notification.requestPermission()">
-            <i class="fa-solid fa-bell me-1"></i> Aktifkan Notifikasi
-        </button>
         <?php if ($unreadCount > 0): ?>
             <a href="<?= base_url('notifications/mark-all-read') ?>" class="btn btn-sm btn-outline-info">
                 <i class="fa-solid fa-check-double me-1"></i> Tandai Semua Dibaca

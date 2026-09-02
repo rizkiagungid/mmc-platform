@@ -9,6 +9,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('member/tasks', '\App\Modules\Task\Controllers\TaskController::myTasks');
     $routes->get('member/tasks/submit/(:num)', '\App\Modules\Task\Controllers\TaskController::submitForm/$1');
     $routes->post('member/tasks/submit/(:num)', '\App\Modules\Task\Controllers\TaskController::submitStore/$1');
+    $routes->get('member/tasks/delete-attachment/(:num)', '\App\Modules\Task\Controllers\TaskController::deleteAttachment/$1');
     $routes->post('member/tasks/comment/(:num)', '\App\Modules\Task\Controllers\TaskController::postComment/$1');
 });
 
@@ -21,6 +22,7 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->post('tasks/update/(:num)', '\App\Modules\Task\Controllers\TaskController::update/$1');
     $routes->get('tasks/delete/(:num)', '\App\Modules\Task\Controllers\TaskController::delete/$1');
     $routes->get('tasks/detail/(:num)', '\App\Modules\Task\Controllers\TaskController::detail/$1');
+    $routes->get('tasks/submission/(:num)', '\App\Modules\Task\Controllers\TaskController::submissionDetail/$1');
     $routes->post('tasks/evaluate/(:num)', '\App\Modules\Task\Controllers\TaskController::evaluate/$1');
     $routes->post('tasks/update-status/(:num)', '\App\Modules\Task\Controllers\TaskController::quickUpdateStatus/$1');
     $routes->post('tasks/update-priority/(:num)', '\App\Modules\Task\Controllers\TaskController::quickUpdatePriority/$1');

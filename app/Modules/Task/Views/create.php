@@ -24,7 +24,7 @@
 
         <div class="mb-3">
             <label class="form-label text-secondary small fw-medium">Deskripsi & Instruksi Pengerjaan</label>
-            <textarea name="description" class="form-control" rows="4" placeholder="Jelaskan detail instruksi, durasi video, spesifikasi karya, atau tautan aset..."><?= old('description') ?></textarea>
+            <textarea name="description" class="form-control" rows="4" placeholder="Jelaskan detail instruksi, ketentuan pengerjaan tugas, atau tautan aset..."><?= old('description') ?></textarea>
         </div>
 
         <div class="row g-3 mb-4">

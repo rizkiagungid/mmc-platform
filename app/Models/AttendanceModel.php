@@ -35,7 +35,7 @@ class AttendanceModel extends Model
                     ->join('users as admin', 'admin.id = attendances.scanned_by_admin_id', 'left')
                     ->where('attendances.meeting_id', $meetingId)
                     ->where('meetings.deleted_at IS NULL')
-                    ->where('roles.slug !=', 'superadmin')
+                    ->whereNotIn('roles.slug', ['superadmin', 'alumni'])
                     ->orderBy('attendances.scan_time', 'DESC')
                     ->findAll();
     }
@@ -58,7 +58,7 @@ class AttendanceModel extends Model
                         ->join('meetings', 'meetings.id = attendances.meeting_id')
                         ->join('users as admin', 'admin.id = attendances.scanned_by_admin_id', 'left')
                         ->where('meetings.deleted_at IS NULL')
-                        ->where('roles.slug !=', 'superadmin');
+                        ->whereNotIn('roles.slug', ['superadmin', 'alumni']);
 
         if ($meetingId && $meetingId > 0) {
             $builder->where('attendances.meeting_id', $meetingId);
@@ -79,7 +79,7 @@ class AttendanceModel extends Model
                         ->join('meetings', 'meetings.id = attendances.meeting_id')
                         ->join('users as admin', 'admin.id = attendances.scanned_by_admin_id', 'left')
                         ->where('meetings.deleted_at IS NULL')
-                        ->where('roles.slug !=', 'superadmin');
+                        ->whereNotIn('roles.slug', ['superadmin', 'alumni']);
 
         if (!empty($filters['meeting_id']) && $filters['meeting_id'] !== 'all') {
             $builder->where('attendances.meeting_id', (int)$filters['meeting_id']);

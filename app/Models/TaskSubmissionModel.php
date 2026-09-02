@@ -47,4 +47,16 @@ class TaskSubmissionModel extends Model
                     ->where('task_submissions.user_id', $userId)
                     ->first();
     }
+
+    public function getSubmissionById(int $submissionId)
+    {
+        return $this->select('task_submissions.*, users.full_name, users.username, users.avatar, users.nis_nip, users.class_dept, users.email, users.phone, users.status as user_status, users.member_uuid, roles.name as role_name, task_statuses.name as status_name, task_statuses.color as status_color, evaluator.full_name as evaluator_name, tasks.title as task_title, tasks.description as task_description, tasks.deadline as task_deadline, tasks.priority_id')
+                    ->join('users', 'users.id = task_submissions.user_id')
+                    ->join('roles', 'roles.id = users.role_id', 'left')
+                    ->join('tasks', 'tasks.id = task_submissions.task_id', 'left')
+                    ->join('task_statuses', 'task_statuses.id = task_submissions.status_id', 'left')
+                    ->join('users as evaluator', 'evaluator.id = task_submissions.evaluated_by', 'left')
+                    ->where('task_submissions.id', $submissionId)
+                    ->first();
+    }
 }

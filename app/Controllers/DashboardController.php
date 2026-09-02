@@ -115,17 +115,55 @@ class DashboardController extends BaseController
             'recommendation'     => $aiRecommendation,
         ];
 
+        if ($userRole === 'alumni') {
+            $aiSummary = [
+                'score'              => 100,
+                'attendanceRate'     => 100,
+                'taskRate'           => 100,
+                'attendedCount'      => $userAttendedCount,
+                'totalMeetings'      => $totalMeetingsCount,
+                'completedTasks'     => $completedTasks,
+                'totalAssignedTasks' => $totalAssignedTasks,
+                'badge'              => 'Alumni Kehormatan (Excellence)',
+                'badgeClass'         => 'bg-warning bg-opacity-25 text-warning border-warning',
+                'statusText'         => 'Selamat atas kelulusan Anda! Akun Anda kini berstatus Alumni Kehormatan.',
+                'pertahankan'        => [
+                    'Jejak karya dan inspirasi yang telah diberikan untuk adik-adik tingkat MMC',
+                    'Koneksi dan silaturahmi dengan keluarga besar Multimedia Club',
+                    'Semangat berkarya dan mengukir prestasi di jenjang pendidikan atau karir selanjutnya'
+                ],
+                'perbaikan'          => [
+                    'Bagikan pengalaman, portofolio karya, dan tips di Feed Sosial & Komunitas MMC',
+                    'Bantu memberikan masukan atau motivasi bagi adik-adik tingkat'
+                ],
+                'recommendation'     => 'Sebagai Alumni Kehormatan, Anda bebas dari kewajiban presensi maupun penugasan harian. Portal ini tetap terbuka penuh untuk Anda!',
+            ];
+        }
+
         $infoModel = new \App\Models\InformationModel();
-        $latestInformations = $infoModel->getInformationsForMember($userId, null, 6);
+        $latestInformations = $infoModel->getInformationsForMember($userId, null, 15);
+
+        $currentUser = $userModel->select('users.*, roles.name as role_name, roles.slug as role_slug')
+                                 ->join('roles', 'roles.id = users.role_id', 'left')
+                                 ->find($userId);
+
+        $rankingService   = new \App\Modules\Ranking\Services\RankingService();
+        $currentYear      = (int)date('Y');
+        $currentMonth     = (int)date('n');
+        $myMonthlyRank    = $rankingService->getUserMonthlyRank((int)$userId, $currentYear, $currentMonth);
+        $currentMonthName = $rankingService->getIndonesianMonthName($currentMonth);
 
         $data = [
             'title'              => 'Dashboard Portal - Multimedia Club',
-            'user'               => $userModel->find($userId),
+            'user'               => $currentUser ?: $userModel->find($userId),
             'activeMeeting'      => $activeMeeting,
             'myActiveAttendance' => $myActiveAttendance,
             'aiSummary'          => $aiSummary,
             'todayBirthdays'     => $userModel->getTodayBirthdayUsers(),
             'latestInformations' => $latestInformations,
+            'myMonthlyRank'      => $myMonthlyRank,
+            'currentMonthName'   => $currentMonthName,
+            'currentYear'        => $currentYear,
         ];
 
         if (in_array($userRole, ['superadmin', 'pembina', 'bph'])) {
