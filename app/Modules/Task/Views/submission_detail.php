@@ -152,11 +152,22 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label text-body small fw-semibold">Nilai Angka (0 - 100) <span class="text-danger">*</span></label>
-                        <div class="input-group">
+                        <label class="form-label text-body small fw-semibold d-flex justify-content-between align-items-center">
+                            <span>Nilai Angka (0 - 100) <span class="text-danger">*</span></span>
+                            <span class="text-secondary style-tiny font-monospace">Bisa langsung diisi</span>
+                        </label>
+                        <div class="input-group mb-2">
                             <span class="input-group-text bg-body-secondary text-warning border-secondary border-opacity-50"><i class="fa-solid fa-award"></i></span>
-                            <input type="number" name="grade" class="form-control bg-body-secondary text-body border-secondary border-opacity-50 font-monospace fs-5 fw-bold" min="0" max="100" required value="<?= $submission['grade'] !== null ? esc($submission['grade']) : 85 ?>">
+                            <input type="number" name="grade" id="detailGradeInput" class="form-control bg-body-secondary text-body border-secondary border-opacity-50 font-monospace fs-5 fw-bold" min="0" max="100" required value="<?= $submission['grade'] !== null ? esc($submission['grade']) : 85 ?>">
                             <span class="input-group-text bg-body-secondary text-secondary border-secondary border-opacity-50 font-monospace">/ 100</span>
+                        </div>
+                        <div class="d-flex flex-wrap gap-1.5 align-items-center mt-1.5">
+                            <span class="text-secondary style-tiny me-1">Pilihan Cepat:</span>
+                            <?php foreach ([60, 70, 75, 80, 85, 90, 95, 100] as $presetScore): ?>
+                                <button type="button" class="btn btn-sm btn-saas-dark border border-secondary border-opacity-50 py-0.5 px-2 style-tiny font-monospace text-body" onclick="document.getElementById('detailGradeInput').value=<?= $presetScore ?>; document.getElementById('detailGradeInput').focus();">
+                                    <?= $presetScore ?>
+                                </button>
+                            <?php endforeach; ?>
                         </div>
                     </div>
 

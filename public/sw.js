@@ -136,32 +136,53 @@ self.addEventListener('sync', (event) => {
     }
 });
 
-// Web Push Notification Listener (Future Ready for Firebase / Web Push API)
+// Web Push & Local Notification Listener (Mobile & Desktop Compatible)
 self.addEventListener('push', (event) => {
-    let data = { title: 'Multimedia Club SMAN 1 Tamansari', body: 'Ada pemberitahuan baru di platform MMC!' };
+    let data = {
+        title: 'Multimedia Club SMAN 1 Tamansari',
+        body: 'Ada pemberitahuan baru di platform MMC!',
+        url: '/notifications',
+        tag: 'mmc-notification-' + Date.now()
+    };
     if (event.data) {
-        try { data = event.data.json(); } catch(e) { data.body = event.data.text(); }
+        try {
+            data = Object.assign(data, event.data.json());
+        } catch(e) {
+            data.body = event.data.text();
+        }
     }
     const options = {
         body: data.body,
         icon: '/assets/icons/icon-192.png',
         badge: '/assets/icons/favicon.png',
-        vibrate: [100, 50, 100],
-        data: { url: data.url || '/dashboard' }
+        tag: data.tag || 'mmc-notification',
+        renotify: true,
+        vibrate: [200, 100, 200],
+        data: {
+            url: data.url || '/notifications'
+        }
     };
     event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
-// Push Notification Click Event Handler
+// Push Notification Click Event Handler (Focus or Open App Window)
 self.addEventListener('notificationclick', (event) => {
     event.notification.close();
-    const targetUrl = event.notification.data?.url || '/dashboard';
+    const targetUrl = event.notification.data?.url || '/notifications';
+
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
             for (const client of clientList) {
-                if (client.url === targetUrl && 'focus' in client) return client.focus();
+                if (client.url.includes(self.location.origin) && 'focus' in client) {
+                    if (client.url !== targetUrl && 'navigate' in client) {
+                        client.navigate(targetUrl);
+                    }
+                    return client.focus();
+                }
             }
-            if (clients.openWindow) return clients.openWindow(targetUrl);
+            if (clients.openWindow) {
+                return clients.openWindow(targetUrl);
+            }
         })
     );
 });

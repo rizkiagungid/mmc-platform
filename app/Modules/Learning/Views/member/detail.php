@@ -14,16 +14,16 @@
             </ol>
         </nav>
     </div>
-    <a href="<?= base_url('member/learning') ?>" class="btn btn-saas-dark btn-sm">
+    <a href="<?= base_url('member/learning') ?>" class="btn btn-saas-dark text-body border border-secondary border-opacity-50 btn-sm">
         <i class="fa-solid fa-arrow-left me-1"></i> Kembali ke Daftar Materi
     </a>
 </div>
 
 <!-- Main Article Card -->
-<div class="saas-card overflow-hidden p-4 p-md-5 mb-5">
+<div class="saas-card overflow-hidden p-4 p-md-5 mb-5 border border-secondary border-opacity-25">
     <!-- Banner Image (If Any) -->
     <?php if (!empty($material['banner'])): ?>
-        <div class="rounded-3 overflow-hidden mb-4 bg-dark text-center cursor-pointer" onclick="openLightbox('<?= (strpos($material['banner'], 'http') === 0) ? esc($material['banner']) : base_url($material['banner']) ?>')">
+        <div class="rounded-3 overflow-hidden mb-4 bg-body-secondary text-center cursor-pointer" onclick="openLightbox('<?= (strpos($material['banner'], 'http') === 0) ? esc($material['banner']) : base_url($material['banner']) ?>')">
             <img src="<?= (strpos($material['banner'], 'http') === 0) ? esc($material['banner']) : base_url($material['banner']) ?>" alt="Banner" class="w-100 object-fit-cover" style="max-height: 380px;">
         </div>
     <?php endif; ?>
@@ -32,13 +32,13 @@
     <div class="mb-4 pb-3 border-bottom border-secondary border-opacity-25">
         <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
             <span class="badge bg-danger font-monospace"><?= esc($material['division_name'] ?: 'Umum') ?></span>
-            <span class="badge bg-secondary font-monospace"><?= esc($material['category']) ?></span>
+            <span class="badge bg-body-secondary border border-secondary border-opacity-50 text-body font-monospace"><?= esc($material['category']) ?></span>
             <?php if ($material['visibility'] === 'member'): ?>
                 <span class="badge bg-warning text-dark font-monospace"><i class="fa-solid fa-lock me-1"></i> Khusus Anggota MMC</span>
             <?php endif; ?>
         </div>
 
-        <h2 class="fw-bold text-white font-heading mb-3"><?= esc($material['title']) ?></h2>
+        <h2 class="fw-bold text-body font-heading mb-3"><?= esc($material['title']) ?></h2>
 
         <!-- Author Avatar & Info -->
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
@@ -51,7 +51,7 @@
                     </div>
                 <?php endif; ?>
                 <div>
-                    <div class="text-white fw-bold small"><?= esc($material['author_name'] ?: 'Super Admin') ?></div>
+                    <div class="text-body fw-bold small"><?= esc($material['author_name'] ?: 'Super Admin') ?></div>
                     <div class="text-secondary style-tiny font-monospace">Dipublikasikan pada <?= date('d M Y H:i', strtotime($material['published_at'] ?: $material['created_at'])) ?></div>
                 </div>
             </div>
@@ -65,14 +65,14 @@
 
     <!-- Excerpt Box -->
     <?php if (!empty($material['excerpt'])): ?>
-        <div class="p-3 rounded-3 bg-dark border-start border-danger border-4 text-secondary small fst-italic mb-4">
+        <div class="p-3 rounded-3 bg-body-secondary border-start border-danger border-4 text-secondary small fst-italic mb-4">
             "<?= esc($material['excerpt']) ?>"
         </div>
     <?php endif; ?>
 
     <!-- Auto-Generated Table of Contents (TOC) -->
-    <div id="tocContainer" class="p-3 rounded-3 bg-black border border-secondary border-opacity-25 mb-4 style-tiny" style="display: none;">
-        <div class="fw-bold text-white font-monospace mb-2 text-uppercase d-flex align-items-center justify-content-between">
+    <div id="tocContainer" class="p-3 rounded-3 bg-body-secondary border border-secondary border-opacity-50 mb-4 style-tiny" style="display: none;">
+        <div class="fw-bold text-body font-monospace mb-2 text-uppercase d-flex align-items-center justify-content-between">
             <span><i class="fa-solid fa-list-ol text-danger me-2"></i> DAFTAR ISI MATERI (TOC)</span>
             <span class="badge bg-secondary style-tiny cursor-pointer" onclick="toggleToc()"><i class="fa-solid fa-chevron-up" id="tocToggleIcon"></i></span>
         </div>
@@ -80,7 +80,7 @@
     </div>
 
     <!-- Rich Text Content Body -->
-    <div class="text-white style-learning-content mb-5 leading-relaxed" id="learningContent">
+    <div class="text-body style-learning-content mb-5 leading-relaxed" id="learningContent">
         <?= $material['content'] ?>
     </div>
 
@@ -89,8 +89,8 @@
         $attachments = !empty($material['attachments']) ? (is_string($material['attachments']) ? json_decode($material['attachments'], true) : $material['attachments']) : [];
     ?>
     <?php if (!empty($attachments) && is_array($attachments)): ?>
-        <div class="p-4 rounded-3 bg-black border border-secondary border-opacity-25 mb-5">
-            <h6 class="text-white font-heading fw-bold mb-3 d-flex align-items-center justify-content-between">
+        <div class="p-4 rounded-3 bg-body-secondary border border-secondary border-opacity-50 mb-5">
+            <h6 class="text-body font-heading fw-bold mb-3 d-flex align-items-center justify-content-between">
                 <span><i class="fa-solid fa-paperclip text-warning me-2"></i> Lampiran File Pembelajaran (Attachments)</span>
                 <span class="badge bg-secondary style-tiny font-monospace"><?= count($attachments) ?> File Terlampir</span>
             </h6>
@@ -116,11 +116,11 @@
                         $isBrandIcon = in_array($type, ['youtube', 'instagram', 'tiktok', 'x_twitter']);
                     ?>
                     <div class="col-md-6">
-                        <div class="p-3 rounded-2 bg-dark border border-secondary border-opacity-25 d-flex align-items-center justify-content-between">
+                        <div class="p-3 rounded-2 bg-body border border-secondary border-opacity-50 d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
                                 <i class="<?= $isBrandIcon ? 'fa-brands' : 'fa-solid' ?> <?= $iconClass ?> fs-4"></i>
                                 <div class="overflow-hidden">
-                                    <div class="text-white small fw-bold text-truncate"><?= esc($att['name'] ?: 'Tautan Lampiran') ?></div>
+                                    <div class="text-body small fw-bold text-truncate"><?= esc($att['name'] ?: 'Tautan Lampiran') ?></div>
                                     <div class="text-secondary style-tiny font-monospace text-uppercase"><?= esc($labelType) ?></div>
                                 </div>
                             </div>
@@ -147,7 +147,7 @@
             <span class="text-secondary style-tiny font-monospace fw-bold me-1"><i class="fa-solid fa-tags text-danger me-1"></i> Tags:</span>
             <?php if (!empty($material['tags'])): ?>
                 <?php foreach ($material['tags'] as $t): ?>
-                    <a href="<?= base_url('member/learning?tag=' . $t['slug']) ?>" class="badge bg-dark border border-secondary text-secondary text-decoration-none font-monospace style-tiny">#<?= esc($t['name']) ?></a>
+                    <a href="<?= base_url('member/learning?tag=' . $t['slug']) ?>" class="badge bg-body-secondary border border-secondary border-opacity-50 text-secondary text-decoration-none font-monospace style-tiny">#<?= esc($t['name']) ?></a>
                 <?php endforeach; ?>
             <?php else: ?>
                 <span class="text-secondary style-tiny fst-italic">Tanpa tag</span>
@@ -167,22 +167,22 @@
 <!-- Related Materials Section -->
 <?php if (!empty($related)): ?>
     <div class="mt-4">
-        <h5 class="text-white font-heading fw-bold mb-3"><i class="fa-solid fa-layer-group text-danger me-2"></i> Materi Pembelajaran Terkait</h5>
+        <h5 class="text-body font-heading fw-bold mb-3"><i class="fa-solid fa-layer-group text-danger me-2"></i> Materi Pembelajaran Terkait</h5>
         <div class="row g-3">
             <?php foreach ($related as $rel): ?>
                 <div class="col-md-6">
-                    <div class="saas-card saas-card-glow h-100 p-3 d-flex flex-column justify-content-between">
+                    <div class="saas-card saas-card-glow h-100 p-3 d-flex flex-column justify-content-between border border-secondary border-opacity-25">
                         <div>
                             <div class="d-flex align-items-center justify-content-between mb-2">
                                 <span class="badge bg-danger font-monospace style-tiny"><?= esc($rel['division_name'] ?: 'Umum') ?></span>
-                                <span class="badge bg-secondary font-monospace style-tiny"><?= esc($rel['category']) ?></span>
+                                <span class="badge bg-body-secondary border border-secondary border-opacity-50 text-body font-monospace style-tiny"><?= esc($rel['category']) ?></span>
                             </div>
-                            <h6 class="text-white font-heading mb-2">
-                                <a href="<?= base_url('member/learning/' . $rel['slug']) ?>" class="text-white text-decoration-none hover-danger"><?= esc($rel['title']) ?></a>
+                            <h6 class="text-body font-heading mb-2 fw-bold">
+                                <a href="<?= base_url('member/learning/' . $rel['slug']) ?>" class="text-body text-decoration-none hover-danger"><?= esc($rel['title']) ?></a>
                             </h6>
                             <p class="text-secondary style-tiny mb-2 line-clamp-2"><?= esc(mb_strimwidth($rel['excerpt'] ?? '', 0, 90, '...')) ?></p>
                         </div>
-                        <div class="pt-2 border-top border-secondary border-opacity-10 d-flex align-items-center justify-content-between text-secondary style-tiny font-monospace">
+                        <div class="pt-2 border-top border-secondary border-opacity-25 d-flex align-items-center justify-content-between text-secondary style-tiny font-monospace">
                             <div><i class="fa-solid fa-clock me-1 text-danger"></i> <?= $rel['reading_time'] ?> min</div>
                             <a href="<?= base_url('member/learning/' . $rel['slug']) ?>" class="text-danger fw-bold text-decoration-none">Pelajari <i class="fa-solid fa-arrow-right"></i></a>
                         </div>

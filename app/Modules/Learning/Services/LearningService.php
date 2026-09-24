@@ -95,6 +95,20 @@ class LearningService extends BaseService
             $forge->createTable('learning_material_revisions', true);
         }
 
+        if (!$this->db->tableExists('learning_material_reads')) {
+            $forge = \Config\Database::forge();
+            $forge->addField([
+                'id'          => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true, 'auto_increment' => true],
+                'user_id'     => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
+                'material_id' => ['type' => 'INT', 'constraint' => 11, 'unsigned' => true],
+                'read_date'   => ['type' => 'DATE', 'null' => true],
+                'created_at'  => ['type' => 'DATETIME', 'null' => true],
+            ]);
+            $forge->addKey('id', true);
+            $forge->addKey(['user_id', 'material_id', 'read_date']);
+            $forge->createTable('learning_material_reads', true);
+        }
+
         // Check missing columns in learning_materials table
         if ($this->db->tableExists('learning_materials')) {
             $fields = $this->db->getFieldNames('learning_materials');
@@ -375,6 +389,30 @@ class LearningService extends BaseService
     {
         $now = date('Y-m-d H:i:s');
         $this->db->query("UPDATE learning_materials SET views_count = views_count + 1, last_viewed_at = '{$now}' WHERE id = {$materialId}");
+    }
+
+    public function recordMaterialRead(int $materialId, ?int $userId)
+    {
+        if (!$userId || $userId <= 0 || $materialId <= 0) return;
+
+        $today = date('Y-m-d');
+        $now   = date('Y-m-d H:i:s');
+
+        // Check if read today already (anti-spam 1 read per material per day)
+        $existing = $this->db->table('learning_material_reads')
+                             ->where('user_id', $userId)
+                             ->where('material_id', $materialId)
+                             ->where('read_date', $today)
+                             ->countAllResults();
+
+        if ($existing === 0) {
+            $this->db->table('learning_material_reads')->insert([
+                'user_id'     => $userId,
+                'material_id' => $materialId,
+                'read_date'   => $today,
+                'created_at'  => $now,
+            ]);
+        }
     }
 
     public function getRelatedMaterials(array $currentMaterial, int $limit = 4): array

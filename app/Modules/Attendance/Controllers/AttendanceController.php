@@ -50,11 +50,14 @@ class AttendanceController extends BaseController
                                     ->orderBy('users.full_name', 'ASC')
                                     ->findAll();
 
+        $selectedStatus = $this->request->getGet('status') ?? '';
+
         return view('App\Modules\Attendance\Views\index', [
             'title'             => 'Rekap & Kelola Presensi - Admin CMS',
             'meetings'          => $meetings,
             'currentMeeting'    => $currentMeeting,
             'selectedMeetingId' => $selectedMeetingId,
+            'selectedStatus'    => $selectedStatus,
             'attendances'       => $attendances,
             'allUsers'          => $allUsers,
         ]);

@@ -80,12 +80,34 @@
             </thead>
             <tbody>
                 <?php foreach ($tasks as $i => $t): ?>
+                    <?php
+                    $assignees = $t['assignees'] ?? [];
+                    $assigneesCount = count($assignees);
+                    $completedCount = 0;
+                    if ($assigneesCount > 0) {
+                        foreach ($assignees as $a) {
+                            $statusId = (int)($a['status_id'] ?? 1);
+                            $statusName = strtolower(trim($a['status_name'] ?? ''));
+                            if ($statusId === 5 || $statusName === 'selesai') {
+                                $completedCount++;
+                            }
+                        }
+                    }
+                    $isAllCompleted = ($assigneesCount > 0 && $completedCount === $assigneesCount);
+                    ?>
                     <tr>
                         <td><?= $i + 1 ?></td>
                         <td>
-                            <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="fw-semibold text-white text-decoration-none">
-                                <?= esc($t['title']) ?>
-                            </a>
+                            <div class="d-flex align-items-center gap-1.5 flex-wrap">
+                                <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="fw-semibold text-white text-decoration-none">
+                                    <?= esc($t['title']) ?>
+                                </a>
+                                <?php if ($isAllCompleted): ?>
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 font-monospace ms-2 d-inline-flex align-items-center gap-1 py-0.5 px-2 mb-1 style-tiny" title="Semua <?= $assigneesCount ?> anggota yang di-assign sudah menyelesaikan tugas ini!">
+                                        <i class="fa-solid fa-circle-check text-success"></i> Selesai Semua
+                                    </span>
+                                <?php endif; ?>
+                            </div>
                             <div class="text-secondary small text-truncate" style="max-width: 250px;"><?= esc($t['description']) ?></div>
                         </td>
                         <td>
@@ -101,19 +123,38 @@
                             </form>
                         </td>
                         <td>
-                            <?php if (empty($t['assignees'])): ?>
+                            <?php if (empty($assignees)): ?>
                                 <span class="text-secondary small font-monospace">Belum ada assignee</span>
                             <?php else: ?>
-                                <?php $assigneesCount = count($t['assignees']); ?>
-                                <button class="btn btn-sm btn-saas-dark py-1 px-2 style-tiny text-white border-secondary border-opacity-50 text-nowrap" type="button" data-bs-toggle="collapse" data-bs-target="#assignees-collapse-<?= $t['id'] ?>" aria-expanded="false" onclick="toggleAssigneeListBtn(this, <?= $assigneesCount ?>)">
-                                    <i class="fa-solid fa-users text-danger me-1"></i> Lihat Anggota (<?= $assigneesCount ?>)
-                                </button>
+                                <div class="d-flex align-items-center gap-2">
+                                    <?php if ($isAllCompleted): ?>
+                                        <button class="btn btn-sm btn-outline-success py-1 px-2 style-tiny text-nowrap d-inline-flex align-items-center gap-1.5" type="button" data-bs-toggle="collapse" data-bs-target="#assignees-collapse-<?= $t['id'] ?>" aria-expanded="false" onclick="toggleAssigneeListBtn(this, <?= $assigneesCount ?>, true)">
+                                            <i class="fa-solid fa-circle-check text-success"></i>
+                                            <span>Semua Selesai (<?= $assigneesCount ?>)</span>
+                                        </button>
+                                        <i class="fa-solid fa-circle-check text-success fs-5" title="Semua anggota (<?= $assigneesCount ?> orang) sudah selesai mengerjakan tugas!"></i>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-saas-dark py-1 px-2 style-tiny text-white border-secondary border-opacity-50 text-nowrap" type="button" data-bs-toggle="collapse" data-bs-target="#assignees-collapse-<?= $t['id'] ?>" aria-expanded="false" onclick="toggleAssigneeListBtn(this, <?= $assigneesCount ?>, false)">
+                                            <i class="fa-solid fa-users text-danger me-1"></i> Lihat Anggota (<?= $assigneesCount ?>)
+                                        </button>
+                                        <?php if ($completedCount > 0): ?>
+                                            <span class="badge bg-secondary bg-opacity-25 text-success font-monospace style-tiny" title="<?= $completedCount ?> dari <?= $assigneesCount ?> anggota selesai">
+                                                <i class="fa-solid fa-check me-0.5"></i> <?= $completedCount ?>/<?= $assigneesCount ?> Selesai
+                                            </span>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </div>
 
                                 <div class="collapse flex-column gap-1 mt-2" id="assignees-collapse-<?= $t['id'] ?>">
-                                    <?php foreach ($t['assignees'] as $a): ?>
+                                    <?php foreach ($assignees as $a): ?>
                                         <div class="d-flex align-items-center gap-1">
                                             <span class="badge bg-dark border border-secondary text-white font-monospace style-tiny text-truncate" style="max-width: 180px;" title="<?= esc($a['full_name']) ?>">
-                                                <i class="fa-solid fa-user me-1 text-danger"></i> <?= esc($a['full_name']) ?>
+                                                <?php if ((int)($a['status_id'] ?? 1) === 5 || strtolower($a['status_name'] ?? '') === 'selesai'): ?>
+                                                    <i class="fa-solid fa-circle-check me-1 text-success"></i>
+                                                <?php else: ?>
+                                                    <i class="fa-solid fa-user me-1 text-danger"></i>
+                                                <?php endif; ?>
+                                                <?= esc($a['full_name']) ?>
                                             </span>
                                             <form action="<?= base_url('admin/tasks/update-assignee-status/' . $t['id']) ?>" method="POST" class="m-0">
                                                 <?= csrf_field() ?>
@@ -139,6 +180,9 @@
                                 <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="btn btn-outline-info" title="Detail & Peninjauan">
                                     <i class="fa-solid fa-eye"></i>
                                 </a>
+                                <a href="<?= base_url('admin/tasks/duplicate/' . $t['id']) ?>" onclick="return confirm('Duplikasi tugas \'<?= esc(addslashes($t['title'])) ?>\' beserta seluruh penerima tugas (assignees)?')" class="btn btn-outline-success" title="Duplikasi / Copy Tugas">
+                                    <i class="fa-solid fa-copy"></i>
+                                </a>
                                 <a href="<?= base_url('admin/tasks/edit/' . $t['id']) ?>" class="btn btn-outline-warning" title="Edit Tugas">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
@@ -158,13 +202,17 @@
 
 <?= $this->section('scripts') ?>
 <script>
-    function toggleAssigneeListBtn(btn, count) {
+    function toggleAssigneeListBtn(btn, count, isCompleted = false) {
         setTimeout(function() {
             const isExpanded = btn.getAttribute('aria-expanded') === 'true';
             if (isExpanded) {
                 btn.innerHTML = '<i class="fa-solid fa-users-slash text-warning me-1"></i> Sembunyikan (' + count + ')';
             } else {
-                btn.innerHTML = '<i class="fa-solid fa-users text-danger me-1"></i> Lihat Anggota (' + count + ')';
+                if (isCompleted) {
+                    btn.innerHTML = '<i class="fa-solid fa-circle-check text-success me-1"></i> Semua Selesai (' + count + ')';
+                } else {
+                    btn.innerHTML = '<i class="fa-solid fa-users text-danger me-1"></i> Lihat Anggota (' + count + ')';
+                }
             }
         }, 50);
     }

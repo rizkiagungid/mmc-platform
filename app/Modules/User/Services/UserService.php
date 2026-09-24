@@ -296,8 +296,34 @@ class UserService extends BaseService
                 $changes[] = "hapus foto profil";
             }
 
-            // Handle avatar file upload
-            if ($avatarFile && $avatarFile->isValid() && !$avatarFile->hasMoved()) {
+            // Handle cropped avatar base64 data (From interactive Cropper Modal)
+            if (!empty($data['avatar_cropped_base64']) && str_starts_with($data['avatar_cropped_base64'], 'data:image/')) {
+                $uploadDir = FCPATH . 'uploads/avatars/';
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+
+                if (!empty($user['avatar']) && file_exists(FCPATH . $user['avatar'])) {
+                    @unlink(FCPATH . $user['avatar']);
+                }
+
+                $parts = explode(',', $data['avatar_cropped_base64']);
+                $binaryData = base64_decode($parts[1] ?? '');
+                if ($binaryData) {
+                    $ext = 'png';
+                    if (str_contains($parts[0], 'image/jpeg') || str_contains($parts[0], 'image/jpg')) {
+                        $ext = 'jpg';
+                    } elseif (str_contains($parts[0], 'image/webp')) {
+                        $ext = 'webp';
+                    }
+                    $newName = 'avatar_' . $userId . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+                    file_put_contents($uploadDir . $newName, $binaryData);
+                    $updateData['avatar'] = 'uploads/avatars/' . $newName;
+                    $changes[] = "foto profil baru (cropped)";
+                }
+            }
+            // Handle regular avatar file upload (up to 20MB)
+            elseif ($avatarFile && $avatarFile->isValid() && !$avatarFile->hasMoved()) {
                 $uploadDir = FCPATH . 'uploads/avatars/';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0755, true);

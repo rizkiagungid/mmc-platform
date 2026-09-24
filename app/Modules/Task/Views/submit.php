@@ -42,6 +42,57 @@
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
+
+            <!-- Penerima Tugas (Assignees List) -->
+            <div class="p-3 rounded-3 bg-body-secondary border border-secondary border-opacity-25 mb-2">
+                <div class="d-flex align-items-center justify-content-between mb-2 pb-2 border-bottom border-secondary border-opacity-15">
+                    <h6 class="text-body font-heading fw-bold mb-0 style-tiny">
+                        <i class="fa-solid fa-users text-danger me-1.5"></i> Penerima Tugas (Assignees)
+                    </h6>
+                    <span class="badge bg-body border border-secondary border-opacity-25 text-secondary style-tiny font-monospace">
+                        <?= count($task['assignees'] ?? []) ?> Anggota
+                    </span>
+                </div>
+
+                <div class="d-flex flex-column gap-2" style="max-height: 240px; overflow-y: auto;">
+                    <?php 
+                        $currentUserId = session()->get('user_id');
+                        $assignees = $task['assignees'] ?? [];
+                    ?>
+                    <?php if (empty($assignees)): ?>
+                        <div class="text-secondary style-tiny fst-italic py-1">Belum ada anggota yang ditugaskan.</div>
+                    <?php else: ?>
+                        <?php foreach ($assignees as $ass): ?>
+                            <?php $isMe = ($ass['id'] == $currentUserId); ?>
+                            <div class="d-flex align-items-center justify-content-between p-2 rounded-2 <?= $isMe ? 'bg-danger bg-opacity-10 border border-danger border-opacity-35' : 'bg-body border border-secondary border-opacity-15' ?>">
+                                <div class="d-flex align-items-center gap-2 min-w-0">
+                                    <?php if (!empty($ass['avatar'])): ?>
+                                        <img src="<?= base_url($ass['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover flex-shrink-0" style="width: 26px; height: 26px;">
+                                    <?php else: ?>
+                                        <div class="rounded-circle bg-danger bg-opacity-25 text-danger d-flex align-items-center justify-content-center fw-bold flex-shrink-0 style-tiny" style="width: 26px; height: 26px;">
+                                            <?= strtoupper(substr($ass['full_name'], 0, 1)) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="min-w-0">
+                                        <div class="text-body fw-semibold text-truncate style-tiny" title="<?= esc($ass['full_name']) ?>">
+                                            <?= esc($ass['full_name']) ?>
+                                            <?php if ($isMe): ?>
+                                                <span class="badge bg-danger text-white style-tiny ms-1" style="font-size: 9px;">Anda</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <?php if (!empty($ass['class_dept'])): ?>
+                                            <div class="text-secondary font-monospace style-tiny" style="font-size: 10px;"><?= esc($ass['class_dept']) ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <span class="badge rounded-pill style-tiny font-monospace flex-shrink-0 ms-2" style="background-color: <?= $ass['status_color'] ?? '#6c757d' ?>;">
+                                    <?= esc($ass['status_name'] ?? 'Belum dikerjakan') ?>
+                                </span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
     </div>
 

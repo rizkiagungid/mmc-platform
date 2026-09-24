@@ -128,18 +128,27 @@ class AuthController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Pendaftaran gagal: Username tidak boleh mengandung spasi! Silakan ganti spasi dengan garis bawah (_) atau titik (.).');
         }
 
+        $memberType = $this->request->getPost('member_type') === 'alumni' ? 'alumni' : 'member';
+
         $rules = [
             'full_name'        => 'required|min_length[3]|max_length[100]',
             'username'         => 'required|regex_match[/^\S+$/]|alpha_numeric_punct|min_length[3]|max_length[30]|is_unique[users.username]',
             'email'            => 'required|valid_email|is_unique[users.email]',
             'nis_nip'          => 'required|min_length[4]|max_length[30]',
-            'class_grade'      => 'required|in_list[X,XI,XII]',
-            'class_room'       => 'required|integer|greater_than_equal_to[1]|less_than_equal_to[10]',
-            'division'         => 'required|in_list[Broadcasting,Programming]',
             'phone'            => 'required|numeric|min_length[10]|max_length[16]',
             'password'         => 'required|min_length[6]',
             'confirm_password' => 'required|matches[password]',
         ];
+
+        if ($memberType === 'alumni') {
+            $rules['class_grade'] = 'permit_empty';
+            $rules['class_room']  = 'permit_empty';
+            $rules['division']    = 'permit_empty|in_list[Broadcasting,Programming]';
+        } else {
+            $rules['class_grade'] = 'required|in_list[X,XI,XII]';
+            $rules['class_room']  = 'required|integer|greater_than_equal_to[1]|less_than_equal_to[10]';
+            $rules['division']    = 'required|in_list[Broadcasting,Programming]';
+        }
 
         $customErrors = [
             'full_name' => [
@@ -199,10 +208,15 @@ class AuthController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
-        $classGrade = trim($this->request->getPost('class_grade'));
-        $classRoom  = trim($this->request->getPost('class_room'));
-        $division   = trim($this->request->getPost('division'));
-        $classDept  = "{$classGrade} {$classRoom} - {$division}";
+        if ($memberType === 'alumni') {
+            $division  = trim((string)$this->request->getPost('division'));
+            $classDept = !empty($division) ? "Alumni - {$division}" : "Alumni";
+        } else {
+            $classGrade = trim((string)$this->request->getPost('class_grade'));
+            $classRoom  = trim((string)$this->request->getPost('class_room'));
+            $division   = trim((string)$this->request->getPost('division'));
+            $classDept  = "{$classGrade} {$classRoom} - {$division}";
+        }
 
         $memberRole = $this->roleModel->getRoleBySlug('member');
 

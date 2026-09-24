@@ -32,6 +32,7 @@ class TaskController extends BaseController
             'tasks'      => $tasks,
             'statuses'   => $statuses,
             'priorities' => $priorities,
+            'members'    => $this->taskService->getAllMembers(),
             'filters'    => $filters,
         ]);
     }
@@ -95,6 +96,18 @@ class TaskController extends BaseController
         return redirect()->to('/admin/tasks')->with('success', $result['body']['message']);
     }
 
+    public function duplicate(int $id)
+    {
+        $postData = $this->request->getPost() ?: [];
+        $result   = $this->taskService->duplicateTask($id, session()->get('user_id'), $postData);
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->to('/admin/tasks')->with('error', $result['body']['message']);
+        }
+
+        return redirect()->to('/admin/tasks')->with('success', $result['body']['message']);
+    }
+
     public function detail(int $id)
     {
         $task = $this->taskService->getTaskDetails($id);
@@ -143,6 +156,69 @@ class TaskController extends BaseController
 
         if ($result['body']['status'] !== 'success') {
             return redirect()->back()->withInput()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    public function evaluateAssigneeDirectly(int $taskId)
+    {
+        $userId = (int)$this->request->getPost('user_id');
+        if ($userId <= 0) {
+            return redirect()->back()->with('error', 'Anggota assignee tidak valid.');
+        }
+
+        $result = $this->taskService->evaluateAssigneeDirectly($taskId, $userId, $this->request->getPost(), session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->withInput()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    public function bulkEvaluate(int $taskId)
+    {
+        $userIds = $this->request->getPost('user_ids');
+        if (!is_array($userIds) || empty($userIds)) {
+            return redirect()->back()->with('error', 'Pilih setidaknya satu anggota penerima tugas untuk dinilai secara massal.');
+        }
+
+        $result = $this->taskService->bulkEvaluate($taskId, $userIds, $this->request->getPost(), session()->get('user_id'));
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->withInput()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    public function quickGrade(int $taskId)
+    {
+        $userId = (int)$this->request->getPost('user_id');
+        $grade  = $this->request->getPost('grade');
+
+        if ($userId <= 0) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['status' => 'error', 'message' => 'Anggota tidak valid.']);
+            }
+            return redirect()->back()->with('error', 'Anggota tidak valid.');
+        }
+
+        $data = [
+            'grade'     => ($grade !== null && $grade !== '') ? (int)$grade : null,
+            'status_id' => $this->request->getPost('status_id') ?: 5, // Default Done (5)
+            'feedback'  => $this->request->getPost('feedback') ?? '',
+        ];
+
+        $result = $this->taskService->evaluateAssigneeDirectly($taskId, $userId, $data, session()->get('user_id'));
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON($result['body']);
+        }
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
         }
 
         return redirect()->back()->with('success', $result['body']['message']);
@@ -263,16 +339,24 @@ class TaskController extends BaseController
         $statusId = (int)$this->request->getPost('status_id');
 
         if ($userId > 0 && $statusId > 0) {
-            $assigneeModel = new \App\Models\TaskAssigneeModel();
-            $assigneeModel->updateAssigneeStatus($taskId, $userId, $statusId);
+            $result = $this->taskService->updateAssigneeStatus($taskId, $userId, $statusId, session()->get('user_id'));
 
-            $actorId = session()->get('user_id');
-            $auditLogModel = new \App\Models\AuditLogModel();
-            $auditLogModel->recordLog($actorId, 'TASK_ASSIGNEE_STATUS_UPDATE', "Perbarui status assignee user ID {$userId} pada tugas ID {$taskId}");
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON($result['body']);
+            }
 
-            return redirect()->to('/admin/tasks')->with('success', 'Status anggota assignee berhasil diperbarui secara langsung.');
+            if ($result['body']['status'] !== 'success') {
+                return redirect()->back()->with('error', $result['body']['message']);
+            }
+
+            return redirect()->back()->with('success', $result['body']['message']);
         }
-        return redirect()->to('/admin/tasks')->with('error', 'Gagal memperbarui status anggota.');
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Gagal memperbarui status anggota.']);
+        }
+
+        return redirect()->back()->with('error', 'Gagal memperbarui status anggota.');
     }
 
     public function quickUpdatePriority(int $taskId)

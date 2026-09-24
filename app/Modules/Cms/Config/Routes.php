@@ -4,7 +4,7 @@ use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
 
-$routes->group('admin/cms', ['filter' => ['auth', 'role:superadmin,pembina,bph']], static function ($routes) {
+$routes->group('admin/cms', ['filter' => ['auth', 'role:superadmin,admin,pembina,bph']], static function ($routes) {
     // WCMS Homepage & Hero Builder
     $routes->get('builder', '\App\Modules\Cms\Controllers\CmsController::index');
     $routes->post('sections/update', '\App\Modules\Cms\Controllers\CmsController::updateSections');
@@ -35,6 +35,13 @@ $routes->group('admin/cms', ['filter' => ['auth', 'role:superadmin,pembina,bph']
     $routes->post('portfolios/store', '\App\Modules\Cms\Controllers\PortfolioCmsController::store');
     $routes->post('portfolios/update/(:num)', '\App\Modules\Cms\Controllers\PortfolioCmsController::update/$1');
     $routes->get('portfolios/delete/(:num)', '\App\Modules\Cms\Controllers\PortfolioCmsController::delete/$1');
+
+    // Gallery & Activity Documentation (CRUD)
+    $routes->get('gallery', '\App\Modules\Cms\Controllers\GalleryCmsController::index');
+    $routes->post('gallery/store', '\App\Modules\Cms\Controllers\GalleryCmsController::store');
+    $routes->post('gallery/update/(:num)', '\App\Modules\Cms\Controllers\GalleryCmsController::update/$1');
+    $routes->get('gallery/delete/(:num)', '\App\Modules\Cms\Controllers\GalleryCmsController::delete/$1');
+    $routes->post('gallery/delete-media/(:num)', '\App\Modules\Cms\Controllers\GalleryCmsController::deleteMedia/$1');
 
     // Achievements & Multi-Member Teams (CRUD)
     $routes->get('achievements', '\App\Modules\Cms\Controllers\AchievementCmsController::index');

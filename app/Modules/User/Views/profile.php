@@ -39,19 +39,19 @@
                 <?= csrf_field() ?>
 
                 <!-- Foto Profil Avatar Header -->
-                <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
-                    <div class="position-relative cursor-pointer" <?php if (!empty($user['avatar'])): ?>data-bs-toggle="modal" data-bs-target="#avatarFullModal" title="Klik untuk lihat foto ukuran penuh"<?php endif; ?>>
-                        <img src="<?= avatar_url($user['avatar'], $user['full_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-2 shadow-sm" style="width: 76px; height: 76px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($user['full_name'])) ?>';">
+                <div class="d-flex align-items-start gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25 flex-wrap flex-sm-nowrap">
+                    <div class="position-relative cursor-pointer flex-shrink-0" id="avatarPreviewContainer">
+                        <img id="currentAvatarPreview" src="<?= avatar_url($user['avatar'], $user['full_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-2 shadow-sm" style="width: 80px; height: 80px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($user['full_name'])) ?>';" <?php if (!empty($user['avatar'])): ?>data-bs-toggle="modal" data-bs-target="#avatarFullModal" title="Klik untuk lihat foto ukuran penuh"<?php endif; ?>>
                         <?php if (!empty($user['avatar'])): ?>
-                            <span class="position-absolute bottom-0 end-0 bg-danger text-white rounded-circle p-1 d-flex align-items-center justify-content-center shadow" style="width: 22px; height: 22px; font-size: 0.65rem;" title="Lihat Foto Full">
+                            <span class="position-absolute bottom-0 end-0 bg-danger text-white rounded-circle p-1 d-flex align-items-center justify-content-center shadow" style="width: 22px; height: 22px; font-size: 0.65rem;" title="Lihat Foto Full" data-bs-toggle="modal" data-bs-target="#avatarFullModal">
                                 <i class="fa-solid fa-magnifying-glass-plus"></i>
                             </span>
                         <?php endif; ?>
                     </div>
 
                     <div class="flex-grow-1">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <label class="form-label text-white small fw-bold mb-1">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                            <label class="form-label text-white small fw-bold mb-0">
                                 <i class="fa-solid fa-camera text-danger me-1"></i> Foto Profil (Avatar)
                             </label>
                             <?php if (!empty($user['avatar'])): ?>
@@ -60,12 +60,31 @@
                                 </button>
                             <?php endif; ?>
                         </div>
-                        <input type="file" name="avatar" class="form-control form-control-sm bg-dark text-white border-secondary mb-1" accept="image/png, image/jpeg, image/jpg, image/webp">
-                        <div class="form-text text-secondary style-tiny">Format: JPG, PNG, WEBP (Maksimal 2MB).</div>
+
+                        <!-- Hidden Cropped Base64 Payload -->
+                        <input type="hidden" name="avatar_cropped_base64" id="avatarCroppedBase64" value="">
+
+                        <input type="file" id="avatarFileInput" name="avatar" class="form-control form-control-sm bg-dark text-white border-secondary mb-1" accept="image/png, image/jpeg, image/jpg, image/webp" onchange="handleAvatarFileSelect(this)">
+                        
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-1">
+                            <div class="form-text text-secondary style-tiny m-0">Format: JPG, PNG, WEBP (Maksimal 20MB). Anda dapat memotong (crop) & pratinjau sebelum menyimpan.</div>
+                            
+                            <div id="avatarStagedStatus" style="display: none;">
+                                <span class="badge bg-success font-monospace style-tiny py-1 px-2.5 rounded-pill shadow-sm">
+                                    <i class="fa-solid fa-circle-check me-1"></i> Foto Baru Siap Disimpan
+                                </span>
+                                <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 style-tiny ms-1 font-monospace" onclick="reopenCropModal()">
+                                    <i class="fa-solid fa-crop me-1"></i> Crop Ulang
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 style-tiny ms-1 font-monospace" onclick="cancelStagedAvatar()">
+                                    <i class="fa-solid fa-xmark me-1"></i> Batal
+                                </button>
+                            </div>
+                        </div>
 
                         <?php if (!empty($user['avatar'])): ?>
-                            <div class="form-check mt-1">
-                                <input class="form-check-input" type="checkbox" name="remove_avatar" value="1" id="removeAvatarCheck">
+                            <div class="form-check mt-2" id="removeAvatarWrapper">
+                                <input class="form-check-input" type="checkbox" name="remove_avatar" value="1" id="removeAvatarCheck" onchange="handleRemoveAvatarToggle(this)">
                                 <label class="form-check-label text-danger style-tiny" for="removeAvatarCheck">
                                     <i class="fa-solid fa-trash me-1"></i> Hapus foto profil ini (kembalikan ke default)
                                 </label>
@@ -74,8 +93,6 @@
                     </div>
                 </div>
 
-                <?php $canEditUsername = in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph']); ?>
-
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label text-secondary small fw-medium">Nama Lengkap <span class="text-danger">*</span></label>
@@ -83,22 +100,12 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-secondary small fw-medium">Username <?= $canEditUsername ? '<span class="text-danger">*</span>' : '' ?></label>
+                        <label class="form-label text-secondary small fw-medium">Username <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-dark text-danger border-secondary border-opacity-25 font-monospace">@</span>
-                            <?php if ($canEditUsername): ?>
-                                <input type="text" name="username" class="form-control font-monospace" value="<?= esc($user['username']) ?>" placeholder="Username unik Anda" required>
-                            <?php else: ?>
-                                <input type="text" class="form-control font-monospace text-secondary opacity-75" value="<?= esc($user['username']) ?>" disabled readonly>
-                            <?php endif; ?>
+                            <input type="text" name="username" class="form-control font-monospace" value="<?= esc(old('username', $user['username'])) ?>" placeholder="Username unik Anda" required>
                         </div>
-                        <small class="text-secondary style-tiny">
-                            <?php if ($canEditUsername): ?>
-                                Username unik Anda untuk login
-                            <?php else: ?>
-                                <i class="fa-solid fa-lock text-warning me-1"></i> Hubungi BPH / Admin untuk mengubah username
-                            <?php endif; ?>
-                        </small>
+                        <small class="text-secondary style-tiny">Username unik Anda untuk login dan profil (dapat diubah mandiri)</small>
                     </div>
 
                     <div class="col-md-6">
@@ -228,6 +235,59 @@
         </div>
     </div>
 <?php endif; ?>
+
+<!-- Modal Pratinjau & Potong (Crop) Foto Profil -->
+<div class="modal fade" id="avatarCropModal" tabindex="-1" aria-labelledby="avatarCropModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-danger border-opacity-50 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-2.5 px-3 bg-danger bg-opacity-10">
+                <h5 class="modal-title font-heading fs-6 fw-bold text-white d-flex align-items-center gap-2" id="avatarCropModalLabel">
+                    <i class="fa-solid fa-crop-simple text-danger"></i> Pratinjau & Potong Foto Profil
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="cancelStagedAvatar()"></button>
+            </div>
+            <div class="modal-body p-3 text-center">
+                <p class="text-secondary style-tiny mb-2">
+                    Geser (drag), perbesar (zoom), atau putar foto Anda agar pas di dalam lingkaran profil.
+                </p>
+
+                <!-- Crop Canvas Container -->
+                <div class="position-relative mx-auto bg-black rounded-4 overflow-hidden border border-secondary border-opacity-50" style="width: 280px; height: 280px; touch-action: none; cursor: grab;" id="cropCanvasWrapper">
+                    <canvas id="cropCanvas" width="280" height="280" class="d-block w-100 h-100"></canvas>
+                    <!-- Circular Overlay Mask with Red Dashed Border -->
+                    <div class="position-absolute top-0 start-0 w-100 h-100 pointer-events-none" style="pointer-events: none; border-radius: 50%; box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65); border: 2px dashed rgba(220, 38, 38, 0.9);"></div>
+                </div>
+
+                <!-- Controls: Zoom & Rotate -->
+                <div class="mt-3 px-2">
+                    <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
+                        <button type="button" class="btn btn-sm btn-saas-dark text-white px-2.5 py-1" onclick="adjustCropZoom(-0.15)" title="Perkecil">
+                            <i class="fa-solid fa-magnifying-glass-minus"></i>
+                        </button>
+                        <input type="range" class="form-range flex-grow-1" id="cropZoomSlider" min="0.2" max="3.5" step="0.05" value="1.0" oninput="onCropZoomChange(this.value)">
+                        <button type="button" class="btn btn-sm btn-saas-dark text-white px-2.5 py-1" onclick="adjustCropZoom(0.15)" title="Perbesar">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-saas-dark text-warning px-2.5 py-1 font-monospace style-tiny" onclick="rotateCropImage()" title="Putar 90 Derajat">
+                            <i class="fa-solid fa-rotate-right me-1"></i> Putar
+                        </button>
+                    </div>
+                    <small class="text-secondary style-tiny d-block">
+                        <i class="fa-solid fa-hand me-1"></i> Klik & seret mouse / usap layar untuk memindahkan posisi foto
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25 py-2 px-3 justify-content-between">
+                <button type="button" class="btn btn-sm btn-saas-dark text-secondary font-monospace" data-bs-dismiss="modal" onclick="cancelStagedAvatar()">
+                    Batal
+                </button>
+                <button type="button" class="btn btn-sm btn-red font-monospace fw-bold px-3 shadow" onclick="applyCroppedAvatar()">
+                    <i class="fa-solid fa-check me-1"></i> Terapkan & Gunakan Foto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?= $this->endSection() ?>
 
@@ -472,6 +532,238 @@
             img.src = avatarUrl;
         } else {
             drawAvatarAndDetails(null);
+        }
+    }
+
+    /* ==========================================================
+       INTERACTIVE AVATAR CROP & PREVIEW ENGINE (MAX 20MB)
+    ========================================================== */
+    const originalAvatarSrc = "<?= avatar_url($user['avatar'], $user['full_name']) ?>";
+    let cropImg = null;
+    let cropZoom = 1.0;
+    let cropRotation = 0; // 0, 90, 180, 270
+    let cropOffsetX = 0;
+    let cropOffsetY = 0;
+    let isCropDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let cropModalInstance = null;
+
+    function handleAvatarFileSelect(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+
+        // Validate max 20MB
+        const maxSizeBytes = 20 * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+            alert('Ukuran foto terlalu besar! Maksimal ukuran file foto adalah 20MB.');
+            input.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            cropImg = new Image();
+            cropImg.onload = function () {
+                // Initialize default crop settings
+                cropZoom = 1.0;
+                cropRotation = 0;
+                cropOffsetX = 0;
+                cropOffsetY = 0;
+
+                const slider = document.getElementById('cropZoomSlider');
+                if (slider) slider.value = '1.0';
+
+                // Setup and show modal
+                const modalEl = document.getElementById('avatarCropModal');
+                if (modalEl) {
+                    cropModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    cropModalInstance.show();
+                    setTimeout(initCropCanvasInteractions, 250);
+                }
+            };
+            cropImg.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function initCropCanvasInteractions() {
+        const canvas = document.getElementById('cropCanvas');
+        if (!canvas) return;
+
+        renderCropCanvas();
+
+        // Mouse Drag Handlers
+        canvas.onmousedown = function (e) {
+            isCropDragging = true;
+            dragStartX = e.clientX - cropOffsetX;
+            dragStartY = e.clientY - cropOffsetY;
+            canvas.style.cursor = 'grabbing';
+        };
+
+        window.onmousemove = function (e) {
+            if (!isCropDragging) return;
+            cropOffsetX = e.clientX - dragStartX;
+            cropOffsetY = e.clientY - dragStartY;
+            renderCropCanvas();
+        };
+
+        window.onmouseup = function () {
+            if (isCropDragging) {
+                isCropDragging = false;
+                if (canvas) canvas.style.cursor = 'grab';
+            }
+        };
+
+        // Touch Drag Handlers for Smartphones & Tablets
+        canvas.ontouchstart = function (e) {
+            if (e.touches && e.touches.length === 1) {
+                isCropDragging = true;
+                dragStartX = e.touches[0].clientX - cropOffsetX;
+                dragStartY = e.touches[0].clientY - cropOffsetY;
+            }
+        };
+
+        canvas.ontouchmove = function (e) {
+            if (!isCropDragging || !e.touches || e.touches.length !== 1) return;
+            e.preventDefault();
+            cropOffsetX = e.touches[0].clientX - dragStartX;
+            cropOffsetY = e.touches[0].clientY - dragStartY;
+            renderCropCanvas();
+        };
+
+        canvas.ontouchend = function () {
+            isCropDragging = false;
+        };
+    }
+
+    function renderCropCanvas() {
+        const canvas = document.getElementById('cropCanvas');
+        if (!canvas || !cropImg) return;
+        const ctx = canvas.getContext('2d');
+        const cWidth = canvas.width;
+        const cHeight = canvas.height;
+
+        ctx.clearRect(0, 0, cWidth, cHeight);
+        ctx.save();
+
+        // Translate to center of canvas for rotation & zoom
+        ctx.translate(cWidth / 2 + cropOffsetX, cHeight / 2 + cropOffsetY);
+        ctx.rotate((cropRotation * Math.PI) / 180);
+
+        // Calculate base scale to fit minimum dimension inside 280x280
+        const minDim = Math.min(cropImg.width, cropImg.height);
+        const baseScale = (280 / minDim) * cropZoom;
+
+        const drawW = cropImg.width * baseScale;
+        const drawH = cropImg.height * baseScale;
+
+        ctx.drawImage(cropImg, -drawW / 2, -drawH / 2, drawW, drawH);
+        ctx.restore();
+    }
+
+    function onCropZoomChange(val) {
+        cropZoom = parseFloat(val) || 1.0;
+        renderCropCanvas();
+    }
+
+    function adjustCropZoom(delta) {
+        const slider = document.getElementById('cropZoomSlider');
+        let current = parseFloat(slider ? slider.value : cropZoom) || 1.0;
+        current = Math.min(3.5, Math.max(0.2, current + delta));
+        if (slider) slider.value = current.toFixed(2);
+        cropZoom = current;
+        renderCropCanvas();
+    }
+
+    function rotateCropImage() {
+        cropRotation = (cropRotation + 90) % 360;
+        renderCropCanvas();
+    }
+
+    function applyCroppedAvatar() {
+        if (!cropImg) return;
+
+        // Render high-res 500x500 output canvas
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = 500;
+        outCanvas.height = 500;
+        const outCtx = outCanvas.getContext('2d');
+
+        outCtx.save();
+        // Scale ratio from 280 preview canvas to 500 export canvas
+        const ratio = 500 / 280;
+
+        outCtx.translate(250 + cropOffsetX * ratio, 250 + cropOffsetY * ratio);
+        outCtx.rotate((cropRotation * Math.PI) / 180);
+
+        const minDim = Math.min(cropImg.width, cropImg.height);
+        const baseScale = (280 / minDim) * cropZoom * ratio;
+
+        const drawW = cropImg.width * baseScale;
+        const drawH = cropImg.height * baseScale;
+
+        outCtx.drawImage(cropImg, -drawW / 2, -drawH / 2, drawW, drawH);
+        outCtx.restore();
+
+        const croppedDataUrl = outCanvas.toDataURL('image/png', 0.95);
+
+        // Update hidden form payload & thumbnail image preview
+        const hiddenInput = document.getElementById('avatarCroppedBase64');
+        const previewImg = document.getElementById('currentAvatarPreview');
+        const stagedStatus = document.getElementById('avatarStagedStatus');
+        const removeCheck = document.getElementById('removeAvatarCheck');
+
+        if (hiddenInput) hiddenInput.value = croppedDataUrl;
+        if (previewImg) previewImg.src = croppedDataUrl;
+        if (stagedStatus) stagedStatus.style.display = 'inline-block';
+        if (removeCheck) removeCheck.checked = false;
+
+        // Hide crop modal
+        if (cropModalInstance) {
+            cropModalInstance.hide();
+        } else {
+            const modalEl = document.getElementById('avatarCropModal');
+            if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+        }
+    }
+
+    function reopenCropModal() {
+        if (!cropImg) {
+            const fileInput = document.getElementById('avatarFileInput');
+            if (fileInput) fileInput.click();
+            return;
+        }
+        const modalEl = document.getElementById('avatarCropModal');
+        if (modalEl) {
+            cropModalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            cropModalInstance.show();
+            setTimeout(initCropCanvasInteractions, 250);
+        }
+    }
+
+    function cancelStagedAvatar() {
+        const hiddenInput = document.getElementById('avatarCroppedBase64');
+        const fileInput = document.getElementById('avatarFileInput');
+        const previewImg = document.getElementById('currentAvatarPreview');
+        const stagedStatus = document.getElementById('avatarStagedStatus');
+
+        if (hiddenInput) hiddenInput.value = '';
+        if (fileInput) fileInput.value = '';
+        if (previewImg) previewImg.src = originalAvatarSrc;
+        if (stagedStatus) stagedStatus.style.display = 'none';
+
+        if (cropModalInstance) {
+            cropModalInstance.hide();
+        } else {
+            const modalEl = document.getElementById('avatarCropModal');
+            if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+        }
+    }
+
+    function handleRemoveAvatarToggle(checkbox) {
+        if (checkbox && checkbox.checked) {
+            cancelStagedAvatar();
         }
     }
 </script>

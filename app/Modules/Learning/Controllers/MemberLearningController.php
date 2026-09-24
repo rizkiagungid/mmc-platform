@@ -53,8 +53,9 @@ class MemberLearningController extends BaseController
             }
         }
 
-        // Increment Views Count
+        // Increment Views Count & Record User Reading Activity for Ranking Points
         $this->learningService->incrementViewCount($material['id']);
+        $this->learningService->recordMaterialRead((int)$material['id'], (int)session()->get('user_id'));
 
         // Fetch Related Materials (4-tier algorithm)
         $related = $this->learningService->getRelatedMaterials($material, 4);

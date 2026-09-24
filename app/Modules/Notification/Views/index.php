@@ -9,6 +9,9 @@
     </div>
 
     <div class="d-flex align-items-center gap-2 flex-wrap">
+        <button type="button" class="btn btn-sm btn-outline-warning font-monospace style-tiny" onclick="testDeviceNotification()">
+            <i class="fa-solid fa-paper-plane me-1"></i> Tes Notifikasi di HP/Laptop
+        </button>
         <?php if ($unreadCount > 0): ?>
             <a href="<?= base_url('notifications/mark-all-read') ?>" class="btn btn-sm btn-outline-info">
                 <i class="fa-solid fa-check-double me-1"></i> Tandai Semua Dibaca
@@ -17,6 +20,37 @@
         <a href="<?= base_url('notifications/clear-all') ?>" onclick="return confirm('Apakah Anda yakin ingin menghapus SELURUH riwayat notifikasi Anda?')" class="btn btn-sm btn-saas-dark text-danger">
             <i class="fa-solid fa-trash-can me-1"></i> Bersihkan Semua
         </a>
+    </div>
+</div>
+
+<!-- Device Notification Status & Quick Enable Card -->
+<div class="saas-card p-3 p-md-3.5 mb-4 border border-secondary border-opacity-50 bg-body-tertiary">
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+        <div class="d-flex align-items-start gap-3">
+            <div class="p-2.5 rounded-3 bg-danger bg-opacity-25 text-danger flex-shrink-0">
+                <i class="fa-solid fa-mobile-screen-button fs-4"></i>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                    <h6 class="text-white font-heading m-0 fw-bold">Notifikasi Layar HP & Laptop</h6>
+                    <span class="mmc-notif-permission-status badge bg-warning text-dark font-monospace style-tiny py-1 px-2.5 rounded-pill">
+                        <i class="fa-solid fa-bell me-1"></i> Memeriksa Status...
+                    </span>
+                </div>
+                <p class="text-secondary style-tiny m-0">
+                    Dapatkan pemberitahuan langsung di layar perangkat Anda saat ada penugasan baru, nilai keluar, presensi, atau pesan masuk obrolan tanpa harus terus membuka aplikasi.
+                </p>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap flex-shrink-0 ms-md-auto">
+            <button type="button" class="mmc-btn-enable-notif btn btn-sm btn-red font-monospace style-tiny px-3" onclick="requestDeviceNotificationPermission()">
+                <i class="fa-solid fa-bell me-1"></i> Izinkan / Aktifkan Notifikasi
+            </button>
+            <button type="button" class="btn btn-sm btn-saas-dark text-white border border-secondary border-opacity-50 font-monospace style-tiny px-3" onclick="testDeviceNotification()">
+                <i class="fa-solid fa-vial me-1 text-warning"></i> Tes Notifikasi Layar
+            </button>
+        </div>
     </div>
 </div>
 

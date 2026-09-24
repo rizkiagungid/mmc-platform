@@ -601,12 +601,36 @@
                     <div class="d-flex flex-column gap-3">
                         <!-- Top 3 Recent Tasks -->
                         <?php foreach (array_slice($recentTasks, 0, 3) as $t): ?>
+                            <?php
+                            $aCount = count($t['assignees'] ?? []);
+                            $cCount = 0;
+                            if ($aCount > 0) {
+                                foreach ($t['assignees'] as $asgn) {
+                                    if ((int)($asgn['status_id'] ?? 1) === 5 || strtolower($asgn['status_name'] ?? '') === 'selesai') {
+                                        $cCount++;
+                                    }
+                                }
+                            }
+                            $isDone = ($aCount > 0 && $cCount === $aCount);
+                            ?>
                             <div class="p-3 rounded-3 bg-body-secondary border border-secondary border-opacity-25">
                                 <div class="d-flex align-items-center justify-content-between mb-2">
-                                    <span class="badge font-monospace style-tiny" style="background-color: <?= $t['priority_color'] ?>;"><?= esc($t['priority_name']) ?></span>
+                                    <div class="d-flex align-items-center gap-1.5">
+                                        <span class="badge font-monospace style-tiny" style="background-color: <?= $t['priority_color'] ?>;"><?= esc($t['priority_name']) ?></span>
+                                        <?php if ($isDone): ?>
+                                            <span class="badge bg-success bg-opacity-25 text-success font-monospace style-tiny">
+                                                <i class="fa-solid fa-circle-check text-success"></i> Selesai
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                     <small class="text-secondary style-tiny"><i class="fa-solid fa-user-group me-1"></i> <?= count($t['assignees']) ?> Anggota</small>
                                 </div>
-                                <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="fw-semibold text-body font-heading d-block mb-2 text-decoration-none"><?= esc($t['title']) ?></a>
+                                <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="fw-semibold text-body font-heading d-block mb-2 text-decoration-none">
+                                    <?= esc($t['title']) ?>
+                                    <?php if ($isDone): ?>
+                                        <i class="fa-solid fa-circle-check text-success ms-1" title="Semua anggota selesai"></i>
+                                    <?php endif; ?>
+                                </a>
                                 <div class="d-flex align-items-center justify-content-between text-secondary style-tiny pt-1 border-top border-secondary border-opacity-10">
                                     <span><i class="fa-solid fa-clock me-1 text-danger"></i> <?= $t['deadline'] ? date('d M Y, H:i', strtotime($t['deadline'])) : 'Tanpa Deadline' ?></span>
                                     <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="btn btn-sm btn-saas-dark text-info py-0.5 px-2 rounded-pill style-tiny">Detail</a>
@@ -619,12 +643,36 @@
                     <?php if (count($recentTasks) > 3): ?>
                         <div class="collapse d-flex flex-column gap-3 mt-3" id="moreAdminTasksCollapse">
                             <?php foreach (array_slice($recentTasks, 3) as $t): ?>
+                                <?php
+                                $aCount = count($t['assignees'] ?? []);
+                                $cCount = 0;
+                                if ($aCount > 0) {
+                                    foreach ($t['assignees'] as $asgn) {
+                                        if ((int)($asgn['status_id'] ?? 1) === 5 || strtolower($asgn['status_name'] ?? '') === 'selesai') {
+                                            $cCount++;
+                                        }
+                                    }
+                                }
+                                $isDone = ($aCount > 0 && $cCount === $aCount);
+                                ?>
                                 <div class="p-3 rounded-3 bg-body-secondary border border-secondary border-opacity-25">
                                     <div class="d-flex align-items-center justify-content-between mb-2">
-                                        <span class="badge font-monospace style-tiny" style="background-color: <?= $t['priority_color'] ?>;"><?= esc($t['priority_name']) ?></span>
+                                        <div class="d-flex align-items-center gap-1.5">
+                                            <span class="badge font-monospace style-tiny" style="background-color: <?= $t['priority_color'] ?>;"><?= esc($t['priority_name']) ?></span>
+                                            <?php if ($isDone): ?>
+                                                <span class="badge bg-success bg-opacity-25 text-success font-monospace style-tiny">
+                                                    <i class="fa-solid fa-circle-check text-success"></i> Selesai
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
                                         <small class="text-secondary style-tiny"><i class="fa-solid fa-user-group me-1"></i> <?= count($t['assignees']) ?> Anggota</small>
                                     </div>
-                                    <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="fw-semibold text-body font-heading d-block mb-2 text-decoration-none"><?= esc($t['title']) ?></a>
+                                    <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="fw-semibold text-body font-heading d-block mb-2 text-decoration-none">
+                                        <?= esc($t['title']) ?>
+                                        <?php if ($isDone): ?>
+                                            <i class="fa-solid fa-circle-check text-success ms-1" title="Semua anggota selesai"></i>
+                                        <?php endif; ?>
+                                    </a>
                                     <div class="d-flex align-items-center justify-content-between text-secondary style-tiny pt-1 border-top border-secondary border-opacity-10">
                                         <span><i class="fa-solid fa-clock me-1 text-danger"></i> <?= $t['deadline'] ? date('d M Y, H:i', strtotime($t['deadline'])) : 'Tanpa Deadline' ?></span>
                                         <a href="<?= base_url('admin/tasks/detail/' . $t['id']) ?>" class="btn btn-sm btn-saas-dark text-info py-0.5 px-2 rounded-pill style-tiny">Detail</a>

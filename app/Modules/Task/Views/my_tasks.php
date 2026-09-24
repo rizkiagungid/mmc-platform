@@ -98,7 +98,7 @@
                         </h5>
                         
                         <?php $descLength = strlen($t['description']); ?>
-                        <div class="text-secondary small lh-base mb-3.5" style="word-break: break-word;">
+                        <div class="text-secondary small lh-base mb-3" style="word-break: break-word;">
                             <?php if ($descLength > 120): ?>
                                 <span><?= esc(substr($t['description'], 0, 120)) ?>...</span>
                                 <div class="collapse mt-1" id="taskDescCollapse_<?= $t['id'] ?>">
@@ -109,6 +109,53 @@
                                 </a>
                             <?php else: ?>
                                 <?= nl2br(esc($t['description'])) ?>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Assignees List Section -->
+                        <div class="mb-3.5 pt-2.5 border-top border-secondary border-opacity-15">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="text-secondary style-tiny font-monospace fw-semibold">
+                                    <i class="fa-solid fa-users text-danger me-1"></i> Tim Ditugaskan:
+                                </span>
+                                <span class="badge bg-body-secondary border border-secondary border-opacity-25 text-secondary style-tiny font-monospace">
+                                    <?= count($t['assignees'] ?? []) ?> Anggota
+                                </span>
+                            </div>
+                            
+                            <?php if (!empty($t['assignees'])): ?>
+                                <div class="d-flex align-items-center flex-wrap gap-1.5">
+                                    <?php 
+                                        $maxDisplay = 4;
+                                        $currentUserId = session()->get('user_id');
+                                        $displayAssignees = array_slice($t['assignees'], 0, $maxDisplay);
+                                        $remainingCount = count($t['assignees']) - $maxDisplay;
+                                    ?>
+                                    <?php foreach ($displayAssignees as $ass): ?>
+                                        <?php $isMe = ($ass['id'] == $currentUserId); ?>
+                                        <div class="d-inline-flex align-items-center gap-1.5 px-2 py-1 rounded-pill bg-body-secondary border <?= $isMe ? 'border-danger border-opacity-50 bg-danger bg-opacity-10' : 'border-secondary border-opacity-25' ?> style-tiny" title="<?= esc($ass['full_name']) ?> (Status: <?= esc($ass['status_name'] ?? 'Belum dikerjakan') ?>)">
+                                            <?php if (!empty($ass['avatar'])): ?>
+                                                <img src="<?= base_url($ass['avatar']) ?>" alt="Avatar" class="rounded-circle object-fit-cover" style="width: 18px; height: 18px;">
+                                            <?php else: ?>
+                                                <div class="rounded-circle bg-danger bg-opacity-25 text-danger d-flex align-items-center justify-content-center fw-bold" style="width: 18px; height: 18px; font-size: 9px;">
+                                                    <?= strtoupper(substr($ass['full_name'], 0, 1)) ?>
+                                                </div>
+                                            <?php endif; ?>
+                                            <span class="text-body text-truncate fw-medium" style="max-width: 90px; font-size: 11px;">
+                                                <?= esc(explode(' ', trim($ass['full_name']))[0]) ?><?= $isMe ? ' <strong class="text-danger">(Saya)</strong>' : '' ?>
+                                            </span>
+                                            <span class="rounded-circle" style="width: 6px; height: 6px; background-color: <?= $ass['status_color'] ?? '#6c757d' ?>;" title="Status: <?= esc($ass['status_name'] ?? 'Belum dikerjakan') ?>"></span>
+                                        </div>
+                                    <?php endforeach; ?>
+
+                                    <?php if ($remainingCount > 0): ?>
+                                        <span class="badge rounded-pill bg-body-secondary border border-secondary border-opacity-25 text-secondary style-tiny px-2 py-1" title="<?= $remainingCount ?> anggota lainnya">
+                                            +<?= $remainingCount ?> lainnya
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php else: ?>
+                                <span class="text-secondary style-tiny fst-italic">Belum ada anggota yang ditugaskan</span>
                             <?php endif; ?>
                         </div>
                     </div>

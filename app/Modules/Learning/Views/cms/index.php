@@ -4,7 +4,7 @@
 <?php $currentStatus = $filters['status'] ?? 'all'; ?>
 <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
     <div>
-        <h4 class="text-white font-heading m-0"><i class="fa-solid fa-book-bookmark text-danger me-2"></i> Learning Center — Materi Pembelajaran</h4>
+        <h4 class="text-body font-heading m-0 fw-bold"><i class="fa-solid fa-book-bookmark text-danger me-2"></i> Learning Center — Materi Pembelajaran</h4>
         <p class="text-secondary small m-0">Kelola dan publikasikan modul kurikulum, artikel tutorial, dan panduan belajar anggota MMC</p>
     </div>
     <?php if (session()->get('role_slug') === 'superadmin'): ?>
@@ -58,17 +58,17 @@
 </ul>
 
 <!-- Filter Toolbar -->
-<div class="saas-card p-3 mb-4">
+<div class="saas-card p-3 mb-4 border border-secondary border-opacity-25">
     <form action="<?= base_url('admin/learning') ?>" method="GET" class="row g-2 align-items-center">
         <input type="hidden" name="status" value="<?= esc($currentStatus) ?>">
         <div class="col-md-5">
             <div class="input-group input-group-sm">
-                <span class="input-group-text bg-dark text-secondary border-secondary"><i class="fa-solid fa-magnifying-glass"></i></span>
-                <input type="text" name="search" class="form-control bg-dark text-white border-secondary" placeholder="Cari judul, kata kunci, isi materi..." value="<?= esc($filters['search'] ?? '') ?>">
+                <span class="input-group-text bg-body-secondary text-secondary border-secondary border-opacity-50"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <input type="text" name="search" class="form-control bg-body-secondary text-body border-secondary border-opacity-50" placeholder="Cari judul, kata kunci, isi materi..." value="<?= esc($filters['search'] ?? '') ?>">
             </div>
         </div>
         <div class="col-md-3">
-            <select name="division_id" class="form-select form-select-sm bg-dark text-white border-secondary">
+            <select name="division_id" class="form-select form-select-sm bg-body-secondary text-body border-secondary border-opacity-50">
                 <option value="">-- Filter Divisi --</option>
                 <?php foreach ($divisions as $d): ?>
                     <option value="<?= $d['id'] ?>" <?= ($filters['division_id'] ?? '') == $d['id'] ? 'selected' : '' ?>><?= esc($d['name']) ?></option>
@@ -76,7 +76,7 @@
             </select>
         </div>
         <div class="col-md-2">
-            <select name="category" class="form-select form-select-sm bg-dark text-white border-secondary">
+            <select name="category" class="form-select form-select-sm bg-body-secondary text-body border-secondary border-opacity-50">
                 <option value="">-- Filter Kategori --</option>
                 <option value="Tutorial" <?= ($filters['category'] ?? '') === 'Tutorial' ? 'selected' : '' ?>>Tutorial</option>
                 <option value="Kurikulum" <?= ($filters['category'] ?? '') === 'Kurikulum' ? 'selected' : '' ?>>Kurikulum</option>
@@ -86,8 +86,8 @@
             </select>
         </div>
         <div class="col-md-2 d-flex gap-1">
-            <button type="submit" class="btn btn-sm btn-red flex-fill">Filter</button>
-            <a href="<?= base_url('admin/learning?status=' . $currentStatus) ?>" class="btn btn-sm btn-outline-light">Reset</a>
+            <button type="submit" class="btn btn-sm btn-red flex-fill shadow-sm">Filter</button>
+            <a href="<?= base_url('admin/learning?status=' . $currentStatus) ?>" class="btn btn-sm btn-saas-dark text-body border border-secondary border-opacity-50">Reset</a>
         </div>
     </form>
 </div>
@@ -96,11 +96,11 @@
 <form action="<?= base_url('admin/learning/bulk-action') ?>" method="POST" id="bulkForm">
     <?= csrf_field() ?>
     <input type="hidden" name="current_status" value="<?= esc($currentStatus) ?>">
-    <div class="saas-card p-4">
+    <div class="saas-card p-4 border border-secondary border-opacity-25">
         <?php if (session()->get('role_slug') === 'superadmin'): ?>
             <div class="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom border-secondary border-opacity-25 flex-wrap gap-2">
                 <div class="d-flex align-items-center gap-2">
-                    <select name="bulk_action" class="form-select form-select-sm bg-dark text-white border-secondary font-monospace style-tiny" style="width: 200px;">
+                    <select name="bulk_action" class="form-select form-select-sm bg-body-secondary text-body border-secondary border-opacity-50 font-monospace style-tiny" style="width: 200px;">
                         <option value="">-- Aksi Masal (Bulk) --</option>
                         <?php if ($currentStatus !== 'trash'): ?>
                             <option value="publish">Publikasikan Terpilih</option>
@@ -112,14 +112,14 @@
                             <option value="purge">Hapus Permanen</option>
                         <?php endif; ?>
                     </select>
-                    <button type="submit" class="btn btn-sm btn-outline-light style-tiny px-3" onclick="return confirm('Jalankan aksi masal untuk materi terpilih?')">Terapkan Aksi</button>
+                    <button type="submit" class="btn btn-sm btn-saas-dark text-body border border-secondary border-opacity-50 style-tiny px-3" onclick="return confirm('Jalankan aksi masal untuk materi terpilih?')">Terapkan Aksi</button>
                 </div>
                 <div class="text-secondary style-tiny font-monospace">Total Data: <?= count($materials) ?> Materi</div>
             </div>
         <?php endif; ?>
 
         <div class="table-responsive">
-            <table class="table table-dark table-hover align-middle m-0">
+            <table class="table table-hover align-middle m-0">
                 <thead>
                     <tr class="border-bottom border-secondary border-opacity-25 text-secondary font-monospace style-tiny">
                         <?php if (session()->get('role_slug') === 'superadmin'): ?>
@@ -151,32 +151,34 @@
                             <?php endif; ?>
                             <td>
                                 <?php if (!empty($m['thumbnail'])): ?>
-                                    <img src="<?= (strpos($m['thumbnail'], 'http') === 0) ? esc($m['thumbnail']) : base_url($m['thumbnail']) ?>" alt="Thumb" class="rounded-2 object-fit-cover" style="width: 48px; height: 48px;">
+                                    <img src="<?= (strpos($m['thumbnail'], 'http') === 0) ? esc($m['thumbnail']) : base_url($m['thumbnail']) ?>" alt="Thumb" class="rounded-2 object-fit-cover border border-secondary border-opacity-25" style="width: 48px; height: 48px;">
                                 <?php else: ?>
-                                    <div class="rounded-2 bg-black d-flex align-items-center justify-content-center border border-secondary border-opacity-25" style="width: 48px; height: 48px;">
+                                    <div class="rounded-2 bg-body-secondary d-flex align-items-center justify-content-center border border-secondary border-opacity-25" style="width: 48px; height: 48px;">
                                         <i class="fa-solid fa-book-open text-danger"></i>
                                     </div>
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <div class="fw-bold text-white mb-1">
+                                <div class="fw-bold text-body mb-1">
                                     <?php if ($m['is_featured']): ?>
                                         <span class="badge bg-warning text-dark me-1" title="Featured Material"><i class="fa-solid fa-star"></i></span>
                                     <?php endif; ?>
-                                    <?= esc($m['title']) ?>
+                                    <a href="<?= base_url('materi/' . $m['slug']) ?>" target="_blank" class="text-body text-decoration-none hover-danger">
+                                        <?= esc($m['title']) ?>
+                                    </a>
                                 </div>
                                 <div class="text-secondary style-tiny line-clamp-1"><?= esc(mb_strimwidth($m['excerpt'] ?? '', 0, 90, '...')) ?></div>
                                 <?php if (!empty($m['tags'])): ?>
                                     <div class="mt-1 d-flex flex-wrap gap-1">
                                         <?php foreach ($m['tags'] as $t): ?>
-                                            <span class="badge bg-black border border-secondary border-opacity-25 text-secondary style-tiny font-monospace">#<?= esc($t['name']) ?></span>
+                                            <span class="badge bg-body-secondary border border-secondary border-opacity-50 text-secondary style-tiny font-monospace">#<?= esc($t['name']) ?></span>
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <span class="badge bg-danger bg-opacity-25 text-danger font-monospace mb-1 d-inline-block"><?= esc($m['division_name'] ?: 'Umum') ?></span><br>
-                                <span class="badge bg-secondary font-monospace style-tiny"><?= esc($m['category']) ?></span>
+                                <span class="badge bg-body-secondary border border-secondary border-opacity-50 text-body font-monospace style-tiny"><?= esc($m['category']) ?></span>
                             </td>
                             <td>
                                 <?php
@@ -203,18 +205,18 @@
                                 </div>
                             </td>
                             <td>
-                                <div class="text-white font-monospace small"><i class="fa-solid fa-eye text-danger me-1"></i> <?= number_format($m['views_count']) ?></div>
+                                <div class="text-body font-monospace small"><i class="fa-solid fa-eye text-danger me-1"></i> <?= number_format($m['views_count']) ?></div>
                                 <div class="text-secondary style-tiny font-monospace"><i class="fa-solid fa-clock me-1"></i> <?= $m['reading_time'] ?> min baca</div>
                             </td>
                             <td>
-                                <div class="text-white small fw-semibold"><?= esc($m['author_name'] ?: 'Admin') ?></div>
+                                <div class="text-body small fw-semibold"><?= esc($m['author_name'] ?: 'Admin') ?></div>
                                 <div class="text-secondary style-tiny font-monospace"><?= date('d M Y', strtotime($m['created_at'])) ?></div>
                             </td>
                             <td class="text-end">
                                 <?php $publicUrl = base_url('materi/' . $m['slug']); ?>
                                 <div class="d-flex justify-content-end gap-1 flex-wrap">
                                     <!-- Copy Link Button -->
-                                    <button type="button" class="btn btn-sm btn-outline-light py-1 px-2" onclick="copyToClipboard('<?= esc($publicUrl) ?>')" title="Salin URL Materi">
+                                    <button type="button" class="btn btn-sm btn-saas-dark text-body border border-secondary border-opacity-50 py-1 px-2" onclick="copyToClipboard('<?= esc($publicUrl) ?>')" title="Salin URL Materi">
                                         <i class="fa-solid fa-copy"></i>
                                     </button>
 

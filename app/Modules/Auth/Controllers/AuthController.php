@@ -67,14 +67,13 @@ class AuthController extends BaseController
             return redirect()->back()->withInput()->with('error', 'Pendaftaran gagal: Username tidak boleh mengandung spasi! Silakan ganti spasi dengan garis bawah (_) atau titik (.).');
         }
 
+        $memberType = $this->request->getPost('member_type') === 'alumni' ? 'alumni' : 'member';
+
         $rules = [
             'full_name'        => 'required|min_length[3]|max_length[100]',
             'username'         => 'required|regex_match[/^\S+$/]|alpha_numeric_punct|min_length[3]|max_length[30]|is_unique[users.username]',
             'email'            => 'required|valid_email|is_unique[users.email]',
             'nis_nip'          => 'required|min_length[4]|max_length[30]',
-            'class_grade'      => 'required|in_list[X,XI,XII]',
-            'class_room'       => 'required|integer|greater_than_equal_to[1]|less_than_equal_to[10]',
-            'division'         => 'required|in_list[Broadcasting,Programming]',
             'phone'            => 'required|numeric|min_length[10]|max_length[16]',
             'address'          => 'permit_empty|max_length[500]',
             'birth_date'       => 'permit_empty|valid_date[Y-m-d]',
@@ -86,6 +85,16 @@ class AuthController extends BaseController
             'password'         => 'required|min_length[6]',
             'confirm_password' => 'required|matches[password]',
         ];
+
+        if ($memberType === 'alumni') {
+            $rules['class_grade'] = 'permit_empty';
+            $rules['class_room']  = 'permit_empty';
+            $rules['division']    = 'permit_empty|in_list[Broadcasting,Programming]';
+        } else {
+            $rules['class_grade'] = 'required|in_list[X,XI,XII]';
+            $rules['class_room']  = 'required|integer|greater_than_equal_to[1]|less_than_equal_to[10]';
+            $rules['division']    = 'required|in_list[Broadcasting,Programming]';
+        }
 
         $customErrors = [
             'full_name' => [
@@ -152,7 +161,12 @@ class AuthController extends BaseController
         }
 
         $postData = $this->request->getPost();
-        $postData['class_dept'] = trim($postData['class_grade']) . ' ' . trim($postData['class_room']) . ' - ' . trim($postData['division']);
+        if ($memberType === 'alumni') {
+            $div = trim((string)($postData['division'] ?? ''));
+            $postData['class_dept'] = !empty($div) ? "Alumni - {$div}" : "Alumni";
+        } else {
+            $postData['class_dept'] = trim($postData['class_grade']) . ' ' . trim($postData['class_room']) . ' - ' . trim($postData['division']);
+        }
 
         $result = $this->authService->registerMember($postData);
 

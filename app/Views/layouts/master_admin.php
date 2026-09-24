@@ -112,6 +112,10 @@
                         <i class="fa-solid fa-film text-primary me-1"></i> Portofolio Karya
                     </a>
 
+                    <a href="<?= base_url('admin/cms/gallery') ?>" class="sidebar-link <?= (url_is('admin/cms/gallery*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-camera-retro text-success me-1"></i> Galeri Kegiatan
+                    </a>
+
                     <a href="<?= base_url('admin/cms/achievements') ?>" class="sidebar-link <?= (url_is('admin/cms/achievements*')) ? 'active' : '' ?>">
                         <i class="fa-solid fa-trophy text-warning me-1"></i> Prestasi Juara
                     </a>
@@ -752,6 +756,7 @@
     <!-- PWA Service Worker Registration & Scripts -->
     <?= pwa_sw_script() ?>
     <script src="<?= base_url('assets/js/pwa-install-banner.js') ?>"></script>
+    <script src="<?= base_url('assets/js/push-notifications.js') ?>"></script>
 
     <script>
         function updateAdminThemeIcon(theme) {

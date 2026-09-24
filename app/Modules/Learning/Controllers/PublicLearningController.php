@@ -59,8 +59,11 @@ class PublicLearningController extends BaseController
             return redirect()->to('/login')->with('error', 'Materi ini khusus untuk Anggota Multimedia Club. Silakan login terlebih dahulu untuk mengakses isi materi.');
         }
 
-        // Increment Views Count
+        // Increment Views Count & Record User Reading Activity for Ranking Points
         $this->learningService->incrementViewCount($material['id']);
+        if (session()->get('is_logged_in') && session()->get('user_id')) {
+            $this->learningService->recordMaterialRead((int)$material['id'], (int)session()->get('user_id'));
+        }
 
         // Fetch Related Materials (4-tier algorithm)
         $related = $this->learningService->getRelatedMaterials($material, 4);

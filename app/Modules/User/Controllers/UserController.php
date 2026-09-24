@@ -387,12 +387,11 @@ class UserController extends BaseController
 
     public function updateProfile()
     {
-        $userId          = session()->get('user_id');
-        $roleSlug        = session()->get('role_slug');
-        $canEditUsername = in_array($roleSlug, ['superadmin', 'pembina', 'bph']);
+        $userId   = session()->get('user_id');
 
         $rules = [
             'full_name'        => 'required|min_length[3]',
+            'username'         => "required|alpha_numeric_punct|is_unique[users.username,id,{$userId}]",
             'email'            => "required|valid_email|is_unique[users.email,id,{$userId}]",
             'nis_nip'          => 'permit_empty',
             'phone'            => 'permit_empty',
@@ -404,11 +403,8 @@ class UserController extends BaseController
             'social_facebook'  => 'permit_empty',
             'social_linkedin'  => 'permit_empty',
             'social_github'    => 'permit_empty',
+            'avatar'           => 'permit_empty|max_size[avatar,20480]|mime_in[avatar,image/jpg,image/jpeg,image/png,image/webp]',
         ];
-
-        if ($canEditUsername) {
-            $rules['username'] = "required|alpha_numeric_punct|is_unique[users.username,id,{$userId}]";
-        }
 
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -420,7 +416,7 @@ class UserController extends BaseController
         }
 
         $avatarFile = $this->request->getFile('avatar');
-        $result     = $this->userService->updateSelfProfile($userId, $postData, $avatarFile, $canEditUsername);
+        $result     = $this->userService->updateSelfProfile($userId, $postData, $avatarFile, true);
 
         if ($result['body']['status'] !== 'success') {
             return redirect()->back()->withInput()->with('error', $result['body']['message']);

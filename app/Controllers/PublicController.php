@@ -217,12 +217,69 @@ class PublicController extends BaseController
 
     public function gallery()
     {
-        $albums = $this->db->table('gallery_albums')->orderBy('id', 'DESC')->get()->getResultArray();
+        $builder = $this->db->table('gallery_albums');
+
+        $category = trim($this->request->getGet('category') ?? '');
+        $search   = trim($this->request->getGet('q') ?? '');
+
+        if (!empty($category) && $category !== 'all') {
+            $builder->where('category', $category);
+        }
+
+        if (!empty($search)) {
+            $builder->groupStart()
+                ->like('title', $search)
+                ->orLike('description', $search)
+                ->orLike('category', $search)
+                ->groupEnd();
+        }
+
+        $albums = $builder->orderBy('event_date', 'DESC')
+                          ->orderBy('id', 'DESC')
+                          ->get()
+                          ->getResultArray();
+
+        foreach ($albums as &$album) {
+            $mediaList = !empty($album['media_files']) ? json_decode($album['media_files'], true) : [];
+            if (!is_array($mediaList)) {
+                $mediaList = [];
+            }
+            $album['media_list'] = $mediaList;
+
+            $photos = 0;
+            $videos = 0;
+            foreach ($mediaList as $m) {
+                if (($m['type'] ?? 'image') === 'video') {
+                    $videos++;
+                } else {
+                    $photos++;
+                }
+            }
+            $album['photo_count'] = $photos;
+            $album['video_count'] = $videos;
+            $album['total_media'] = count($mediaList);
+        }
+
+        // Get available categories for filter tabs
+        $categoriesRaw = $this->db->table('gallery_albums')
+            ->select('category')
+            ->distinct()
+            ->where('category IS NOT NULL')
+            ->where('category !=', '')
+            ->get()
+            ->getResultArray();
+        $categories = array_column($categoriesRaw, 'category');
+
+        $canManage = in_array(session()->get('role_slug'), ['superadmin', 'admin', 'pembina', 'bph']);
 
         return view('public/gallery', [
-            'title'     => 'Galeri Kegiatan & Workshop - Multimedia Club',
-            'siteTitle' => $this->settingModel->getSetting('site_title', 'Multimedia Club SMAN 1 Tamansari'),
-            'albums'    => $albums,
+            'title'          => 'Galeri Kegiatan & Dokumentasi - Multimedia Club',
+            'siteTitle'      => $this->settingModel->getSetting('site_title', 'Multimedia Club SMAN 1 Tamansari'),
+            'albums'         => $albums,
+            'categories'     => $categories,
+            'activeCategory' => $category,
+            'searchQuery'    => $search,
+            'canManage'      => $canManage,
         ]);
     }
 

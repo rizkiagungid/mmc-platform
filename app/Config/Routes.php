@@ -97,6 +97,7 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->get('tasks/edit/(:num)', '\App\Modules\Task\Controllers\TaskController::edit/$1');
     $routes->post('tasks/update/(:num)', '\App\Modules\Task\Controllers\TaskController::update/$1');
     $routes->get('tasks/delete/(:num)', '\App\Modules\Task\Controllers\TaskController::delete/$1');
+    $routes->match(['get', 'post'], 'tasks/duplicate/(:num)', '\App\Modules\Task\Controllers\TaskController::duplicate/$1');
     $routes->post('tasks/evaluate/(:num)', '\App\Modules\Task\Controllers\TaskController::evaluate/$1');
     $routes->post('tasks/update-status/(:num)', '\App\Modules\Task\Controllers\TaskController::quickUpdateStatus/$1');
     $routes->post('tasks/update-priority/(:num)', '\App\Modules\Task\Controllers\TaskController::quickUpdatePriority/$1');

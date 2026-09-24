@@ -372,6 +372,8 @@ class UserController extends BaseController
             'phone'            => 'permit_empty',
             'class_dept'       => 'permit_empty',
             'address'          => 'permit_empty',
+            'username'         => "required|alpha_numeric_punct|is_unique[users.username,id,{$userId}]",
+            'nis_nip'          => 'permit_empty',
             'birth_date'       => 'permit_empty',
             'social_instagram' => 'permit_empty',
             'social_tiktok'    => 'permit_empty',
@@ -379,11 +381,6 @@ class UserController extends BaseController
             'social_linkedin'  => 'permit_empty',
             'social_github'    => 'permit_empty',
         ];
-
-        if ($canEditUsernameNis) {
-            $rules['username'] = "required|alpha_numeric_punct|is_unique[users.username,id,{$userId}]";
-            $rules['nis_nip']  = 'permit_empty';
-        }
 
         if (!$this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -407,18 +404,16 @@ class UserController extends BaseController
 
         $changes = [];
 
-        if ($canEditUsernameNis) {
-            $newUsername = trim($this->request->getPost('username') ?? '');
-            if (!empty($newUsername) && $newUsername !== $user['username']) {
-                $updateData['username'] = $newUsername;
-                $changes[] = "username dari '@{$user['username']}' ke '@{$newUsername}'";
-            }
+        $newUsername = trim($this->request->getPost('username') ?? '');
+        if (!empty($newUsername) && $newUsername !== $user['username']) {
+            $updateData['username'] = $newUsername;
+            $changes[] = "username dari '@{$user['username']}' ke '@{$newUsername}'";
+        }
 
-            $newNisNip = trim($this->request->getPost('nis_nip') ?? '') ?: null;
-            if ($newNisNip !== ($user['nis_nip'] ?? null)) {
-                $updateData['nis_nip'] = $newNisNip;
-                $changes[] = "NIS/NIP";
-            }
+        $newNisNip = trim($this->request->getPost('nis_nip') ?? '') ?: null;
+        if ($newNisNip !== ($user['nis_nip'] ?? null)) {
+            $updateData['nis_nip'] = $newNisNip;
+            $changes[] = "NIS/NIP";
         }
 
         $password = $this->request->getPost('password');

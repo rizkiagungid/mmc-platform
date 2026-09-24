@@ -37,8 +37,6 @@
             <form action="<?= base_url('profile') ?>" method="POST">
                 <?= csrf_field() ?>
 
-                <?php $canEditUsername = in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph']); ?>
-
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label text-secondary small fw-medium">Nama Lengkap <span class="text-danger">*</span></label>
@@ -46,22 +44,12 @@
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label text-secondary small fw-medium">Username <?= $canEditUsername ? '<span class="text-danger">*</span>' : '' ?></label>
+                        <label class="form-label text-secondary small fw-medium">Username <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <span class="input-group-text bg-dark text-danger border-secondary border-opacity-25 font-monospace">@</span>
-                            <?php if ($canEditUsername): ?>
-                                <input type="text" name="username" class="form-control font-monospace" value="<?= esc($user['username']) ?>" placeholder="Username unik Anda" required>
-                            <?php else: ?>
-                                <input type="text" class="form-control font-monospace text-secondary opacity-75" value="<?= esc($user['username']) ?>" disabled readonly>
-                            <?php endif; ?>
+                            <input type="text" name="username" class="form-control font-monospace" value="<?= esc(old('username', $user['username'])) ?>" placeholder="Username unik Anda" required>
                         </div>
-                        <small class="text-secondary style-tiny">
-                            <?php if ($canEditUsername): ?>
-                                Username unik Anda untuk login
-                            <?php else: ?>
-                                <i class="fa-solid fa-lock text-warning me-1"></i> Hubungi BPH / Admin untuk mengubah username
-                            <?php endif; ?>
-                        </small>
+                        <small class="text-secondary style-tiny">Username unik Anda untuk login dan profil (dapat diubah mandiri)</small>
                     </div>
 
                     <div class="col-md-6">

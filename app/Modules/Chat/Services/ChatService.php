@@ -36,7 +36,9 @@ class ChatService extends BaseService
     public function getUserConversations(int $userId): array
     {
         // 1. Get conversation IDs where user is a participant
-        $participants = $this->participantModel->where('user_id', $userId)->findAll();
+        $participants = $this->db->table('chat_participants')
+                                 ->where('user_id', $userId)
+                                 ->get()->getResultArray();
         if (empty($participants)) {
             return [];
         }
@@ -129,8 +131,8 @@ class ChatService extends BaseService
         }
 
         // Find existing direct conversation shared by both users
-        $userConvs = array_column($this->participantModel->where('user_id', $userId)->findAll(), 'conversation_id');
-        $targetConvs = array_column($this->participantModel->where('user_id', $targetUserId)->findAll(), 'conversation_id');
+        $userConvs = array_column($this->db->table('chat_participants')->where('user_id', $userId)->get()->getResultArray(), 'conversation_id');
+        $targetConvs = array_column($this->db->table('chat_participants')->where('user_id', $targetUserId)->get()->getResultArray(), 'conversation_id');
 
         $commonIds = array_intersect($userConvs, $targetConvs);
 
@@ -449,9 +451,10 @@ class ChatService extends BaseService
             return $this->error('Grup obrolan tidak ditemukan.');
         }
 
-        $part = $this->participantModel->where('conversation_id', $conversationId)
-                                       ->where('user_id', $userId)
-                                       ->first();
+        $part = $this->db->table('chat_participants')
+                         ->where('conversation_id', $conversationId)
+                         ->where('user_id', $userId)
+                         ->get()->getRowArray();
         if (!$part) {
             return $this->error('Anda bukan anggota dari grup ini.');
         }
@@ -460,37 +463,45 @@ class ChatService extends BaseService
 
         try {
             // Remove user from participants
-            $this->participantModel->where('conversation_id', $conversationId)
-                                   ->where('user_id', $userId)
-                                   ->delete();
+            $this->db->table('chat_participants')
+                     ->where('conversation_id', $conversationId)
+                     ->where('user_id', $userId)
+                     ->delete();
 
             // Check remaining participants
-            $remaining = $this->participantModel->where('conversation_id', $conversationId)->findAll();
+            $remaining = $this->db->table('chat_participants')
+                                  ->where('conversation_id', $conversationId)
+                                  ->get()->getResultArray();
+
             if (empty($remaining)) {
-                // If no members left, delete conversation
-                $this->messageModel->where('conversation_id', $conversationId)->delete();
-                $this->conversationModel->delete($conversationId);
-            } elseif ((int)$conv['created_by'] === $userId) {
-                // Reassign creator to first remaining participant
-                $nextLeader = reset($remaining);
-                $this->conversationModel->update($conversationId, ['created_by' => $nextLeader['user_id']]);
-                $this->participantModel->where('conversation_id', $conversationId)
-                                       ->where('user_id', $nextLeader['user_id'])
-                                       ->set(['role' => 'admin'])
-                                       ->update();
+                // If no members left, delete conversation & messages
+                $this->db->table('chat_messages')->where('conversation_id', $conversationId)->delete();
+                $this->db->table('chat_conversations')->where('id', $conversationId)->delete();
+            } else {
+                if ((int)$conv['created_by'] === $userId) {
+                    // Reassign creator to first remaining participant
+                    $nextLeader = reset($remaining);
+                    $this->db->table('chat_conversations')
+                             ->where('id', $conversationId)
+                             ->update(['created_by' => $nextLeader['user_id']]);
+                    $this->db->table('chat_participants')
+                             ->where('conversation_id', $conversationId)
+                             ->where('user_id', $nextLeader['user_id'])
+                             ->update(['role' => 'admin']);
+                }
+
+                $user = $this->userModel->find($userId);
+                $userName = $user ? $user['full_name'] : 'Anggota';
+
+                // Post system message in group
+                $this->db->table('chat_messages')->insert([
+                    'conversation_id' => $conversationId,
+                    'sender_id'       => $userId,
+                    'message'         => "🚪 {$userName} telah keluar dari grup obrolan.",
+                    'is_read'         => 1,
+                    'created_at'      => date('Y-m-d H:i:s'),
+                ]);
             }
-
-            $user = $this->userModel->find($userId);
-            $userName = $user ? $user['full_name'] : 'Anggota';
-
-            // Post system message in group
-            $this->messageModel->insert([
-                'conversation_id' => $conversationId,
-                'sender_id'       => $userId,
-                'message'         => "🚪 {$userName} telah keluar dari grup obrolan.",
-                'is_read'         => 1,
-                'created_at'      => date('Y-m-d H:i:s'),
-            ]);
 
             $this->commitTransaction();
             return $this->success('Anda telah keluar dari grup obrolan.');
@@ -510,9 +521,10 @@ class ChatService extends BaseService
             return $this->error('Grup obrolan tidak ditemukan.');
         }
 
-        $part = $this->participantModel->where('conversation_id', $conversationId)
-                                       ->where('user_id', $userId)
-                                       ->first();
+        $part = $this->db->table('chat_participants')
+                         ->where('conversation_id', $conversationId)
+                         ->where('user_id', $userId)
+                         ->get()->getRowArray();
         $userRole = session()->get('role_slug');
         $isAdmin  = in_array($userRole, ['superadmin', 'pembina', 'bph']);
 
@@ -562,7 +574,10 @@ class ChatService extends BaseService
             return $this->error('Grup tidak ditemukan.');
         }
 
-        $operatorPart = $this->participantModel->where('conversation_id', $conversationId)->where('user_id', $operatorId)->first();
+        $operatorPart = $this->db->table('chat_participants')
+                                 ->where('conversation_id', $conversationId)
+                                 ->where('user_id', $operatorId)
+                                 ->get()->getRowArray();
         $userRole = session()->get('role_slug');
         $isSystemAdmin = in_array($userRole, ['superadmin', 'pembina', 'bph']);
 
@@ -570,13 +585,18 @@ class ChatService extends BaseService
             return $this->error('Hanya Admin Grup yang dapat mengubah peran anggota.');
         }
 
-        $targetPart = $this->participantModel->where('conversation_id', $conversationId)->where('user_id', $targetUserId)->first();
+        $targetPart = $this->db->table('chat_participants')
+                               ->where('conversation_id', $conversationId)
+                               ->where('user_id', $targetUserId)
+                               ->get()->getRowArray();
         if (!$targetPart) {
             return $this->error('Anggota tidak ditemukan di grup ini.');
         }
 
         $newRole = ($targetPart['role'] === 'admin') ? 'member' : 'admin';
-        $this->participantModel->where('id', $targetPart['id'])->set(['role' => $newRole])->update();
+        $this->db->table('chat_participants')
+                 ->where('id', $targetPart['id'])
+                 ->update(['role' => $newRole]);
 
         $roleTitle = ($newRole === 'admin') ? 'Admin Grup' : 'Anggota Biasa';
         return $this->success("Peran anggota berhasil diubah menjadi {$roleTitle}.");
@@ -592,7 +612,10 @@ class ChatService extends BaseService
             return $this->error('Grup tidak ditemukan.');
         }
 
-        $operatorPart = $this->participantModel->where('conversation_id', $conversationId)->where('user_id', $operatorId)->first();
+        $operatorPart = $this->db->table('chat_participants')
+                                 ->where('conversation_id', $conversationId)
+                                 ->where('user_id', $operatorId)
+                                 ->get()->getRowArray();
         $userRole = session()->get('role_slug');
         $isSystemAdmin = in_array($userRole, ['superadmin', 'pembina', 'bph']);
 
@@ -604,7 +627,22 @@ class ChatService extends BaseService
             return $this->error('Pembuat utama grup tidak dapat dikeluarkan dari grup.');
         }
 
-        $this->participantModel->where('conversation_id', $conversationId)->where('user_id', $targetUserId)->delete();
+        $this->db->table('chat_participants')
+                 ->where('conversation_id', $conversationId)
+                 ->where('user_id', $targetUserId)
+                 ->delete();
+
+        $targetUser = $this->userModel->find($targetUserId);
+        $targetName = $targetUser ? $targetUser['full_name'] : 'Anggota';
+
+        $this->db->table('chat_messages')->insert([
+            'conversation_id' => $conversationId,
+            'sender_id'       => $operatorId,
+            'message'         => "🚫 {$targetName} telah dikeluarkan dari grup oleh admin.",
+            'is_read'         => 1,
+            'created_at'      => date('Y-m-d H:i:s'),
+        ]);
+
         return $this->success('Anggota berhasil dikeluarkan dari grup.');
     }
 
@@ -618,7 +656,12 @@ class ChatService extends BaseService
             return $this->error('Grup tidak ditemukan.');
         }
 
-        $existingParts = array_column($this->participantModel->where('conversation_id', $conversationId)->findAll(), 'user_id');
+        $existingParts = array_column(
+            $this->db->table('chat_participants')
+                     ->where('conversation_id', $conversationId)
+                     ->get()->getResultArray(), 
+            'user_id'
+        );
         $toAdd = array_diff($newMemberIds, $existingParts);
 
         if (empty($toAdd)) {
@@ -635,7 +678,7 @@ class ChatService extends BaseService
                 'joined_at'       => $now,
             ];
         }
-        $this->participantModel->insertBatch($batch);
+        $this->db->table('chat_participants')->insertBatch($batch);
 
         return $this->success('Anggota baru berhasil ditambahkan ke dalam grup.');
     }

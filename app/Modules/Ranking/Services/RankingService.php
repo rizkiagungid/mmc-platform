@@ -134,40 +134,70 @@ class RankingService extends BaseService
             ];
         }
 
-        // 6. Combine and calculate Total Score for each user
+        // 6. Aggregate Learning Material Reads (5 pts per unique material read, max 50 pts)
+        $learningQuery = [];
+        if ($db->tableExists('learning_material_reads')) {
+            $learningQuery = $db->table('learning_material_reads')
+                ->select('user_id, COUNT(id) as total_reads, COUNT(DISTINCT material_id) as unique_materials')
+                ->whereIn('user_id', $userIds)
+                ->where("created_at >= '{$effectiveStartDate}'")
+                ->where("created_at <= '{$endDate}'")
+                ->groupBy('user_id')
+                ->get()
+                ->getResultArray();
+        }
+
+        $learningMap = [];
+        foreach ($learningQuery as $row) {
+            $count = (int)($row['total_reads'] ?? 0);
+            $unique = (int)($row['unique_materials'] ?? 0);
+            $points = min(50, $unique * 5);
+            $learningMap[$row['user_id']] = [
+                'reads_count'      => $count,
+                'unique_materials' => $unique,
+                'points'           => $points,
+            ];
+        }
+
+        // 7. Combine and calculate Total Score for each user
         $leaderboard = [];
         foreach ($users as $u) {
             $uid = $u['id'];
 
-            $attData     = $attendanceMap[$uid] ?? ['points' => 0, 'total' => 0, 'present' => 0, 'late' => 0];
-            $taskData    = $taskMap[$uid] ?? ['points' => 0, 'total_submitted' => 0, 'avg_grade' => null];
-            $postData    = $postMap[$uid] ?? ['count' => 0, 'points' => 0];
-            $commentData = $commentMap[$uid] ?? ['count' => 0, 'points' => 0];
+            $attData      = $attendanceMap[$uid] ?? ['points' => 0, 'total' => 0, 'present' => 0, 'late' => 0];
+            $taskData     = $taskMap[$uid] ?? ['points' => 0, 'total_submitted' => 0, 'avg_grade' => null];
+            $postData     = $postMap[$uid] ?? ['count' => 0, 'points' => 0];
+            $commentData  = $commentMap[$uid] ?? ['count' => 0, 'points' => 0];
+            $learningData = $learningMap[$uid] ?? ['reads_count' => 0, 'unique_materials' => 0, 'points' => 0];
 
-            $feedPoints  = $postData['points'] + $commentData['points'];
-            $totalPoints = $attData['points'] + $taskData['points'] + $feedPoints;
+            $feedPoints     = $postData['points'] + $commentData['points'];
+            $learningPoints = $learningData['points'];
+            $totalPoints    = $attData['points'] + $taskData['points'] + $feedPoints + $learningPoints;
 
             $leaderboard[] = [
-                'user_id'            => $uid,
-                'full_name'          => $u['full_name'],
-                'username'           => $u['username'],
-                'avatar'             => $u['avatar'],
-                'class_dept'         => $u['class_dept'],
-                'role_name'          => $u['role_name'],
-                'role_slug'          => $u['role_slug'],
-                'attendance_points'  => $attData['points'],
-                'attendance_count'   => $attData['total'],
-                'task_points'        => $taskData['points'],
-                'task_count'         => $taskData['total_submitted'],
-                'task_avg_grade'     => $taskData['avg_grade'],
-                'feed_points'        => $feedPoints,
-                'feed_post_count'    => $postData['count'],
-                'feed_comment_count' => $commentData['count'],
-                'total_points'       => $totalPoints,
+                'user_id'               => $uid,
+                'full_name'             => $u['full_name'],
+                'username'              => $u['username'],
+                'avatar'                => $u['avatar'],
+                'class_dept'            => $u['class_dept'],
+                'role_name'             => $u['role_name'],
+                'role_slug'             => $u['role_slug'],
+                'attendance_points'     => $attData['points'],
+                'attendance_count'      => $attData['total'],
+                'task_points'           => $taskData['points'],
+                'task_count'            => $taskData['total_submitted'],
+                'task_avg_grade'        => $taskData['avg_grade'],
+                'feed_points'           => $feedPoints,
+                'feed_post_count'       => $postData['count'],
+                'feed_comment_count'    => $commentData['count'],
+                'learning_points'       => $learningPoints,
+                'learning_read_count'   => $learningData['reads_count'],
+                'learning_unique_count' => $learningData['unique_materials'],
+                'total_points'          => $totalPoints,
             ];
         }
 
-        // 8. Sort descending by total_points, then attendance_points, then task_points
+        // 8. Sort descending by total_points, then attendance_points, then task_points, then learning_points
         usort($leaderboard, function ($a, $b) {
             if ($b['total_points'] !== $a['total_points']) {
                 return $b['total_points'] <=> $a['total_points'];
@@ -177,6 +207,9 @@ class RankingService extends BaseService
             }
             if ($b['task_points'] !== $a['task_points']) {
                 return $b['task_points'] <=> $a['task_points'];
+            }
+            if ($b['learning_points'] !== $a['learning_points']) {
+                return $b['learning_points'] <=> $a['learning_points'];
             }
             return strcmp($a['full_name'], $b['full_name']);
         });

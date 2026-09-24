@@ -123,4 +123,100 @@ class NotificationController extends BaseController
 
         return redirect()->back()->with('success', 'Seluruh riwayat notifikasi telah dibersihkan.');
     }
+
+    public function checkNew()
+    {
+        $userId = session()->get('user_id');
+        if (!$userId) {
+            return $this->response->setJSON([
+                'status'        => 'unauthenticated',
+                'unread_count'  => 0,
+                'unread_chat'   => 0,
+                'notifications' => [],
+                'latest_id'     => 0,
+            ]);
+        }
+
+        $lastId = (int)($this->request->getVar('last_id') ?? 0);
+
+        $unreadCount = $this->notificationModel->getUnreadCount($userId);
+
+        $builder = $this->notificationModel->where('user_id', $userId)
+                                           ->where('is_read', 0);
+        if ($lastId > 0) {
+            $builder->where('id >', $lastId);
+        }
+
+        $newNotifs = $builder->orderBy('id', 'ASC')->findAll(10);
+
+        $maxId = $lastId;
+        if (!empty($newNotifs)) {
+            $maxId = max(array_column($newNotifs, 'id'));
+        } else {
+            // Find overall max id for user if lastId is 0
+            $latestRow = $this->notificationModel->where('user_id', $userId)->orderBy('id', 'DESC')->first();
+            if ($latestRow) {
+                $maxId = (int)$latestRow['id'];
+            }
+        }
+
+        // Calculate unread chat messages
+        $unreadChat = 0;
+        try {
+            $chatParticipantModel = new \App\Models\ChatParticipantModel();
+            $chatMessageModel     = new \App\Models\ChatMessageModel();
+            $userConvs            = array_column($chatParticipantModel->where('user_id', $userId)->findAll(), 'conversation_id');
+            if (!empty($userConvs)) {
+                $unreadChat = $chatMessageModel->whereIn('conversation_id', $userConvs)
+                                               ->where('sender_id !=', $userId)
+                                               ->where('is_read', 0)
+                                               ->countAllResults();
+            }
+        } catch (\Throwable $e) {
+            $unreadChat = 0;
+        }
+
+        // Format links for notifications
+        foreach ($newNotifs as &$n) {
+            if (!empty($n['link'])) {
+                $n['target_url'] = str_starts_with($n['link'], 'http') ? $n['link'] : base_url($n['link']);
+            } else {
+                $n['target_url'] = base_url('notifications');
+            }
+        }
+        unset($n);
+
+        return $this->response->setJSON([
+            'status'        => 'success',
+            'unread_count'  => $unreadCount,
+            'unread_chat'   => $unreadChat,
+            'notifications' => $newNotifs,
+            'latest_id'     => $maxId,
+        ]);
+    }
+
+    public function testPush()
+    {
+        $userId = session()->get('user_id');
+        if (!$userId) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Silakan login terlebih dahulu.']);
+        }
+
+        $notifId = $this->notificationModel->notifyUser(
+            $userId,
+            'Tes Notifikasi MMC Berhasil! 🎉',
+            'Notifikasi sistem Multimedia Club kini aktif dan siap muncul di layar HP atau Laptop Anda.',
+            'general',
+            base_url('notifications')
+        );
+
+        return $this->response->setJSON([
+            'status'       => 'success',
+            'message'      => 'Notifikasi uji coba berhasil dikirim ke perangkat Anda!',
+            'notif_id'     => $notifId,
+            'title'        => 'Tes Notifikasi MMC Berhasil! 🎉',
+            'body'         => 'Notifikasi sistem Multimedia Club kini aktif dan siap muncul di layar HP atau Laptop Anda.',
+            'url'          => base_url('notifications'),
+        ]);
+    }
 }

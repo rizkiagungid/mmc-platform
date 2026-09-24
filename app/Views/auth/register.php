@@ -44,6 +44,39 @@
                         <?= csrf_field() ?>
 
                         <div class="row g-3">
+                            <!-- Pilihan Tipe Keanggotaan: Anggota Baru vs Alumni -->
+                            <div class="col-12 mb-2">
+                                <label class="form-label text-secondary small fw-medium d-block mb-2">
+                                    <i class="fa-solid fa-id-badge text-danger me-1"></i> Tipe Keanggotaan <span class="text-danger">*</span>
+                                </label>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="member_type" id="type_member" value="member" <?= (old('member_type', 'member') === 'member') ? 'checked' : '' ?> onchange="toggleMemberType(this.value)">
+                                        <label class="btn btn-outline-danger w-100 p-3 rounded-3 text-start d-flex align-items-center gap-2.5 h-100" for="type_member">
+                                            <div class="p-2 rounded-circle bg-danger bg-opacity-25 text-danger flex-shrink-0">
+                                                <i class="fa-solid fa-graduation-cap fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-white small">Anggota Baru</div>
+                                                <small class="text-secondary style-tiny d-block">Siswa Aktif SMAN 1 Tamansari</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="radio" class="btn-check" name="member_type" id="type_alumni" value="alumni" <?= (old('member_type') === 'alumni') ? 'checked' : '' ?> onchange="toggleMemberType(this.value)">
+                                        <label class="btn btn-outline-warning w-100 p-3 rounded-3 text-start d-flex align-items-center gap-2.5 h-100" for="type_alumni">
+                                            <div class="p-2 rounded-circle bg-warning bg-opacity-25 text-warning flex-shrink-0">
+                                                <i class="fa-solid fa-user-tie fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold text-white small">Alumni</div>
+                                                <small class="text-secondary style-tiny d-block">Lulusan / Alumni Ekskul MMC</small>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Nama Lengkap -->
                             <div class="col-md-6">
                                 <label class="form-label text-secondary small fw-medium">Nama Lengkap <span class="text-danger">*</span></label>
@@ -92,27 +125,35 @@
                             </div>
 
                             <!-- Kelas, Ruang & Divisi -->
-                            <div class="col-md-12">
-                                <label class="form-label text-secondary small fw-medium">Kelas, Ruang & Divisi <span class="text-danger">*</span></label>
+                            <div class="col-md-12" id="class_dept_container">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <label class="form-label text-secondary small fw-medium m-0">
+                                        Kelas, Ruang & Divisi <span id="class_required_asterisk" class="text-danger">*</span>
+                                    </label>
+                                    <span id="class_lock_badge" class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 font-monospace style-tiny" style="display: none;">
+                                        <i class="fa-solid fa-lock me-1"></i> Kelas & Ruangan Terkunci (Alumni)
+                                    </span>
+                                </div>
+
                                 <div class="row g-2">
-                                    <div class="col-md-4">
-                                        <select name="class_grade" class="form-select bg-dark text-white border-secondary border-opacity-50 <?= isset($errors['class_grade']) ? 'is-invalid border-danger' : '' ?>" required>
+                                    <div class="col-md-4" id="class_grade_wrapper">
+                                        <select name="class_grade" id="reg_class_grade" class="form-select bg-dark text-white border-secondary border-opacity-50 <?= isset($errors['class_grade']) ? 'is-invalid border-danger' : '' ?>" required>
                                             <option value="" disabled <?= !old('class_grade') ? 'selected' : '' ?>>-- Pilih Kelas --</option>
                                             <?php foreach (['X', 'XI', 'XII'] as $grade): ?>
                                                 <option value="<?= $grade ?>" <?= old('class_grade') === $grade ? 'selected' : '' ?>>Kelas <?= $grade ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
-                                        <select name="class_room" class="form-select bg-dark text-white border-secondary border-opacity-50 <?= isset($errors['class_room']) ? 'is-invalid border-danger' : '' ?>" required>
+                                    <div class="col-md-4" id="class_room_wrapper">
+                                        <select name="class_room" id="reg_class_room" class="form-select bg-dark text-white border-secondary border-opacity-50 <?= isset($errors['class_room']) ? 'is-invalid border-danger' : '' ?>" required>
                                             <option value="" disabled <?= !old('class_room') ? 'selected' : '' ?>>-- Pilih Ruang --</option>
                                             <?php for ($r = 1; $r <= 10; $r++): ?>
                                                 <option value="<?= $r ?>" <?= old('class_room') == $r ? 'selected' : '' ?>>Ruang <?= $r ?></option>
                                             <?php endfor; ?>
                                         </select>
                                     </div>
-                                    <div class="col-md-4">
-                                        <select name="division" class="form-select bg-dark text-white border-secondary border-opacity-50 <?= isset($errors['division']) ? 'is-invalid border-danger' : '' ?>" required>
+                                    <div class="col-md-4" id="division_wrapper">
+                                        <select name="division" id="reg_division" class="form-select bg-dark text-white border-secondary border-opacity-50 <?= isset($errors['division']) ? 'is-invalid border-danger' : '' ?>">
                                             <option value="" disabled <?= !old('division') ? 'selected' : '' ?>>-- Pilih Divisi --</option>
                                             <?php foreach (['Broadcasting', 'Programming'] as $div): ?>
                                                 <option value="<?= $div ?>" <?= old('division') === $div ? 'selected' : '' ?>><?= $div ?></option>
@@ -221,4 +262,50 @@
         </div>
     </div>
 </section>
+
+<script>
+    function toggleMemberType(type) {
+        const gradeSelect = document.getElementById('reg_class_grade');
+        const roomSelect = document.getElementById('reg_class_room');
+        const classGradeWrapper = document.getElementById('class_grade_wrapper');
+        const classRoomWrapper = document.getElementById('class_room_wrapper');
+        const classRequiredAsterisk = document.getElementById('class_required_asterisk');
+        const classLockBadge = document.getElementById('class_lock_badge');
+
+        if (type === 'alumni') {
+            if (gradeSelect) {
+                gradeSelect.disabled = true;
+                gradeSelect.removeAttribute('required');
+                gradeSelect.value = '';
+                gradeSelect.classList.add('opacity-50', 'bg-secondary', 'bg-opacity-10');
+            }
+            if (roomSelect) {
+                roomSelect.disabled = true;
+                roomSelect.removeAttribute('required');
+                roomSelect.value = '';
+                roomSelect.classList.add('opacity-50', 'bg-secondary', 'bg-opacity-10');
+            }
+            if (classRequiredAsterisk) classRequiredAsterisk.style.display = 'none';
+            if (classLockBadge) classLockBadge.style.display = 'inline-block';
+        } else {
+            if (gradeSelect) {
+                gradeSelect.disabled = false;
+                gradeSelect.setAttribute('required', 'required');
+                gradeSelect.classList.remove('opacity-50', 'bg-secondary', 'bg-opacity-10');
+            }
+            if (roomSelect) {
+                roomSelect.disabled = false;
+                roomSelect.setAttribute('required', 'required');
+                roomSelect.classList.remove('opacity-50', 'bg-secondary', 'bg-opacity-10');
+            }
+            if (classRequiredAsterisk) classRequiredAsterisk.style.display = 'inline';
+            if (classLockBadge) classLockBadge.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkedType = document.querySelector('input[name="member_type"]:checked')?.value || 'member';
+        toggleMemberType(checkedType);
+    });
+</script>
 <?= $this->endSection() ?>
