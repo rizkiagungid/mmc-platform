@@ -764,6 +764,7 @@ const HackerApp = (function() {
     // Initialization
     // -------------------------------------------------------------
     function init() {
+        autoRandomizeAllMissions();
         mountCyberSimulator();
         setupGlobalAudioUnlock();
         renderMissions();
@@ -975,6 +976,7 @@ const HackerApp = (function() {
     function selectMission(idx) {
         if (idx < 0 || idx >= MISSIONS.length) return;
         currentMissionIdx = idx;
+        randomizeTargetPassword(false);
         currentStage = 0;
         resetNetworkMap();
         renderMissions();
@@ -1537,12 +1539,12 @@ const HackerApp = (function() {
     // -------------------------------------------------------------
     // FEATURE 2: DYNAMIC PASSWORD RANDOMIZER & HASH GENERATOR
     // -------------------------------------------------------------
-    function randomizeTargetPassword(notify = true) {
+    function randomizeTargetPassword(notify = false) {
         const cur = MISSIONS[currentMissionIdx];
         if (!cur) return;
 
-        // Pick random password from pool or generate
-        const pool = DYNAMIC_PASSWORD_POOL.filter(p => p !== cur.crackedPlain);
+        // Pick random password from pool (different each time)
+        const pool = DYNAMIC_PASSWORD_POOL.filter(p => p !== cur.crackedPlain && p !== "password");
         const newPlain = pool[Math.floor(Math.random() * pool.length)] || ("SmanitCyber_" + Math.floor(1000 + Math.random() * 9000));
         
         cur.crackedPlain = newPlain;
@@ -1550,28 +1552,44 @@ const HackerApp = (function() {
 
         // Re-encrypt hash into cipherText for Decryptor sync
         if (cur.cipherMethod === 'Base64') {
-            cur.cipherText = btoa(unescape(encodeURIComponent(cur.targetHash)));
+            cur.cipherText = btoa(unescape(encodeURIComponent("Target Hash: " + cur.targetHash)));
         } else if (cur.cipherMethod === 'Caesar') {
-            cur.cipherText = rotCipher(cur.targetHash, cur.cipherKey || 3);
+            cur.cipherText = rotCipher("Target Hash: " + cur.targetHash, cur.cipherKey || 3);
         } else {
             cur.cipherText = fakeAesTransform(cur.targetHash, cur.cipherKey || "KEY");
         }
 
-        // Update inputs on screen
+        // Update inputs on screen if elements exist
         const hashIn = document.getElementById('inputTargetHash');
         if (hashIn) hashIn.value = cur.targetHash;
         const cipherIn = document.getElementById('cipherInputText');
         if (cipherIn) cipherIn.value = cur.cipherText;
 
-        sfxLaser();
-        logCracker(`[RANDOMIZE] Target password baru: "${newPlain}"`);
-        logCracker(`[HASH GENERATED] New ${cur.hashType} Hash: ${cur.targetHash}`);
-        logCipher(`[CIPHER REBUILT] Intercepted payload refreshed for ${cur.cipherMethod}`);
-        logGlobal(`[DICE] Target Password diacak: "${newPlain}" -> Hash: ${cur.targetHash.substring(0, 12)}...`);
-
         if (notify) {
-            alert(`🎲 TARGET PASSWORD TELAH DIACAK!\n\nPassword Baru: ${newPlain}\nHash (${cur.hashType}): ${cur.targetHash}\nCipher (${cur.cipherMethod}): ${cur.cipherText.substring(0, 20)}...\n\nSilakan jalankan ulang Dekripsi atau Cracker!`);
+            sfxLaser();
+            logCracker(`[RANDOMIZE] Target password baru: "${newPlain}"`);
+            logCracker(`[HASH GENERATED] New ${cur.hashType} Hash: ${cur.targetHash}`);
+            logCipher(`[CIPHER REBUILT] Intercepted payload refreshed for ${cur.cipherMethod}`);
+            logGlobal(`[DICE] Target Password diacak: "${newPlain}" -> Hash: ${cur.targetHash.substring(0, 12)}...`);
+            alert(`🎲 TARGET PASSWORD TELAH DIACAK!\n\nPassword Baru: ${newPlain}\nHash (${cur.hashType}): ${cur.targetHash}\n\nSilakan jalankan Crack!`);
         }
+    }
+
+    // Auto randomize all missions on load with unique passwords
+    function autoRandomizeAllMissions() {
+        MISSIONS.forEach((m, idx) => {
+            const pool = DYNAMIC_PASSWORD_POOL;
+            const chosen = pool[idx % pool.length] + "_" + Math.floor(10 + Math.random() * 90);
+            m.crackedPlain = chosen;
+            m.targetHash = generateHashForPassword(chosen, m.hashType);
+            if (m.cipherMethod === 'Base64') {
+                m.cipherText = btoa(unescape(encodeURIComponent("Target Hash: " + m.targetHash)));
+            } else if (m.cipherMethod === 'Caesar') {
+                m.cipherText = rotCipher("Target Hash: " + m.targetHash, m.cipherKey || 3);
+            } else {
+                m.cipherText = fakeAesTransform(m.targetHash, m.cipherKey || "KEY");
+            }
+        });
     }
 
     function updateStageUI() {
@@ -1846,12 +1864,12 @@ const HackerApp = (function() {
             progress += (100 / totalSteps);
             sfxCrackHit();
 
-            const randChars = Math.random().toString(36).substring(2, 10);
+            const wordCandidate = REALISTIC_CANDIDATE_WORDLIST[Math.floor(Math.random() * REALISTIC_CANDIDATE_WORDLIST.length)] + Math.floor(Math.random() * 999);
             if (progress < 100) {
                 if (fill) fill.style.width = `${progress}%`;
-                if (label) label.textContent = `Cracking... ${Math.floor(progress)}% (${randChars})`;
-                if (Math.random() > 0.6) {
-                    logCracker(`> Trying wordlist candidate: [${randChars}] -> mismatch`);
+                if (label) label.textContent = `Cracking... ${Math.floor(progress)}% (Testing: ${wordCandidate})`;
+                if (Math.random() > 0.45) {
+                    logCracker(`> Trying candidate: [${wordCandidate}] -> hash mismatch`);
                 }
             } else {
                 clearInterval(crackInterval);
@@ -1860,14 +1878,14 @@ const HackerApp = (function() {
                 if (btnStart) btnStart.disabled = false;
                 if (btnStop) btnStop.disabled = true;
 
-                let crackedWord = cur ? cur.crackedPlain : "password";
+                let crackedWord = cur ? cur.crackedPlain : ("SmanitHacks#" + Math.floor(1000 + Math.random() * 9000));
                 if (cur && hashInput.toLowerCase() !== cur.targetHash.toLowerCase()) {
-                    crackedWord = "generic_pass_" + Math.random().toString(36).substring(2, 6);
+                    crackedWord = "CustomKey_" + Math.random().toString(36).substring(2, 7);
                 }
 
                 if (label) label.textContent = `SUCCESS (100%) - KEY: ${crackedWord}`;
-                logCracker(`[SUCCESS] Hash successfully cracked!`);
-                logCracker(`[RESULT] Plaintext Password: >>> ${crackedWord} <<<`);
+                logCracker(`[MATCH FOUND] Hash matches dictionary entry!`);
+                logCracker(`[CRACKED] Plaintext Password: >>> ${crackedWord} <<<`);
                 logGlobal(`[BREACH] Password cracked successfully: ${crackedWord}`);
                 sfxDecrypted();
 
