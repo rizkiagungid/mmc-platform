@@ -2074,6 +2074,9 @@ const HackerApp = (function() {
     // -------------------------------------------------------------
     // INTERACTIVE SHELL CLI
     // -------------------------------------------------------------
+    // -------------------------------------------------------------
+    // INTERACTIVE SHELL CLI (ENHANCED INDONESIAN GUIDED ENGINE)
+    // -------------------------------------------------------------
     function runQuickCommand(cmd) {
         const inEl = document.getElementById('shellInput');
         if (inEl) inEl.value = cmd;
@@ -2093,61 +2096,128 @@ const HackerApp = (function() {
         const lower = cmd.toLowerCase();
         const cur = MISSIONS[currentMissionIdx] || MISSIONS[0];
 
-        if (lower === 'help') {
-            logShell(`Available commands:
-  help              - Display this helper guide
-  scan / nmap [ip]  - Scan target server for open ports & CVEs
-  cat [file]        - Read file contents (e.g. cat secret.txt, cat shadow)
-  crack [hash]      - Send hash into cracking engine
-  decrypt [str]     - Send string to cipher decryptor
-  inject --sql      - Launch automated SQL injection probe
-  whoami            - Display current user identity & rank
-  matrix            - Run digital matrix visual stream
-  clear             - Clear terminal screen`);
+        if (lower === 'help' || lower === 'panduan' || lower === 'tutorial' || lower === 'step' || lower === 'alur') {
+            logShell(`======================================================================
+📖 PANDUAN LENGKAP PERINTAH TERMINAL CLI & ALUR SIMULASI (MMC SEC)
+======================================================================
+
+🎯 ALUR STEP-BY-STEP PERETASAN ETIS & PENGUJIAN KEAMANAN:
+
+1️⃣ TAHAP RECONNAISSANCE (PENGINTAIAN PORT & SERVIS)
+   👉 Ketik: nmap -sS ${cur.targetIP}   (atau tap tombol 'nmap' / 'scan')
+   💡 Kenapa? Nmap digunakan untuk memindai port jaringan target yang terbuka
+      (seperti Port 22 SSH, 80 HTTP, 443 HTTPS, 3306 DB) untuk mencari celah.
+
+2️⃣ TAHAP DATA DUMP (MEMBACA FILE LOG & MEMO RAHASIA)
+   👉 Ketik: cat secret.txt   atau   cat shadow
+   💡 Kenapa? Perintah 'cat' (concatenate) membaca isi file target yang berhasil
+      disadap, mengungkap ciphertext enkripsi & target hash password.
+
+3️⃣ TAHAP CIPHER DECRYPT (DEKRIPSI SANDI)
+   👉 Ketik: decrypt
+   💡 Kenapa? Membuka modul Decryptor untuk mengonversi token Base64/Caesar
+      menjadi signature hash asli (MD5/SHA256).
+
+4️⃣ TAHAP PASSWORD CRACKING (MEMECAHKAN KATA SANDI)
+   👉 Ketik: crack
+   💡 Kenapa? Menjalankan engine Dictionary & Rainbow Table untuk mencocokkan
+      hash dengan kata sandi plaintext asli target (${cur.crackedPlain}).
+
+5️⃣ TAHAP ROOT PRIVILEGE ESCALATION (PENGAMBILALIHAN HAK AKSES)
+   👉 Ketik: sudo su - root --auth='${cur.crackedPlain}'   (atau tap 'sudo root')
+   💡 Kenapa? Menggunakan password yang berhasil di-crack untuk login sebagai
+      UID 0 (Superuser Root) dengan kekuasaan penuh atas sistem target!
+
+6️⃣ TAHAP SELESAI & BERSIHKAN LOG
+   👉 Ketik: whoami   (cek status) lalu   clear   (bersihkan layar)
+   💡 Kenapa? Memverifikasi bahwa akun telah naik ke Root dan menghapus jejak.
+
+----------------------------------------------------------------------
+⚡ DAFTAR PERINTAH LENGKAP (QUICK CHEAT SHEET):
+• help / panduan     : Buka petunjuk dan penjelasan alur lengkap ini
+• nmap / scan        : Pindai port target (${cur.targetIP})
+• cat secret.txt     : Buka file memo sadapan token rahasia
+• cat shadow         : Buka file dump hash autentikasi (/etc/shadow)
+• decrypt            : Buka tab Decryptor untuk memecahkan ciphertext
+• crack              : Buka tab Password Cracker untuk membobol hash
+• sudo / root        : Eksekusi eskalasi hak akses administrator UID 0
+• whoami             : Tampilkan identitas akun & skor XP saat ini
+• inject --sql       : Simulasi pengujian keamanan input form database
+• matrix             : Tampilkan animasi aliran kode digital matrix neon
+• clear              : Bersihkan layar terminal console
+======================================================================`);
+            sfxSuccess();
         } else if (lower.startsWith('scan') || lower.startsWith('nmap')) {
-            logShell(`Starting Nmap scan on ${cur.targetIP}...
-PORT     STATE SERVICE       VERSION
-22/tcp   OPEN  ssh           OpenSSH 8.4p1
-80/tcp   OPEN  http          Apache httpd 2.4.52
-443/tcp  OPEN  https         TLSv1.3
-3306/tcp OPEN  mysql         MySQL 8.0.28
-[VULN DETECTED] CVE-2023-44487 & Insecure Hash Storage detected on target!`);
+            logShell(`[INFO] Menjalankan Network Mapper (Nmap) pada host target: ${cur.targetIP}...
+PORT     STATE SERVICE       VERSION             DESKRIPSI & KEAMANAN
+22/tcp   OPEN  ssh           OpenSSH 8.4p1       Remote Terminal Shell
+80/tcp   OPEN  http          Apache httpd 2.4.52 Web Server Publik
+443/tcp  OPEN  https         TLSv1.3             Portal Terenkripsi SSL
+3306/tcp OPEN  mysql         MySQL 8.0.28        Database Storage Backend
+----------------------------------------------------------------------
+[HASIL RECON] Ditemukan 4 Port Aktif! Celah terdeteksi pada Port 80 & Hash Vault.
+💡 LANGKAH SELANJUTNYA: Ketik 'cat secret.txt' untuk melihat memo data rahasia!`);
             sfxRadar();
-        } else if (lower.startsWith('sudo') || lower.includes('root')) {
-            logShell(`[AUTHENTICATED] Elevating user to UID 0 (root)...
-root@${cur.targetIP}:~# access granted. Privilege escalation verified.`);
+        } else if (lower.startsWith('sudo') || lower === 'root' || lower.includes('su -')) {
+            logShell(`[OTENTIKASI BERHASIL] Memverifikasi kredensial '${cur.crackedPlain}'...
+[PRIVILEGE ESCALATION] Mengangkat sesi pengguna ke UID 0 (Superuser Root)...
+----------------------------------------------------------------------
+root@${cur.targetIP}:~# AKSES ROOT DIBERIKAN! Sistem target sepenuhnya di bawah kendali Anda.
+💡 LANGKAH SELANJUTNYA: Buka tab 'Dashboard' untuk klaim +5 Poin Ranking & XP!`);
             sfxRootDrop();
-        } else if (lower === 'cat secret.txt' || lower === 'cat secret') {
-            logShell(`[FILE: secret.txt]
---------------------------------------------------
-CONFIDENTIAL MEMO - MMC ADMIN:
-Target Name: ${cur.title}
-Intercepted token: ${cur.cipherText}
-Method: ${cur.cipherMethod} | Target Hash: ${cur.targetHash}`);
+        } else if (lower === 'cat secret.txt' || lower === 'cat secret' || lower === 'cat memo') {
+            logShell(`[FILE: /var/log/secret.txt] - DUMPED SECURE MEMO
+----------------------------------------------------------------------
+NAMA MISI     : ${cur.title}
+TARGET IP     : ${cur.targetIP} (${cur.category})
+TOKEN CIPHER  : ${cur.cipherText}
+METODE SANDI  : ${cur.cipherMethod} (Key: ${cur.cipherKey || 'Auto'})
+TARGET HASH   : ${cur.targetHash} (${cur.hashType})
+----------------------------------------------------------------------
+💡 LANGKAH SELANJUTNYA: Ketik 'decrypt' atau buka tab Decryptor untuk memecahkan token!`);
             sfxSuccess();
         } else if (lower.includes('shadow')) {
-            logShell(`[FILE: /etc/shadow]
+            logShell(`[FILE: /etc/shadow] - KREDENSIAL HASH DATABASE TARGET
+----------------------------------------------------------------------
 root:$6$mmc$${cur.targetHash}:19200:0:99999:7:::
-admin:$6$system$5f4dcc3b5aa765d61d8327deb882cf99:19200:0:99999:7:::`);
+admin:$6$system$${cur.targetHash}:19200:0:99999:7:::
+user_guest:$6$anon$5f4dcc3b5aa765d61d8327deb882cf99:19200:0:99999:7:::
+----------------------------------------------------------------------
+💡 LANGKAH SELANJUTNYA: Ketik 'crack' untuk memecahkan hash di atas menggunakan Password Cracker!`);
+            sfxSuccess();
+        } else if (lower === 'decrypt') {
+            switchTab('decryptor');
+            loadInterceptedCipher();
+            logShell(`[NAVIGASI] Modul Decryptor dibuka & ciphertext '${cur.cipherText.substring(0, 16)}...' dimuat.`);
+            sfxLaser();
+        } else if (lower === 'crack') {
+            switchTab('decryptor');
+            loadMissionHash();
+            logShell(`[NAVIGASI] Modul Password Cracker dibuka & target hash '${cur.targetHash.substring(0, 16)}...' dimuat.`);
+            sfxLaser();
         } else if (lower.startsWith('inject')) {
-            logShell(`[EXPLOIT] Injecting SQL payload: FETCH RECORD WHERE id = target_id --auth
-[200 OK] Extracted target hash: ${cur.targetHash}`);
+            logShell(`[SIMULASI PENGUJIAN SQL] Menginjeksi parameter keamanan ke backend...
+[STATUS: 200 OK] Respon database mengembalikan hash target: ${cur.targetHash}
+💡 Hash berhasil diekstrak! Ketik 'crack' untuk memecahkannya.`);
             sfxLaser();
         } else if (lower === 'whoami') {
-            logShell(`Identity: root / MMC Cyber Infiltrator
-Target: ${cur.targetIP} (${cur.secLevel})
-Current XP: ${playerXP}`);
-        } else if (lower === 'clear') {
+            logShell(`[INFORMASI SESI PENGGUNA]
+IDENTITAS : root@cyber (MMC Ethical Cyber Infiltrator)
+TARGET IP : ${cur.targetIP} (Keamanan: ${cur.secLevel})
+STATUS XP : ${playerXP} XP (+5 Poin Ranking MM per Misi Selesai)
+HAK AKSES : UID 0 (Root / Full Administrative Access)`);
+            sfxClick();
+        } else if (lower === 'clear' || lower === 'cls') {
             const shLog = document.getElementById('shellLog');
-            if (shLog) shLog.innerHTML = '';
+            if (shLog) shLog.innerHTML = '<div>Terminal screen cleared. Type \'help\' for interactive guide.</div>';
         } else if (lower === 'matrix') {
-            logShell(`101001010111010101010010101011100101
-010101101010001010101011101010101001
-110101010100101010111001010101011010
-[MATRIX STREAM INJECTED]`);
+            logShell(`101001010111010101010010101011100101010101101010001010101011101010101001
+110101010100101010111001010101011010010101010101110101010100101010111001
+[MATRIX DIGITAL STREAM ENGAGED]`);
             sfxMatrixRattle();
         } else {
-            logShell(`bash: ${cmd}: command not recognized. Type 'help' for instructions.`);
+            logShell(`bash: '${cmd}': perintah tidak dikenali.
+Ketik 'help' atau 'panduan' untuk melihat daftar perintah lengkap dan petunjuk step-by-step.`);
             sfxAlert();
         }
     }
