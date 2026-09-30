@@ -145,6 +145,27 @@ class GameController extends BaseController
                     'Kuas Halus, Neon Glow, Spray & Flood Fill',
                     'Ekspor PNG High-Res & Poin Ranking (+5 pts)'
                 ]
+            ],
+            [
+                'id'          => 'aku-hacker',
+                'title'       => 'Aku Hacker: Cyber Simulator',
+                'subtitle'    => 'Retro Terminal, Password Cracker, Decryptor & Network Infiltrator',
+                'category'    => 'Cybersecurity & Logic Simulator',
+                'badge'       => 'New Game #7',
+                'badge_color' => 'success',
+                'icon'        => 'fa-user-secret',
+                'image'       => 'assets/img/game-hacker-thumb.jpg',
+                'difficulty'  => 'Level 1 - 10 (Cyber Elite)',
+                'status'      => 'active',
+                'play_url'    => base_url('mini-game/aku-hacker'),
+                'description' => 'Simulasi peretasan & cybersecurity interaktif bertema retro terminal neon. Pecahkan hash password, dekripsi sandi rahasia, jalankan perintah terminal Linux, dan susupi peta jaringan server!',
+                'features'    => [
+                    'Password Cracker (MD5, SHA1, SHA256)',
+                    'Encryption & Decrypt Tools (Base64, AES, Caesar)',
+                    'Interactive Linux Hacker Terminal CLI',
+                    'Interactive Network Visualizer Map',
+                    'Misi Bertingkat & Poin Ranking (+5 pts)'
+                ]
             ]
         ];
 
@@ -223,6 +244,18 @@ class GameController extends BaseController
             'title'       => 'Studio Gambar & Mewarnai - Mini Game Kreatif | Multimedia Club',
             'pageTitle'   => 'Studio Gambar & Mewarnai MMC',
             'description' => 'Kanvas lukis digital interaktif untuk menggambar bebas, mewarnai sketsa multimedia, stempel clipart, cat tumpah flood fill, kuas neon, dan unduh hasil karyamu!',
+        ]);
+    }
+
+    /**
+     * Mini Game #7: Aku Hacker (Cyber Hacker Simulator)
+     */
+    public function akuHacker()
+    {
+        return view('App\Modules\Game\Views\aku_hacker', [
+            'title'       => 'Aku Hacker: Cyber Hacker Simulator | Multimedia Club',
+            'pageTitle'   => 'Cyber Hacker Simulator',
+            'description' => 'Simulasi cybersecurity interaktif bergaya retro green terminal. Pecahkan hash password, dekripsi ciphertext rahasia, eksekusi perintah terminal shell, dan tembus node jaringan server!',
         ]);
     }
 

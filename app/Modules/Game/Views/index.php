@@ -49,6 +49,11 @@
     box-shadow: 0 8px 20px rgba(236, 72, 153, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
+.game-icon-aku-hacker {
+    background: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5);
+    border: 1px solid #10b981;
+}
 .btn-pink {
     background: linear-gradient(135deg, #ec4899 0%, #db2777 100%) !important;
     border: 1px solid #f472b6 !important;
@@ -60,6 +65,20 @@
     border: 1px solid #fbcfe8 !important;
     color: #ffffff !important;
     box-shadow: 0 6px 18px rgba(236, 72, 153, 0.65);
+    transform: translateY(-2px);
+}
+.btn-terminal {
+    background: #00ff66 !important;
+    border: 1px solid #00ff66 !important;
+    color: #050d08 !important;
+    box-shadow: 0 0 15px rgba(0, 255, 102, 0.4);
+    font-weight: 700;
+}
+.btn-terminal:hover {
+    background: #33ff88 !important;
+    border: 1px solid #66ffaa !important;
+    color: #000000 !important;
+    box-shadow: 0 0 25px rgba(0, 255, 102, 0.7);
     transform: translateY(-2px);
 }
 .game-icon-default {
@@ -131,6 +150,7 @@
                                 if ($game['id'] === 'quiz') $btnClass = 'btn-info text-dark font-heading fw-bold';
                                 if ($game['id'] === 'pelari-kalcer') $btnClass = 'btn-success text-white font-heading fw-bold';
                                 if ($game['id'] === 'menggambar') $btnClass = 'btn-pink text-white font-heading fw-bold';
+                                if ($game['id'] === 'aku-hacker') $btnClass = 'btn-terminal';
                             ?>
                                 <a href="<?= esc($game['play_url']) ?>" class="btn <?= $btnClass ?> px-4 font-heading fw-bold d-inline-flex align-items-center gap-2">
                                     <i class="fa-solid fa-play"></i> Mainkan

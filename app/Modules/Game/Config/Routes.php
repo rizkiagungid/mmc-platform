@@ -41,6 +41,13 @@ $routes->get('mini-game/gambar', '\App\Modules\Game\Controllers\GameController::
 $routes->get('mini-game/draw', '\App\Modules\Game\Controllers\GameController::menggambar');
 $routes->get('mini-game/coloring', '\App\Modules\Game\Controllers\GameController::menggambar');
 
+// Game #7: Aku Hacker (Cyber Hacker Simulator)
+$routes->get('mini-game/aku-hacker', '\App\Modules\Game\Controllers\GameController::akuHacker');
+$routes->get('games/aku-hacker', '\App\Modules\Game\Controllers\GameController::akuHacker');
+$routes->get('mini-game/hacker', '\App\Modules\Game\Controllers\GameController::akuHacker');
+$routes->get('mini-game/cyber-hacker', '\App\Modules\Game\Controllers\GameController::akuHacker');
+$routes->get('mini-game/cyber', '\App\Modules\Game\Controllers\GameController::akuHacker');
+
 // AJAX API for Game Progress / Score Recording
 $routes->post('mini-game/api/record-score', '\App\Modules\Game\Controllers\GameController::recordScore');
 
