@@ -1,0 +1,485 @@
+/* =========================================================
+   AKU HACKER: CYBER HACKER SIMULATOR - RETRO CRT MATRIX THEME
+   ========================================================= */
+:root {
+    --hacker-green: #00ff66;
+    --hacker-green-bright: #39ff14;
+    --hacker-green-dim: #008f39;
+    --hacker-green-glow: rgba(0, 255, 102, 0.45);
+    --hacker-dark: #050b06;
+    --hacker-panel: rgba(8, 18, 10, 0.95);
+    --hacker-border: #00ff66;
+    --hacker-border-dim: rgba(0, 255, 102, 0.25);
+    --hacker-text-muted: #4ade80;
+    --hacker-amber: #f59e0b;
+    --hacker-red: #ef4444;
+    --hacker-blue: #00e5ff;
+}
+
+.cyber-body {
+    background-color: #020603;
+    background-image: 
+        linear-gradient(rgba(0, 255, 102, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 102, 0.035) 1px, transparent 1px);
+    background-size: 24px 24px;
+    color: var(--hacker-green);
+    font-family: 'JetBrains Mono', 'Courier New', Consolas, monospace;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* CRT Scanline & Screen Vignette Overlay */
+.crt-overlay {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.crt-overlay::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 255, 0, 0.02));
+    z-index: 1;
+    background-size: 100% 3px, 6px 100%;
+    pointer-events: none !important;
+    opacity: 0.6;
+}
+
+/* Cyber Box & Borders */
+.cyber-box {
+    background: var(--hacker-panel);
+    border: 1px solid var(--hacker-border);
+    box-shadow: 0 0 15px rgba(0, 255, 102, 0.15), inset 0 0 15px rgba(0, 255, 102, 0.04);
+    position: relative;
+    z-index: 2;
+}
+
+.cyber-box-dim {
+    background: rgba(6, 14, 8, 0.92);
+    border: 1px solid var(--hacker-border-dim);
+}
+
+.cyber-header-bar {
+    border-bottom: 1px solid var(--hacker-border);
+    padding: 10px 16px;
+    background: rgba(0, 255, 102, 0.07);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cyber-title {
+    color: var(--hacker-green);
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-shadow: 0 0 8px var(--hacker-green-glow);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Status Badges & LED */
+.led-live {
+    width: 9px;
+    height: 9px;
+    background: #00ff66;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 8px #00ff66, 0 0 12px #00ff66;
+    animation: blink-led 1.2s infinite ease-in-out;
+}
+@keyframes blink-led {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.85); }
+}
+
+.cyber-tag {
+    font-size: 0.78rem;
+    padding: 3px 8px;
+    border: 1px solid var(--hacker-green);
+    color: var(--hacker-green);
+    background: rgba(0, 255, 102, 0.08);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    letter-spacing: 0.5px;
+}
+
+.cyber-tag.warning {
+    border-color: var(--hacker-amber);
+    color: var(--hacker-amber);
+    background: rgba(245, 158, 11, 0.08);
+}
+.cyber-tag.danger {
+    border-color: var(--hacker-red);
+    color: var(--hacker-red);
+    background: rgba(239, 68, 68, 0.08);
+}
+.cyber-tag.info {
+    border-color: var(--hacker-blue);
+    color: var(--hacker-blue);
+    background: rgba(0, 229, 255, 0.08);
+}
+
+/* Glowing Pulsing Button for Auto Guided Hack */
+.btn-auto-guided {
+    background: linear-gradient(135deg, #00ff66 0%, #00b347 100%) !important;
+    color: #030a04 !important;
+    border: 1px solid #39ff14 !important;
+    box-shadow: 0 0 18px rgba(0, 255, 102, 0.65), 0 0 30px rgba(0, 255, 102, 0.35);
+    font-weight: 900 !important;
+    animation: pulse-auto 1.8s infinite ease-in-out;
+    letter-spacing: 0.5px;
+}
+@keyframes pulse-auto {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 15px rgba(0, 255, 102, 0.6); }
+    50% { transform: scale(1.03); box-shadow: 0 0 25px rgba(57, 255, 20, 0.9), 0 0 40px rgba(0, 255, 102, 0.5); }
+}
+
+/* 8-Stage Progress Tracker Breadcrumbs */
+.stage-stepper-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 4px;
+    padding: 6px 2px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--hacker-green-dim) #020803;
+}
+.stage-step-item {
+    flex: 1;
+    min-width: 105px;
+    padding: 6px 8px;
+    background: rgba(0, 255, 102, 0.04);
+    border: 1px solid var(--hacker-border-dim);
+    font-size: 0.72rem;
+    text-align: center;
+    position: relative;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.stage-step-item.active {
+    background: rgba(0, 255, 102, 0.2);
+    border-color: var(--hacker-green);
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+    font-weight: bold;
+}
+.stage-step-item.done {
+    background: rgba(0, 255, 102, 0.12);
+    border-color: #00ff66;
+    color: var(--hacker-green);
+}
+.stage-step-item.done::after {
+    content: " ✓";
+    color: #39ff14;
+    font-weight: bold;
+}
+
+/* Interactive Navigation Tabs */
+.cyber-nav-btn {
+    background: transparent;
+    border: 1px solid var(--hacker-border-dim);
+    color: #4ade80;
+    font-family: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 8px 14px;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 15;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-transform: uppercase;
+}
+.cyber-nav-btn:hover {
+    background: rgba(0, 255, 102, 0.15);
+    border-color: var(--hacker-green);
+    color: #fff;
+    box-shadow: 0 0 10px var(--hacker-green-glow);
+}
+.cyber-nav-btn.active {
+    background: var(--hacker-green);
+    border-color: var(--hacker-green);
+    color: #030a04 !important;
+    font-weight: 900;
+    box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
+}
+
+/* Interactive Cyber Buttons */
+.btn-cyber {
+    background: rgba(0, 255, 102, 0.1);
+    border: 1px solid var(--hacker-green);
+    color: var(--hacker-green);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.82rem;
+    padding: 6px 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.15s ease;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 15;
+    border-radius: 0px;
+}
+.btn-cyber:hover:not(:disabled) {
+    background: var(--hacker-green);
+    color: #050a06;
+    box-shadow: 0 0 12px var(--hacker-green-glow);
+}
+.btn-cyber.active {
+    background: var(--hacker-green);
+    color: #030804;
+    font-weight: 800;
+}
+.btn-cyber:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: #335533;
+    color: #447744;
+}
+
+.btn-cyber-amber {
+    border-color: var(--hacker-amber);
+    color: var(--hacker-amber);
+    background: rgba(245, 158, 11, 0.1);
+}
+.btn-cyber-amber:hover:not(:disabled), .btn-cyber-amber.active {
+    background: var(--hacker-amber);
+    color: #000;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+}
+
+.btn-cyber-red {
+    border-color: var(--hacker-red);
+    color: var(--hacker-red);
+    background: rgba(239, 68, 68, 0.1);
+}
+.btn-cyber-red:hover:not(:disabled) {
+    background: var(--hacker-red);
+    color: #fff;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+}
+
+.btn-cyber-blue {
+    border-color: var(--hacker-blue);
+    color: var(--hacker-blue);
+    background: rgba(0, 229, 255, 0.1);
+}
+.btn-cyber-blue:hover:not(:disabled) {
+    background: var(--hacker-blue);
+    color: #000;
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+}
+
+/* Form Controls / Terminal Inputs */
+.cyber-input {
+    background: #020803;
+    border: 1px solid var(--hacker-border-dim);
+    color: var(--hacker-green-bright);
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cyber-input:focus {
+    border-color: var(--hacker-green);
+    box-shadow: 0 0 10px rgba(0, 255, 102, 0.3);
+    color: #ffffff;
+}
+.cyber-input::placeholder {
+    color: rgba(0, 255, 102, 0.35);
+}
+
+/* Terminal Log Display Window */
+.cyber-log-window {
+    background: #010602;
+    border: 1px solid var(--hacker-border-dim);
+    color: var(--hacker-green);
+    font-size: 0.8rem;
+    line-height: 1.45;
+    padding: 10px 14px;
+    height: 150px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--hacker-green-dim) #020803;
+}
+.cyber-log-window::-webkit-scrollbar {
+    width: 6px;
+}
+.cyber-log-window::-webkit-scrollbar-track {
+    background: #020803;
+}
+.cyber-log-window::-webkit-scrollbar-thumb {
+    background: var(--hacker-green-dim);
+}
+
+/* Password Cracker Progress Bar */
+.cyber-progress-track {
+    background: #020a04;
+    border: 1px solid var(--hacker-border-dim);
+    height: 22px;
+    position: relative;
+    overflow: hidden;
+}
+.cyber-progress-fill {
+    background: linear-gradient(90deg, #008f39 0%, #00ff66 100%);
+    height: 100%;
+    width: 0%;
+    transition: width 0.1s linear;
+    box-shadow: 0 0 10px var(--hacker-green-glow);
+}
+.cyber-progress-label {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 0 4px #000;
+    letter-spacing: 1px;
+}
+
+/* Mission Cards */
+.mission-card {
+    background: rgba(0, 255, 102, 0.03);
+    border: 1px solid var(--hacker-border-dim);
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.mission-card:hover {
+    background: rgba(0, 255, 102, 0.1);
+    border-color: var(--hacker-green);
+    transform: translateX(3px);
+}
+.mission-card.active {
+    background: rgba(0, 255, 102, 0.18);
+    border-color: var(--hacker-green);
+    border-left: 5px solid var(--hacker-green);
+    box-shadow: inset 0 0 10px rgba(0, 255, 102, 0.1);
+}
+
+/* Step Guide Card */
+.guide-step-card {
+    background: rgba(0, 255, 102, 0.04);
+    border: 1px solid var(--hacker-border-dim);
+    padding: 12px;
+    border-radius: 6px;
+    height: 100%;
+    text-align: left;
+}
+.guide-step-card .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--hacker-green);
+    color: #000;
+    font-weight: bold;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    margin-bottom: 6px;
+}
+
+/* Simulated Browser Preview in AuditSec Studio */
+.sim-browser {
+    background: #0f172a;
+    border: 2px solid #334155;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.sim-browser-topbar {
+    background: #1e293b;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #334155;
+}
+.sim-dot {
+    width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+}
+.sim-url-bar {
+    background: #090d16;
+    color: #94a3b8;
+    font-size: 0.75rem;
+    padding: 3px 12px;
+    border-radius: 4px;
+    flex-grow: 1;
+}
+
+/* AuditSecd Glitch State */
+.auditSec-glitch-text {
+    text-shadow: 2px 2px #ef4444, -2px -2px #00e5ff;
+    animation: glitch 1.5s infinite;
+}
+@keyframes glitch {
+    0%, 100% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-1px, -1px); }
+    60% { transform: translate(2px, 1px); }
+    80% { transform: translate(1px, -2px); }
+}
+
+/* Interactive Network Canvas */
+#networkCanvas {
+    background: #020603;
+    display: block;
+    width: 100%;
+    height: 380px;
+    cursor: crosshair;
+}
+
+/* Command Shell Terminal */
+.shell-prompt {
+    color: var(--hacker-green-bright);
+    font-weight: 800;
+}
+.shell-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 14px;
+    background: var(--hacker-green);
+    animation: blink-cursor 0.9s infinite;
+    vertical-align: middle;
+    margin-left: 2px;
+}
+@keyframes blink-cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Mobile Quick Bar for commands */
+.quick-chip {
+    background: rgba(0, 255, 102, 0.08);
+    border: 1px solid var(--hacker-border-dim);
+    color: var(--hacker-green);
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+    white-space: nowrap;
+}
+.quick-chip:hover {
+    background: var(--hacker-green);
+    color: #020603;
+}
