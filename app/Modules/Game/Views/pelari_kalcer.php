@@ -46,11 +46,10 @@
 #runnerCanvas {
     width: 100%;
     height: auto;
-    min-height: 280px;
     display: block;
     aspect-ratio: 900 / 340;
     cursor: pointer;
-    object-fit: cover;
+    touch-action: manipulation;
 }
 
 /* HUD Overlay Badges */
@@ -848,7 +847,7 @@ let runnerState = {
     
     // Player Physics
     player: {
-        x: 80,
+        x: 100,
         y: GROUND_Y - 48,
         width: 38,
         height: 48,
