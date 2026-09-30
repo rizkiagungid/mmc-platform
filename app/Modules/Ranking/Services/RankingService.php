@@ -159,7 +159,35 @@ class RankingService extends BaseService
             ];
         }
 
-        // 7. Combine and calculate Total Score for each user
+        // 7. Aggregate Mini Game Plays (+5 pts per game, max 25 pts per day)
+        $gameMap = [];
+        if ($db->tableExists('mini_game_logs')) {
+            $gameQuery = $db->table('mini_game_logs')
+                ->select('user_id, DATE(created_at) as play_date, COUNT(id) as daily_count')
+                ->whereIn('user_id', $userIds)
+                ->where("created_at >= '{$effectiveStartDate}'")
+                ->where("created_at <= '{$endDate}'")
+                ->groupBy('user_id, DATE(created_at)')
+                ->get()
+                ->getResultArray();
+
+            foreach ($gameQuery as $row) {
+                $uid = $row['user_id'];
+                $dailyCount  = (int)($row['daily_count'] ?? 0);
+                $dailyPoints = min(25, $dailyCount * 5); // +5 pts per game, max 25 pts per day
+
+                if (!isset($gameMap[$uid])) {
+                    $gameMap[$uid] = [
+                        'points'     => 0,
+                        'play_count' => 0,
+                    ];
+                }
+                $gameMap[$uid]['points']     += $dailyPoints;
+                $gameMap[$uid]['play_count'] += $dailyCount;
+            }
+        }
+
+        // 8. Combine and calculate Total Score for each user
         $leaderboard = [];
         foreach ($users as $u) {
             $uid = $u['id'];
@@ -169,10 +197,12 @@ class RankingService extends BaseService
             $postData     = $postMap[$uid] ?? ['count' => 0, 'points' => 0];
             $commentData  = $commentMap[$uid] ?? ['count' => 0, 'points' => 0];
             $learningData = $learningMap[$uid] ?? ['reads_count' => 0, 'unique_materials' => 0, 'points' => 0];
+            $gameData     = $gameMap[$uid] ?? ['points' => 0, 'play_count' => 0];
 
             $feedPoints     = $postData['points'] + $commentData['points'];
             $learningPoints = $learningData['points'];
-            $totalPoints    = $attData['points'] + $taskData['points'] + $feedPoints + $learningPoints;
+            $gamePoints     = $gameData['points'];
+            $totalPoints    = $attData['points'] + $taskData['points'] + $feedPoints + $learningPoints + $gamePoints;
 
             $leaderboard[] = [
                 'user_id'               => $uid,
@@ -193,11 +223,13 @@ class RankingService extends BaseService
                 'learning_points'       => $learningPoints,
                 'learning_read_count'   => $learningData['reads_count'],
                 'learning_unique_count' => $learningData['unique_materials'],
+                'game_points'           => $gamePoints,
+                'game_play_count'       => $gameData['play_count'],
                 'total_points'          => $totalPoints,
             ];
         }
 
-        // 8. Sort descending by total_points, then attendance_points, then task_points, then learning_points
+        // 9. Sort descending by total_points, then attendance_points, then task_points, then learning_points, then game_points
         usort($leaderboard, function ($a, $b) {
             if ($b['total_points'] !== $a['total_points']) {
                 return $b['total_points'] <=> $a['total_points'];
@@ -210,6 +242,9 @@ class RankingService extends BaseService
             }
             if ($b['learning_points'] !== $a['learning_points']) {
                 return $b['learning_points'] <=> $a['learning_points'];
+            }
+            if ($b['game_points'] !== $a['game_points']) {
+                return $b['game_points'] <=> $a['game_points'];
             }
             return strcmp($a['full_name'], $b['full_name']);
         });

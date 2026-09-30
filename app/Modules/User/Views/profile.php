@@ -19,7 +19,7 @@
                 <div class="mt-1" style="font-size: 0.7rem;">UUID: <span class="text-danger"><?= esc($user['member_uuid']) ?></span></div>
             </div>
 
-            <!-- Download Options -->
+            <!-- Download & Alumni Options -->
             <div class="mt-3 pt-3 border-top border-secondary border-opacity-25 d-flex flex-column gap-2">
                 <button type="button" class="btn btn-sm btn-outline-light w-100 font-monospace style-tiny" onclick="downloadOnlyQR()">
                     <i class="fa-solid fa-qrcode me-1 text-info"></i> 1. Download Hanya QR Code (PNG)
@@ -27,6 +27,48 @@
                 <button type="button" class="btn btn-sm btn-red w-100 font-monospace style-tiny fw-bold shadow-sm" onclick="downloadIDCard()">
                     <i class="fa-solid fa-id-card me-1"></i> 2. Download ID Card Digital Anggota MMC (PNG)
                 </button>
+
+                <?php 
+                    $userRoleSlug = strtolower((string)($user['role_slug'] ?? session()->get('role_slug') ?? ''));
+                    $alumniReqStatus = $user['alumni_request_status'] ?? 'none';
+                ?>
+
+                <?php if ($userRoleSlug === 'alumni'): ?>
+                    <div class="p-2 rounded-3 bg-warning bg-opacity-10 border border-warning border-opacity-50 text-warning text-center font-monospace style-tiny fw-bold">
+                        <i class="fa-solid fa-graduation-cap me-1"></i> Status: Alumni Resmi Multimedia Club
+                    </div>
+                <?php elseif ($alumniReqStatus === 'pending'): ?>
+                    <div class="p-2.5 rounded-3 bg-warning bg-opacity-10 border border-warning border-opacity-50 text-start">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="badge bg-warning text-dark font-monospace style-tiny fw-bold">
+                                <i class="fa-solid fa-clock-rotate-left me-1"></i> Pengajuan Alumni Pending
+                            </span>
+                            <?php if (!empty($user['alumni_requested_at'])): ?>
+                                <span class="text-secondary style-tiny font-monospace"><?= date('d/m/Y', strtotime($user['alumni_requested_at'])) ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <p class="text-secondary style-tiny mb-2">Permintaan Anda sedang menunggu persetujuan dari BPH / Super Admin.</p>
+                        <form action="<?= base_url('profile/cancel-alumni-request') ?>" method="POST" onsubmit="return confirm('Batalkan pengajuan menjadi alumni?')">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100 font-monospace style-tiny py-1">
+                                <i class="fa-solid fa-ban me-1"></i> Batalkan Pengajuan
+                            </button>
+                        </form>
+                    </div>
+                <?php else: ?>
+                    <?php if ($alumniReqStatus === 'rejected'): ?>
+                        <div class="p-2 rounded-3 bg-danger bg-opacity-10 border border-danger border-opacity-25 text-start mb-1">
+                            <div class="text-danger style-tiny fw-bold"><i class="fa-solid fa-circle-exclamation me-1"></i> Pengajuan sebelumnya ditolak.</div>
+                            <?php if (!empty($user['alumni_request_notes'])): ?>
+                                <div class="text-secondary style-tiny font-monospace mt-1">Alasan: <?= esc($user['alumni_request_notes']) ?></div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <button type="button" class="btn btn-sm btn-outline-warning w-100 font-monospace style-tiny fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#requestAlumniModal">
+                        <i class="fa-solid fa-graduation-cap me-1"></i> 3. Request Menjadi Alumni
+                    </button>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -285,6 +327,49 @@
                     <i class="fa-solid fa-check me-1"></i> Terapkan & Gunakan Foto
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Request Menjadi Alumni -->
+<div class="modal fade" id="requestAlumniModal" tabindex="-1" aria-labelledby="requestAlumniModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-warning border-opacity-50 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-3 px-4 bg-warning bg-opacity-10">
+                <h5 class="modal-title font-heading fs-6 fw-bold text-white d-flex align-items-center gap-2" id="requestAlumniModalLabel">
+                    <i class="fa-solid fa-graduation-cap text-warning"></i> Pengajuan Menjadi Alumni Club
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= base_url('profile/request-alumni') ?>" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body p-4">
+                    <div class="d-flex align-items-start gap-3 p-3 rounded-3 bg-black bg-opacity-50 border border-secondary border-opacity-25 mb-3">
+                        <div class="rounded-circle p-2 bg-warning bg-opacity-25 text-warning fs-5">
+                            <i class="fa-solid fa-circle-info"></i>
+                        </div>
+                        <div class="style-tiny text-secondary leading-relaxed">
+                            Pengajuan status <strong class="text-white">Alumni</strong> ini akan diverifikasi dan disetujui (ACC) oleh <strong class="text-warning">Pengurus BPH / Super Admin</strong>. Setelah disetujui, hak akses dan status peran Anda di sistem otomatis berubah menjadi Alumni Multimedia Club.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label text-white small fw-bold">
+                            Catatan / Info Kelulusan <span class="text-secondary opacity-75 fw-normal">(Opsional)</span>
+                        </label>
+                        <textarea name="notes" class="form-control bg-black text-white border-secondary border-opacity-50 font-monospace style-tiny" rows="3" placeholder="Contoh: Telah lulus angkatan 2025 / Melanjutkan kuliah di Universitas X..."></textarea>
+                        <div class="form-text text-secondary style-tiny">Tambahkan keterangan kelulusan atau pesan singkat untuk pengurus BPH.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25 py-2 px-4 justify-content-between">
+                    <button type="button" class="btn btn-sm btn-saas-dark text-secondary font-monospace" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-warning text-dark font-monospace fw-bold px-3 shadow">
+                        <i class="fa-solid fa-paper-plane me-1"></i> Kirim Pengajuan Alumni
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

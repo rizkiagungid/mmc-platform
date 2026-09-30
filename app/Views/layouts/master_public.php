@@ -47,7 +47,7 @@
 
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-saas sticky-top">
-        <div class="container">
+        <div class="container-fluid px-3 px-lg-4 px-xl-5">
             <a class="navbar-brand d-flex align-items-center gap-2 font-heading" href="<?= base_url('/') ?>">
                 <img src="<?= (strpos(get_setting('site_logo', 'assets/logo-mm-2023.png'), 'http') === 0) ? esc(get_setting('site_logo', 'assets/logo-mm-2023.png')) : base_url(get_setting('site_logo', 'assets/logo-mm-2023.png')) ?>" alt="Logo" style="height: 38px;" class="rounded-2 p-1 bg-white flex-shrink-0">
                 <span class="fs-6 fs-sm-5 fw-bold text-truncate navbar-title-text"><?= esc(get_setting('site_title', 'Multimedia Club SMAN 1 Tamansari')) ?></span>
@@ -58,15 +58,89 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarPublic">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-lg-2">
-                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('/')) ? 'active fw-bold' : '' ?>" href="<?= base_url('/') ?>">Home</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('about*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('about') ?>">Tentang</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('learning-path*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('learning-path') ?>">Learning Path</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('materi*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('materi') ?>">Materi</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('portfolio*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('portfolio') ?>">Portofolio</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('achievements*') || url_is('prestasi*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('achievements') ?>">Prestasi</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('gallery*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('gallery') ?>">Galeri</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 <?= (url_is('faq*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('faq') ?>">FAQ</a></li>
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1 gap-xl-2 align-items-lg-center">
+                    <li class="nav-item">
+                        <a class="nav-link px-2 px-xl-3 text-nowrap <?= (url_is('/')) ? 'active fw-bold' : '' ?>" href="<?= base_url('/') ?>">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-2 px-xl-3 text-nowrap <?= (url_is('about*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('about') ?>">Tentang</a>
+                    </li>
+
+                    <!-- Dropdown: Pembelajaran -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-2 px-xl-3 text-nowrap <?= (url_is('learning-path*') || url_is('materi*')) ? 'active fw-bold' : '' ?>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Pembelajaran
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark shadow-lg border border-secondary border-opacity-50 p-2" style="min-width: 240px;">
+                            <li>
+                                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 <?= (url_is('learning-path*')) ? 'active' : '' ?>" href="<?= base_url('learning-path') ?>">
+                                    <i class="fa-solid fa-graduation-cap text-info fa-fw"></i>
+                                    <div>
+                                        <div class="fw-semibold small">Learning Path</div>
+                                        <div class="text-secondary style-tiny">Divisi & Kurikulum Silabus</div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 <?= (url_is('materi*')) ? 'active' : '' ?>" href="<?= base_url('materi') ?>">
+                                    <i class="fa-solid fa-book-bookmark text-danger fa-fw"></i>
+                                    <div>
+                                        <div class="fw-semibold small">Materi & Modul</div>
+                                        <div class="text-secondary style-tiny">Pusat Tutorial Digital</div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- Mini Game Direct Nav Link with Glow Badge -->
+                    <li class="nav-item">
+                        <a class="nav-link px-2 px-xl-3 text-nowrap d-inline-flex align-items-center gap-1.5 <?= (url_is('mini-game*') || url_is('games*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('mini-game') ?>">
+                            <i class="fa-solid fa-gamepad text-danger"></i>
+                            <span>Mini Game</span>
+                            <span class="badge bg-danger text-white style-tiny font-monospace px-1.5 py-0.5 rounded-pill">New</span>
+                        </a>
+                    </li>
+
+                    <!-- Dropdown: Karya & Prestasi -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle px-2 px-xl-3 text-nowrap <?= (url_is('portfolio*') || url_is('achievements*') || url_is('prestasi*') || url_is('gallery*')) ? 'active fw-bold' : '' ?>" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Karya & Prestasi
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark shadow-lg border border-secondary border-opacity-50 p-2" style="min-width: 250px;">
+                            <li>
+                                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 <?= (url_is('portfolio*')) ? 'active' : '' ?>" href="<?= base_url('portfolio') ?>">
+                                    <i class="fa-solid fa-film text-primary fa-fw"></i>
+                                    <div>
+                                        <div class="fw-semibold small">Portofolio Karya</div>
+                                        <div class="text-secondary style-tiny">Showcase Hasil Karya Member</div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 <?= (url_is('achievements*') || url_is('prestasi*')) ? 'active' : '' ?>" href="<?= base_url('achievements') ?>">
+                                    <i class="fa-solid fa-trophy text-warning fa-fw"></i>
+                                    <div>
+                                        <div class="fw-semibold small">Prestasi Juara</div>
+                                        <div class="text-secondary style-tiny">Rekam Jejak & Piala Lomba</div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item rounded-2 py-2 d-flex align-items-center gap-2 <?= (url_is('gallery*')) ? 'active' : '' ?>" href="<?= base_url('gallery') ?>">
+                                    <i class="fa-solid fa-camera-retro text-success fa-fw"></i>
+                                    <div>
+                                        <div class="fw-semibold small">Galeri Kegiatan</div>
+                                        <div class="text-secondary style-tiny">Dokumentasi Event & Hunting</div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link px-2 px-xl-3 text-nowrap <?= (url_is('faq*')) ? 'active fw-bold' : '' ?>" href="<?= base_url('faq') ?>">FAQ</a>
+                    </li>
                 </ul>
 
                 <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
@@ -128,6 +202,7 @@
                     <ul class="list-unstyled text-secondary small d-flex flex-column gap-2">
                         <li><a href="<?= base_url('about') ?>" class="text-secondary">Tentang Klub</a></li>
                         <li><a href="<?= base_url('learning-path') ?>" class="text-secondary">Divisi & Kurikulum</a></li>
+                        <li><a href="<?= base_url('mini-game') ?>" class="text-secondary"><i class="fa-solid fa-gamepad text-danger me-1"></i> Mini Game Simulator</a></li>
                         <li><a href="<?= base_url('portfolio') ?>" class="text-secondary">Portofolio Karya</a></li>
                         <li><a href="<?= base_url('achievements') ?>" class="text-secondary">Prestasi & Tim Juara</a></li>
                         <li><a href="<?= base_url('gallery') ?>" class="text-secondary">Galeri Kegiatan</a></li>

@@ -33,20 +33,22 @@ class UserController extends BaseController
 
     public function index()
     {
-        $keyword    = trim($this->request->getGet('keyword') ?? '');
-        $roleId     = $this->request->getGet('role_id') ? (int)$this->request->getGet('role_id') : null;
-        $classGrade = trim($this->request->getGet('class_grade') ?? '');
-        $classRoom  = trim($this->request->getGet('class_room') ?? '');
-        $division   = trim($this->request->getGet('division') ?? '');
-        $status     = trim($this->request->getGet('status') ?? '');
-        $hasAvatar  = $this->request->getGet('has_avatar');
+        $keyword       = trim($this->request->getGet('keyword') ?? '');
+        $roleId        = $this->request->getGet('role_id') ? (int)$this->request->getGet('role_id') : null;
+        $classGrade    = trim($this->request->getGet('class_grade') ?? '');
+        $classRoom     = trim($this->request->getGet('class_room') ?? '');
+        $division      = trim($this->request->getGet('division') ?? '');
+        $status        = trim($this->request->getGet('status') ?? '');
+        $hasAvatar     = $this->request->getGet('has_avatar');
+        $alumniRequest = trim($this->request->getGet('alumni_request') ?? '');
 
         $filters = [
-            'class_grade' => $classGrade,
-            'class_room'  => $classRoom,
-            'division'    => $division,
-            'status'      => $status,
-            'has_avatar'  => $hasAvatar,
+            'class_grade'    => $classGrade,
+            'class_room'     => $classRoom,
+            'division'       => $division,
+            'status'         => $status,
+            'has_avatar'     => $hasAvatar,
+            'alumni_request' => $alumniRequest,
         ];
 
         $users = $this->userService->getAllUsers($roleId, $keyword, $filters);
@@ -54,17 +56,18 @@ class UserController extends BaseController
         $stats = $this->userService->getMemberStats();
 
         return view('App\Modules\User\Views\index', [
-            'title'      => 'Manajemen Pengguna & Anggota - Admin CMS',
-            'users'      => $users,
-            'roles'      => $roles,
-            'stats'      => $stats,
-            'keyword'    => $keyword,
-            'roleId'     => $roleId,
-            'classGrade' => $classGrade,
-            'classRoom'  => $classRoom,
-            'division'   => $division,
-            'status'     => $status,
-            'hasAvatar'  => $hasAvatar,
+            'title'         => 'Manajemen Pengguna & Anggota - Admin CMS',
+            'users'         => $users,
+            'roles'         => $roles,
+            'stats'         => $stats,
+            'keyword'       => $keyword,
+            'roleId'        => $roleId,
+            'classGrade'    => $classGrade,
+            'classRoom'     => $classRoom,
+            'division'      => $division,
+            'status'        => $status,
+            'hasAvatar'     => $hasAvatar,
+            'alumniRequest' => $alumniRequest,
         ]);
     }
 
@@ -73,22 +76,24 @@ class UserController extends BaseController
         $scope     = $this->request->getPost('export_scope') ?? 'all';
         $columns   = $this->request->getPost('columns') ?? [];
 
-        $keyword    = trim($this->request->getPost('keyword') ?? $this->request->getGet('keyword') ?? '');
-        $roleId     = $this->request->getPost('role_id') ? (int)$this->request->getPost('role_id') : ($this->request->getGet('role_id') ? (int)$this->request->getGet('role_id') : null);
-        $classGrade = trim($this->request->getPost('class_grade') ?? $this->request->getGet('class_grade') ?? '');
-        $classRoom  = trim($this->request->getPost('class_room') ?? $this->request->getGet('class_room') ?? '');
-        $division   = trim($this->request->getPost('division') ?? $this->request->getGet('division') ?? '');
-        $status     = trim($this->request->getPost('status') ?? $this->request->getGet('status') ?? '');
-        $hasAvatar  = $this->request->getPost('has_avatar') ?? $this->request->getGet('has_avatar');
+        $keyword       = trim($this->request->getPost('keyword') ?? $this->request->getGet('keyword') ?? '');
+        $roleId        = $this->request->getPost('role_id') ? (int)$this->request->getPost('role_id') : ($this->request->getGet('role_id') ? (int)$this->request->getGet('role_id') : null);
+        $classGrade    = trim($this->request->getPost('class_grade') ?? $this->request->getGet('class_grade') ?? '');
+        $classRoom     = trim($this->request->getPost('class_room') ?? $this->request->getGet('class_room') ?? '');
+        $division      = trim($this->request->getPost('division') ?? $this->request->getGet('division') ?? '');
+        $status        = trim($this->request->getPost('status') ?? $this->request->getGet('status') ?? '');
+        $hasAvatar     = $this->request->getPost('has_avatar') ?? $this->request->getGet('has_avatar');
+        $alumniRequest = trim($this->request->getPost('alumni_request') ?? $this->request->getGet('alumni_request') ?? '');
 
         $filters = [];
         if ($scope === 'filtered') {
             $filters = [
-                'class_grade' => $classGrade,
-                'class_room'  => $classRoom,
-                'division'    => $division,
-                'status'      => $status,
-                'has_avatar'  => $hasAvatar,
+                'class_grade'    => $classGrade,
+                'class_room'     => $classRoom,
+                'division'       => $division,
+                'status'         => $status,
+                'has_avatar'     => $hasAvatar,
+                'alumni_request' => $alumniRequest,
             ];
         }
 
@@ -487,5 +492,68 @@ class UserController extends BaseController
         }
 
         return redirect()->to('/admin/users')->with('success', $result['body']['message']);
+    }
+
+    /**
+     * Member self-requests alumni status
+     */
+    public function requestAlumni()
+    {
+        $userId = session()->get('user_id');
+        $notes  = $this->request->getPost('notes');
+
+        $result = $this->userService->requestAlumniStatus((int)$userId, $notes);
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    /**
+     * Member cancels their pending alumni request
+     */
+    public function cancelAlumniRequest()
+    {
+        $userId = session()->get('user_id');
+        $result = $this->userService->cancelAlumniRequest((int)$userId);
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    /**
+     * Admin/BPH approves an alumni request
+     */
+    public function approveAlumni($id)
+    {
+        $actorId = session()->get('user_id');
+        $result  = $this->userService->approveAlumniRequest((int)$id, (int)$actorId);
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
+    }
+
+    /**
+     * Admin/BPH rejects an alumni request
+     */
+    public function rejectAlumni($id)
+    {
+        $actorId = session()->get('user_id');
+        $reason  = $this->request->getPost('reason') ?? $this->request->getGet('reason');
+        $result  = $this->userService->rejectAlumniRequest((int)$id, (int)$actorId, $reason);
+
+        if ($result['body']['status'] !== 'success') {
+            return redirect()->back()->with('error', $result['body']['message']);
+        }
+
+        return redirect()->back()->with('success', $result['body']['message']);
     }
 }

@@ -7,6 +7,8 @@ use CodeIgniter\Router\RouteCollection;
 $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('profile', '\App\Modules\User\Controllers\UserController::profile');
     $routes->post('profile', '\App\Modules\User\Controllers\UserController::updateProfile');
+    $routes->post('profile/request-alumni', '\App\Modules\User\Controllers\UserController::requestAlumni');
+    $routes->post('profile/cancel-alumni-request', '\App\Modules\User\Controllers\UserController::cancelAlumniRequest');
 });
 
 $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], static function ($routes) {
@@ -18,6 +20,11 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
     $routes->get('users/delete/(:num)', '\App\Modules\User\Controllers\UserController::delete/$1');
     $routes->get('users/regenerate-qr/(:num)', '\App\Modules\User\Controllers\UserController::regenerateQr/$1');
     $routes->get('users/qr/(:segment)', '\App\Modules\User\Controllers\UserController::showQr/$1');
+    $routes->get('users/approve-alumni/(:num)', '\App\Modules\User\Controllers\UserController::approveAlumni/$1');
+    $routes->post('users/approve-alumni/(:num)', '\App\Modules\User\Controllers\UserController::approveAlumni/$1');
+    $routes->get('users/reject-alumni/(:num)', '\App\Modules\User\Controllers\UserController::rejectAlumni/$1');
+    $routes->post('users/reject-alumni/(:num)', '\App\Modules\User\Controllers\UserController::rejectAlumni/$1');
     $routes->post('users/bulk-update', '\App\Modules\User\Controllers\UserController::bulkUpdate');
     $routes->post('users/bulk-action', '\App\Modules\User\Controllers\UserController::bulkAction');
 });
+

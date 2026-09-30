@@ -17,6 +17,24 @@
     </div>
 </div>
 
+<!-- Pending Alumni Request Notification Banner -->
+<?php if (!empty($stats['pending_alumni_count']) && $stats['pending_alumni_count'] > 0): ?>
+    <div class="alert alert-warning border border-warning border-opacity-50 bg-warning bg-opacity-10 text-white p-3 rounded-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="p-2.5 bg-warning bg-opacity-25 text-warning rounded-circle fs-4 flex-shrink-0">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+                <div class="fw-bold text-warning fs-6">Ada <?= (int)$stats['pending_alumni_count'] ?> Pengajuan Menjadi Alumni Menunggu Persetujuan!</div>
+                <div class="style-tiny text-secondary mt-0.5">Tinjau dan setujui (ACC) permintaan anggota yang telah lulus untuk otomatis dialihkan menjadi role Alumni.</div>
+            </div>
+        </div>
+        <a href="<?= base_url('admin/users?alumni_request=pending') ?>" class="btn btn-sm btn-warning text-dark font-monospace fw-bold px-3">
+            <i class="fa-solid fa-list-check me-1"></i> Tinjau Pengajuan Pending (<?= (int)$stats['pending_alumni_count'] ?>)
+        </a>
+    </div>
+<?php endif; ?>
+
 <!-- Division & Member Stats Cards -->
 <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-xl-7 g-3 mb-4">
     <!-- Card 1: Total Akun Terdaftar (Semua Role) -->
@@ -196,6 +214,17 @@
                 </select>
             </div>
 
+            <!-- Filter Pengajuan Alumni -->
+            <div class="col-md-6 col-lg-3">
+                <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-graduation-cap text-warning me-1"></i> Request Alumni</label>
+                <select name="alumni_request" class="form-select bg-black text-white border-secondary border-opacity-25">
+                    <option value="">-- Semua Status Request --</option>
+                    <option value="pending" <?= (isset($alumniRequest) && $alumniRequest === 'pending') ? 'selected' : '' ?>>⏳ Menunggu ACC (Pending)</option>
+                    <option value="approved" <?= (isset($alumniRequest) && $alumniRequest === 'approved') ? 'selected' : '' ?>>✅ Disetujui (Approved)</option>
+                    <option value="rejected" <?= (isset($alumniRequest) && $alumniRequest === 'rejected') ? 'selected' : '' ?>>❌ Ditolak (Rejected)</option>
+                </select>
+            </div>
+
             <!-- Filter Avatar / Foto Profil -->
             <div class="col-md-6 col-lg-3">
                 <label class="form-label text-secondary style-tiny fw-medium mb-1"><i class="fa-solid fa-image me-1"></i> Foto Profil</label>
@@ -207,13 +236,13 @@
             </div>
 
             <!-- Filter Buttons -->
-            <div class="col-md-12 col-lg-6 d-flex align-items-end gap-2">
-                <button type="submit" class="btn btn-red px-4 fw-semibold">
-                    <i class="fa-solid fa-filter me-1"></i> Terapkan Filter
+            <div class="col-md-6 col-lg-3 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-red px-4 fw-semibold w-100">
+                    <i class="fa-solid fa-filter me-1"></i> Filter
                 </button>
-                <?php if (!empty($keyword) || !empty($roleId) || !empty($classGrade) || !empty($classRoom) || !empty($division) || !empty($status) || (isset($hasAvatar) && $hasAvatar !== null && $hasAvatar !== '')): ?>
+                <?php if (!empty($keyword) || !empty($roleId) || !empty($classGrade) || !empty($classRoom) || !empty($division) || !empty($status) || !empty($alumniRequest) || (isset($hasAvatar) && $hasAvatar !== null && $hasAvatar !== '')): ?>
                     <a href="<?= base_url('admin/users') ?>" class="btn btn-saas-dark px-3" title="Reset Semua Filter">
-                        <i class="fa-solid fa-rotate-left me-1"></i> Reset Filter
+                        <i class="fa-solid fa-rotate-left"></i>
                     </a>
                 <?php endif; ?>
             </div>
@@ -229,7 +258,10 @@
             <small class="text-secondary">Pilih aksi massal yang ingin diterapkan pada anggota terpilih:</small>
         </div>
         <div class="d-flex gap-2 flex-wrap">
-            <button type="button" class="btn btn-warning btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#bulkEditModal">
+            <button type="button" class="btn btn-warning btn-sm fw-bold text-dark" id="btn-bulk-approve-alumni">
+                <i class="fa-solid fa-graduation-cap me-1"></i> ACC Alumni Massal
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#bulkEditModal">
                 <i class="fa-solid fa-pen-to-square me-1"></i> Edit Data Massal
             </button>
             <button type="button" class="btn btn-info btn-sm text-white fw-bold" id="btn-bulk-qr">
@@ -272,7 +304,14 @@
                             <div class="d-flex align-items-center gap-3">
                                 <img src="<?= avatar_url($u['avatar'], $u['full_name']) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-danger border-opacity-50 shadow-sm" style="width: 40px; height: 40px; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'" data-bs-toggle="modal" data-bs-target="#userAvatarModal-<?= $u['id'] ?>" title="Klik untuk lihat foto full" onerror="this.onerror=null; this.src='<?= base_url('media/avatar?name=' . urlencode($u['full_name'])) ?>';">
                                 <div>
-                                    <div class="fw-semibold text-white"><?= esc($u['full_name']) ?></div>
+                                    <div class="fw-semibold text-white d-flex align-items-center gap-2 flex-wrap">
+                                        <?= esc($u['full_name']) ?>
+                                        <?php if (!empty($u['alumni_request_status']) && $u['alumni_request_status'] === 'pending'): ?>
+                                            <span class="badge bg-warning text-dark font-monospace style-tiny py-0.5 px-1.5 rounded-pill shadow-sm" title="Catatan: <?= esc($u['alumni_request_notes'] ?? 'Tanpa catatan') ?>">
+                                                <i class="fa-solid fa-graduation-cap me-1"></i> Req Alumni
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                     <small class="text-secondary font-monospace">@<?= esc($u['username']) ?> | <?= esc($u['email']) ?></small>
                                 </div>
                             </div>
@@ -339,6 +378,11 @@
                         </td>
                         <td class="text-end">
                             <div class="d-flex justify-content-end align-items-center gap-1">
+                                <?php if (!empty($u['alumni_request_status']) && $u['alumni_request_status'] === 'pending'): ?>
+                                    <a href="<?= base_url('admin/users/approve-alumni/' . $u['id']) ?>" class="btn btn-sm btn-warning text-dark px-2 py-1 style-tiny font-monospace fw-bold" onclick="return confirm('ACC dan ubah role <?= esc($u['full_name']) ?> menjadi Alumni?')" title="ACC Menjadi Alumni">
+                                        <i class="fa-solid fa-check me-1"></i> ACC Alumni
+                                    </a>
+                                <?php endif; ?>
                                 <?php if ($u['status'] === 'inactive'): ?>
                                     <a href="<?= base_url('admin/users/activate/' . $u['id']) ?>" class="btn btn-sm btn-success px-2 py-1 style-tiny font-monospace" onclick="return confirm('Konfirmasi dan aktifkan akun pendaftar <?= esc($u['full_name']) ?>?')" title="Konfirmasi & Aktifkan Akun">
                                         <i class="fa-solid fa-user-check me-1"></i> Aktifkan
@@ -349,6 +393,11 @@
                                         Pilihan
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border border-secondary border-opacity-50">
+                                        <?php if (!empty($u['alumni_request_status']) && $u['alumni_request_status'] === 'pending'): ?>
+                                            <li><a class="dropdown-item text-warning fw-bold" href="<?= base_url('admin/users/approve-alumni/' . $u['id']) ?>" onclick="return confirm('Setujui pengajuan alumni dan ubah role menjadi Alumni?')"><i class="fa-solid fa-graduation-cap me-2"></i> ACC Request Alumni</a></li>
+                                            <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="rejectAlumniPrompt(<?= $u['id'] ?>, '<?= esc(addslashes($u['full_name'])) ?>')"><i class="fa-solid fa-ban me-2"></i> Tolak Request Alumni</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                        <?php endif; ?>
                                         <?php if ($u['status'] === 'inactive'): ?>
                                             <li><a class="dropdown-item text-success fw-bold" href="<?= base_url('admin/users/activate/' . $u['id']) ?>" onclick="return confirm('Konfirmasi dan aktifkan akun pendaftar <?= esc($u['full_name']) ?>?')"><i class="fa-solid fa-user-check me-2"></i> Konfirmasi & Aktifkan Akun</a></li>
                                             <li><hr class="dropdown-divider"></li>
@@ -589,6 +638,10 @@
         }
 
         // Bulk Action Handlers
+        $('#btn-bulk-approve-alumni').on('click', function() {
+            submitBulkAction('approve_alumni', 'ACC Alumni Massal?', 'Apakah Anda yakin ingin menyetujui pengajuan {count} anggota terpilih menjadi Alumni (Role Alumni)?', 'Ya, ACC Semua', '#eab308');
+        });
+
         $('#btn-bulk-activate').on('click', function() {
             submitBulkAction('activate', 'Aktifkan Akun Massal?', 'Apakah Anda yakin ingin mengkonfirmasi dan mengaktifkan {count} akun anggota terpilih?', 'Ya, Aktifkan Semua', '#16a34a');
         });
@@ -609,6 +662,34 @@
             $('.export-col-chk').prop('checked', false);
         });
     });
+
+    function rejectAlumniPrompt(userId, userName) {
+        Swal.fire({
+            title: 'Tolak Request Alumni?',
+            text: `Tolak permohonan status alumni untuk "${userName}"? Anda dapat memberikan catatan alasan penolakan di bawah:`,
+            input: 'textarea',
+            inputPlaceholder: 'Tulis alasan penolakan (opsional, contoh: Belum menyelesaikan administrasi/tugas)...',
+            inputAttributes: {
+                'aria-label': 'Alasan penolakan'
+            },
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#27272a',
+            confirmButtonText: 'Ya, Tolak Request',
+            cancelButtonText: 'Batal',
+            background: '#121218',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = $('<form action="<?= base_url("admin/users/reject-alumni") ?>/' + userId + '" method="POST"></form>');
+                form.append('<?= csrf_field() ?>');
+                form.append($('<input type="hidden" name="notes">').val(result.value || ''));
+                $('body').append(form);
+                form.submit();
+            }
+        });
+    }
 </script>
 
 <!-- Modal Export Data CSV / Excel -->
@@ -626,6 +707,7 @@
                 <input type="hidden" name="division" value="<?= esc($division ?? '') ?>">
                 <input type="hidden" name="status" value="<?= esc($status ?? '') ?>">
                 <input type="hidden" name="has_avatar" value="<?= esc($hasAvatar ?? '') ?>">
+                <input type="hidden" name="alumni_request" value="<?= esc($alumniRequest ?? '') ?>">
 
                 <div class="modal-header border-bottom border-secondary border-opacity-25">
                     <h5 class="modal-title font-heading"><i class="fa-solid fa-file-csv text-success me-2"></i> Export Data Anggota & Pengguna (CSV / Excel)</h5>

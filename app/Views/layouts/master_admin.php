@@ -140,6 +140,11 @@
                         <i class="fa-solid fa-comments text-info me-1"></i> Kritik & Saran
                     </a>
 
+                    <a href="<?= base_url('mini-game') ?>" class="sidebar-link <?= (url_is('mini-game*') || url_is('games*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-gamepad text-warning me-1"></i> Mini Game Simulator
+                        <span class="badge bg-danger text-white font-monospace style-tiny ms-auto fw-bold">New</span>
+                    </a>
+
                     <?php if (in_array(session()->get('role_slug'), ['superadmin', 'pembina', 'bph'])): ?>
                         <div class="px-2 mt-3 mb-2">
                             <span class="text-uppercase text-secondary font-monospace fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.1em;">SISTEM</span>
@@ -192,6 +197,11 @@
                         <?php if (in_array('learning', $navDisabledPages)): ?>
                             <span class="badge bg-secondary bg-opacity-25 text-secondary border border-secondary style-tiny ms-auto">Off</span>
                         <?php endif; ?>
+                    </a>
+
+                    <a href="<?= base_url('mini-game') ?>" class="sidebar-link <?= (url_is('mini-game*') || url_is('games*')) ? 'active' : '' ?>">
+                        <i class="fa-solid fa-gamepad text-warning me-1"></i> Mini Game Simulator
+                        <span class="badge bg-danger text-white font-monospace style-tiny ms-auto fw-bold">New</span>
                     </a>
 
                     <a href="<?= base_url('admin/cms/messages') ?>" class="sidebar-link <?= (url_is('admin/cms/messages*')) ? 'active' : '' ?>">

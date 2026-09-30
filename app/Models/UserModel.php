@@ -32,6 +32,9 @@ class UserModel extends Model
         'qr_version',
         'qr_updated_at',
         'status',
+        'alumni_request_status',
+        'alumni_requested_at',
+        'alumni_request_notes',
     ];
     protected $useTimestamps    = true;
     protected $createdField     = 'created_at';
@@ -65,6 +68,10 @@ class UserModel extends Model
 
         if (!empty($filters['status'])) {
             $builder->where('users.status', $filters['status']);
+        }
+
+        if (!empty($filters['alumni_request'])) {
+            $builder->where('users.alumni_request_status', $filters['alumni_request']);
         }
 
         if (!empty($filters['class_grade'])) {

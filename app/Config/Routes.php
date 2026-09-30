@@ -129,7 +129,7 @@ $routes->group('admin', ['filter' => ['auth', 'role:superadmin,pembina,bph']], s
 });
 
 // Load Modular Routes
-$modules = ['Auth', 'User', 'Meeting', 'Attendance', 'Task', 'Cms', 'Learning', 'System', 'Notification', 'Chat', 'Feed', 'Information'];
+$modules = ['Auth', 'User', 'Meeting', 'Attendance', 'Task', 'Cms', 'Learning', 'Game', 'System', 'Notification', 'Chat', 'Feed', 'Information'];
 foreach ($modules as $module) {
     $routeFile = APPPATH . 'Modules/' . $module . '/Config/Routes.php';
     if (file_exists($routeFile)) {

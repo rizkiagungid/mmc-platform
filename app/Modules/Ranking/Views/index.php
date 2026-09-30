@@ -133,6 +133,9 @@
                         <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25 px-2.5 py-1.5 rounded-3">
                             <i class="fa-solid fa-book-open-reader text-danger me-1"></i> Belajar: <?= $myRank['learning_points'] ?> Pts
                         </span>
+                        <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25 px-2.5 py-1.5 rounded-3">
+                            <i class="fa-solid fa-gamepad text-primary me-1"></i> Games: <?= $myRank['game_points'] ?? 0 ?> Pts
+                        </span>
                     </div>
                 </div>
             </div>
@@ -144,7 +147,7 @@
             <i class="fa-solid fa-trophy display-1 text-secondary opacity-25 mb-3"></i>
             <h5 class="text-white font-heading">Belum Ada Catatan Keaktifan</h5>
             <p class="text-secondary style-tiny max-w-md mx-auto">
-                Belum ada aktivitas presensi, tugas, interaksi beranda, atau belajar materi yang tercatat pada periode <?= esc($monthName) ?> <?= esc($selectedYear) ?>.
+                Belum ada aktivitas presensi, tugas, interaksi beranda, belajar materi, atau mini games yang tercatat pada periode <?= esc($monthName) ?> <?= esc($selectedYear) ?>.
             </p>
         </div>
     <?php else: ?>
@@ -191,6 +194,7 @@
                             <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25" title="Poin Tugas"><i class="fa-solid fa-list-check text-info me-1"></i><?= $rank2['task_points'] ?></span>
                             <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25" title="Poin Beranda Feed"><i class="fa-solid fa-square-rss text-warning me-1"></i><?= $rank2['feed_points'] ?></span>
                             <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25" title="Poin Materi Belajar"><i class="fa-solid fa-book-open-reader text-danger me-1"></i><?= $rank2['learning_points'] ?></span>
+                            <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25" title="Poin Mini Games"><i class="fa-solid fa-gamepad text-primary me-1"></i><?= $rank2['game_points'] ?? 0 ?></span>
                         </div>
                     </div>
                 </div>
@@ -227,6 +231,7 @@
                             <span class="badge bg-body-secondary text-body border border-info border-opacity-50" title="Poin Tugas"><i class="fa-solid fa-list-check text-info me-1"></i>Tugas: <?= $rank1['task_points'] ?></span>
                             <span class="badge bg-body-secondary text-body border border-warning border-opacity-50" title="Poin Beranda Feed"><i class="fa-solid fa-square-rss text-warning me-1"></i>Feed: <?= $rank1['feed_points'] ?></span>
                             <span class="badge bg-body-secondary text-body border border-danger border-opacity-50" title="Poin Materi Belajar"><i class="fa-solid fa-book-open-reader text-danger me-1"></i>Belajar: <?= $rank1['learning_points'] ?></span>
+                            <span class="badge bg-body-secondary text-body border border-primary border-opacity-50" title="Poin Mini Games"><i class="fa-solid fa-gamepad text-primary me-1"></i>Games: <?= $rank1['game_points'] ?? 0 ?></span>
                         </div>
                     </div>
                 </div>
@@ -263,6 +268,7 @@
                             <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25" title="Poin Tugas"><i class="fa-solid fa-list-check text-info me-1"></i><?= $rank3['task_points'] ?></span>
                             <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25" title="Poin Beranda Feed"><i class="fa-solid fa-square-rss text-warning me-1"></i><?= $rank3['feed_points'] ?></span>
                             <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25" title="Poin Materi Belajar"><i class="fa-solid fa-book-open-reader text-danger me-1"></i><?= $rank3['learning_points'] ?></span>
+                            <span class="badge bg-body-secondary text-body border border-secondary border-opacity-25" title="Poin Mini Games"><i class="fa-solid fa-gamepad text-primary me-1"></i><?= $rank3['game_points'] ?? 0 ?></span>
                         </div>
                     </div>
                 </div>
@@ -293,6 +299,7 @@
                                 <th class="text-center">TUGAS</th>
                                 <th class="text-center">FEED</th>
                                 <th class="text-center">MATERI BELAJAR</th>
+                                <th class="text-center">MINI GAMES</th>
                                 <th class="text-end">TOTAL SKOR</th>
                             </tr>
                         </thead>
@@ -321,19 +328,18 @@
                                     </td>
                                     <td class="text-center font-monospace style-tiny">
                                         <span class="text-success fw-bold"><?= $r['attendance_points'] ?> Pts</span>
-                                        <small class="text-secondary d-block opacity-75">(<?= $r['attendance_count'] ?> Sesi)</small>
                                     </td>
                                     <td class="text-center font-monospace style-tiny">
                                         <span class="text-info fw-bold"><?= $r['task_points'] ?> Pts</span>
-                                        <small class="text-secondary d-block opacity-75">(<?= $r['task_count'] ?> Tugas<?= $r['task_avg_grade'] !== null ? ' • Avg ' . $r['task_avg_grade'] : '' ?>)</small>
                                     </td>
                                     <td class="text-center font-monospace style-tiny">
                                         <span class="text-warning fw-bold"><?= $r['feed_points'] ?> Pts</span>
-                                        <small class="text-secondary d-block opacity-75">(<?= $r['feed_post_count'] ?> Post, <?= $r['feed_comment_count'] ?> Komen)</small>
                                     </td>
                                     <td class="text-center font-monospace style-tiny">
                                         <span class="text-danger fw-bold"><?= $r['learning_points'] ?> Pts</span>
-                                        <small class="text-secondary d-block opacity-75">(<?= $r['learning_unique_count'] ?> Materi)</small>
+                                    </td>
+                                    <td class="text-center font-monospace style-tiny">
+                                        <span class="text-primary fw-bold"><?= $r['game_points'] ?? 0 ?> Pts</span>
                                     </td>
                                     <td class="text-end">
                                         <span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 font-monospace fs-6 px-3 py-1.5 rounded-3 fw-bold">
@@ -364,12 +370,12 @@
             </div>
             <div class="modal-body p-4">
                 <p class="text-secondary small mb-4">
-                    Sistem <strong>Ranking MM</strong> menghitung seluruh kontribusi, kedisiplinan, dan keaktifan Anda secara otomatis setiap bulan (direset setiap awal bulan baru) berdasarkan 4 pilar utama:
+                    Sistem <strong>Ranking MM</strong> menghitung seluruh kontribusi, kedisiplinan, dan keaktifan Anda secara otomatis setiap bulan (direset setiap awal bulan baru) berdasarkan 5 pilar utama:
                 </p>
 
-                <div class="row g-3 mb-4">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 g-3 mb-4">
                     <!-- Rule 1: Absensi -->
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col">
                         <div class="p-3 rounded-3 bg-body-secondary border border-success border-opacity-25 h-100">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <span class="badge bg-success text-white p-2 rounded-2"><i class="fa-solid fa-qrcode fs-6"></i></span>
@@ -385,7 +391,7 @@
                     </div>
 
                     <!-- Rule 2: Tugas -->
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col">
                         <div class="p-3 rounded-3 bg-body-secondary border border-info border-opacity-25 h-100">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <span class="badge bg-info text-dark p-2 rounded-2"><i class="fa-solid fa-list-check fs-6"></i></span>
@@ -399,7 +405,7 @@
                     </div>
 
                     <!-- Rule 3: Feed -->
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col">
                         <div class="p-3 rounded-3 bg-body-secondary border border-warning border-opacity-25 h-100">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <span class="badge bg-warning text-dark p-2 rounded-2"><i class="fa-solid fa-square-rss fs-6"></i></span>
@@ -413,7 +419,7 @@
                     </div>
 
                     <!-- Rule 4: Materi Pembelajaran -->
-                    <div class="col-md-6 col-lg-3">
+                    <div class="col">
                         <div class="p-3 rounded-3 bg-body-secondary border border-danger border-opacity-25 h-100">
                             <div class="d-flex align-items-center gap-2 mb-2">
                                 <span class="badge bg-danger text-white p-2 rounded-2"><i class="fa-solid fa-book-open-reader fs-6"></i></span>
@@ -422,6 +428,20 @@
                             <ul class="text-secondary style-tiny m-0 ps-3 lh-lg">
                                 <li><strong>+5 Poin:</strong> Membaca materi pembelajaran di Learning Center (per materi unik)</li>
                                 <li><strong>Maks 50 Poin/Bln:</strong> Batas maksimal 10 materi berbeda per bulan</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Rule 5: Mini Games & Simulator -->
+                    <div class="col">
+                        <div class="p-3 rounded-3 bg-body-secondary border border-primary border-opacity-25 h-100">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge bg-primary text-white p-2 rounded-2"><i class="fa-solid fa-gamepad fs-6"></i></span>
+                                <strong class="text-white style-tiny font-heading">5. Mini Games</strong>
+                            </div>
+                            <ul class="text-secondary style-tiny m-0 ps-3 lh-lg">
+                                <li><strong>+5 Poin:</strong> Setiap sesi mini game yang diselesaikan / dimainkan</li>
+                                <li><strong>Maks 25 Poin/Hari:</strong> Batas maksimal 5 sesi per hari (25 Pts/hari)</li>
                             </ul>
                         </div>
                     </div>

@@ -130,12 +130,54 @@ a:hover {
 
 .navbar-saas .nav-link {
   color: var(--text-muted) !important;
+  white-space: nowrap !important;
+  font-size: 0.92rem;
+  font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .navbar-saas .nav-link:hover,
 .navbar-saas .nav-link.active {
   color: var(--accent-red) !important;
+}
+
+.navbar-saas .dropdown-menu {
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(16px);
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5);
+  margin-top: 0.5rem;
+}
+
+.navbar-saas .dropdown-item {
+  color: var(--text-main);
+  transition: all 0.15s ease;
+}
+
+.navbar-saas .dropdown-item:hover {
+  background-color: rgba(220, 38, 38, 0.15);
+  color: var(--accent-red);
+}
+
+.navbar-saas .dropdown-item.active {
+  background-color: var(--accent-red);
+  color: #ffffff !important;
+}
+
+[data-bs-theme="light"] .navbar-saas .dropdown-menu {
+  background: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-bs-theme="light"] .navbar-saas .dropdown-item {
+  color: #0f172a !important;
+}
+
+[data-bs-theme="light"] .navbar-saas .dropdown-item:hover {
+  background-color: rgba(220, 38, 38, 0.08) !important;
+  color: #dc2626 !important;
 }
 
 .navbar-saas .navbar-brand span {

@@ -6,19 +6,22 @@ use App\Services\BaseService;
 use App\Models\UserModel;
 use App\Models\RoleModel;
 use App\Models\AuditLogModel;
+use App\Models\NotificationModel;
 
 class UserService extends BaseService
 {
     protected $userModel;
     protected $roleModel;
     protected $auditLogModel;
+    protected $notificationModel;
 
     public function __construct()
     {
         parent::__construct();
-        $this->userModel     = new UserModel();
-        $this->roleModel     = new RoleModel();
-        $this->auditLogModel = new AuditLogModel();
+        $this->userModel         = new UserModel();
+        $this->roleModel         = new RoleModel();
+        $this->auditLogModel     = new AuditLogModel();
+        $this->notificationModel = new NotificationModel();
     }
 
     public function getAllUsers(?int $roleId = null, ?string $keyword = null, array $filters = []): array
@@ -67,14 +70,20 @@ class UserService extends BaseService
                           ->where('users.deleted_at IS NULL')
                           ->countAllResults();
 
+        $pendingAlumniCount = $db->table('users')
+                                 ->where('alumni_request_status', 'pending')
+                                 ->where('deleted_at IS NULL')
+                                 ->countAllResults();
+
         return [
-            'all_users_count'    => $allUsersCount,
-            'total_members'      => $totalMembers,
-            'broadcasting_count' => $broadcastingCount,
-            'programming_count'  => $programmingCount,
-            'bph_count'          => $bphCount,
-            'admin_count'        => $superAdminCount,
-            'alumni_count'       => $alumniCount,
+            'all_users_count'      => $allUsersCount,
+            'total_members'        => $totalMembers,
+            'broadcasting_count'   => $broadcastingCount,
+            'programming_count'    => $programmingCount,
+            'bph_count'            => $bphCount,
+            'admin_count'          => $superAdminCount,
+            'alumni_count'         => $alumniCount,
+            'pending_alumni_count' => $pendingAlumniCount,
         ];
     }
 
@@ -468,6 +477,28 @@ class UserService extends BaseService
                 }
                 $msg = "Berhasil meregenerasi QR Code v baru untuk {$count} anggota terpilih!";
                 $this->auditLogModel->recordLog($operatorId, 'BULK_QR_REGENERATE', "Regenerasi Member QR massal untuk {$count} anggota.");
+            } elseif ($action === 'approve_alumni') {
+                $alumniRole = $this->roleModel->getRoleBySlug('alumni');
+                if (!$alumniRole) {
+                    $this->db->transRollback();
+                    return $this->error('Role Alumni tidak ditemukan di sistem.');
+                }
+                $this->userModel->whereIn('id', $userIds)->set([
+                    'role_id'               => $alumniRole['id'],
+                    'alumni_request_status' => 'approved',
+                ])->update();
+
+                // Notify all approved users
+                $this->notificationModel->notifyUsers(
+                    $userIds,
+                    'Selamat! Pengajuan Status Alumni Disetujui 🎓',
+                    'Pengajuan status Alumni Anda telah disetujui. Akun Anda kini resmi beralih ke role Alumni.',
+                    'alumni_request',
+                    base_url('profile')
+                );
+
+                $msg = "Berhasil menyetujui dan mengubah {$count} akun anggota menjadi Role Alumni!";
+                $this->auditLogModel->recordLog($operatorId, 'BULK_ALUMNI_APPROVE', "Menyetujui status alumni massal untuk {$count} akun.");
             } elseif ($action === 'delete') {
                 $this->userModel->whereIn('id', $userIds)->delete();
                 $msg = "Berhasil menghapus {$count} anggota terpilih dari sistem.";
@@ -482,6 +513,163 @@ class UserService extends BaseService
         } catch (\Throwable $e) {
             $this->db->transRollback();
             return $this->error('Gagal memproses aksi massal: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Member self-requests alumni status
+     */
+    public function requestAlumniStatus(int $userId, ?string $notes = null): array
+    {
+        $user = $this->userModel->select('users.*, roles.slug as role_slug')
+                                ->join('roles', 'roles.id = users.role_id')
+                                ->where('users.id', $userId)
+                                ->first();
+
+        if (!$user) {
+            return $this->error('Pengguna tidak ditemukan.');
+        }
+
+        if (($user['role_slug'] ?? '') === 'alumni') {
+            return $this->error('Akun Anda sudah berstatus sebagai Alumni.');
+        }
+
+        if (($user['alumni_request_status'] ?? '') === 'pending') {
+            return $this->error('Pengajuan status Alumni Anda saat ini sedang dalam proses peninjauan oleh BPH/Superadmin.');
+        }
+
+        $this->beginTransaction();
+        try {
+            $this->userModel->update($userId, [
+                'alumni_request_status' => 'pending',
+                'alumni_requested_at'   => date('Y-m-d H:i:s'),
+                'alumni_request_notes'  => $notes ? trim($notes) : null,
+            ]);
+
+            // Notify Superadmin and BPH
+            $this->notificationModel->notifyRoles(
+                ['superadmin', 'bph'],
+                'Pengajuan Status Alumni Baru 🎓',
+                "Anggota {$user['full_name']} (@{$user['username']}) mengajukan permohonan status menjadi Alumni.",
+                'alumni_request',
+                base_url('admin/users?alumni_request=pending')
+            );
+
+            $this->auditLogModel->recordLog($userId, 'ALUMNI_REQUEST', "Mengajukan permohonan perubahan status keanggotaan menjadi Alumni.");
+
+            $this->commitTransaction();
+            return $this->success('Pengajuan status Alumni Anda berhasil dikirim! Silakan menunggu persetujuan dari BPH atau Superadmin.');
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal mengirim pengajuan alumni: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Member cancels their pending alumni request
+     */
+    public function cancelAlumniRequest(int $userId): array
+    {
+        $user = $this->userModel->find($userId);
+        if (!$user) {
+            return $this->error('Pengguna tidak ditemukan.');
+        }
+
+        if (($user['alumni_request_status'] ?? '') !== 'pending') {
+            return $this->error('Tidak ada pengajuan alumni aktif yang sedang menunggu.');
+        }
+
+        $this->beginTransaction();
+        try {
+            $this->userModel->update($userId, [
+                'alumni_request_status' => 'none',
+                'alumni_requested_at'   => null,
+                'alumni_request_notes'  => null,
+            ]);
+
+            $this->auditLogModel->recordLog($userId, 'ALUMNI_REQUEST_CANCEL', "Membatalkan pengajuan status alumni mandiri.");
+
+            $this->commitTransaction();
+            return $this->success('Pengajuan status Alumni telah dibatalkan.');
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal membatalkan pengajuan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Admin/BPH approves an alumni request
+     */
+    public function approveAlumniRequest(int $targetUserId, int $actorAdminId): array
+    {
+        $user = $this->userModel->find($targetUserId);
+        if (!$user) {
+            return $this->error('Pengguna tidak ditemukan.');
+        }
+
+        $alumniRole = $this->roleModel->getRoleBySlug('alumni');
+        if (!$alumniRole) {
+            return $this->error('Role Alumni tidak ditemukan di sistem.');
+        }
+
+        $this->beginTransaction();
+        try {
+            $this->userModel->update($targetUserId, [
+                'role_id'               => $alumniRole['id'],
+                'alumni_request_status' => 'approved',
+            ]);
+
+            // Notify Target User
+            $this->notificationModel->notifyUser(
+                $targetUserId,
+                'Selamat! Pengajuan Status Alumni Disetujui 🎓',
+                'Pengajuan status Alumni Anda telah disetujui. Akun Anda kini resmi beralih ke role Alumni.',
+                'alumni_request',
+                base_url('profile')
+            );
+
+            $this->auditLogModel->recordLog($actorAdminId, 'ALUMNI_REQUEST_APPROVE', "Menyetujui pengajuan status alumni untuk {$user['full_name']} (ID: {$targetUserId}). Akun beralih ke Role Alumni.");
+
+            $this->commitTransaction();
+            return $this->success("Pengajuan alumni untuk {$user['full_name']} berhasil disetujui. Akun telah beralih ke Role Alumni!");
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal menyetujui pengajuan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Admin/BPH rejects an alumni request
+     */
+    public function rejectAlumniRequest(int $targetUserId, int $actorAdminId, ?string $reason = null): array
+    {
+        $user = $this->userModel->find($targetUserId);
+        if (!$user) {
+            return $this->error('Pengguna tidak ditemukan.');
+        }
+
+        $this->beginTransaction();
+        try {
+            $this->userModel->update($targetUserId, [
+                'alumni_request_status' => 'rejected',
+            ]);
+
+            $reasonMsg = $reason ? " Alasan: {$reason}" : '';
+            $this->notificationModel->notifyUser(
+                $targetUserId,
+                'Pembaruan Pengajuan Status Alumni',
+                "Mohon maaf, pengajuan status Alumni Anda belum dapat disetujui saat ini.{$reasonMsg}",
+                'alumni_request',
+                base_url('profile')
+            );
+
+            $this->auditLogModel->recordLog($actorAdminId, 'ALUMNI_REQUEST_REJECT', "Menolak pengajuan status alumni untuk {$user['full_name']} (ID: {$targetUserId}).");
+
+            $this->commitTransaction();
+            return $this->success("Pengajuan alumni untuk {$user['full_name']} telah ditolak.");
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            return $this->error('Gagal menolak pengajuan: ' . $e->getMessage());
         }
     }
 }
