@@ -15,5 +15,5 @@
     window.MMC_API_RECORD_SCORE = "<?= base_url('mini-game/api/record-score') ?>";
     window.MMC_GAME_HUB_URL = "<?= base_url('mini-game') ?>";
 </script>
-<script src="<?= base_url('assets/js/games/cyber_simulator.js?v=5.0') ?>"></script>
+<script src="<?= base_url('assets/js/cyber_simulator.js?v=5.0') ?>"></script>
 <?= $this->endSection() ?>
