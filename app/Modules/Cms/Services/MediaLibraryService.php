@@ -12,7 +12,7 @@ class MediaLibraryService extends BaseService
                            ->select('media_library.*, users.full_name as uploader_name')
                            ->join('users', 'users.id = media_library.uploaded_by', 'left');
 
-        if ($folder) {
+        if ($folder && $folder !== 'all') {
             $builder->where('media_library.folder', $folder);
         }
 
@@ -24,7 +24,14 @@ class MediaLibraryService extends BaseService
                     ->groupEnd();
         }
 
-        return $builder->orderBy('media_library.created_at', 'DESC')->get()->getResultArray();
+        $items = $builder->orderBy('media_library.created_at', 'DESC')->get()->getResultArray();
+
+        foreach ($items as &$item) {
+            $item['url'] = media_url($item['file_path']);
+        }
+        unset($item);
+
+        return $items;
     }
 
     public function uploadMedia($file, int $uploaderId, ?string $folder = 'general', ?string $alt = null, ?string $caption = null): array
@@ -39,9 +46,10 @@ class MediaLibraryService extends BaseService
         $fileSize     = $file->getSize();
         $newName      = $file->getRandomName();
 
-        $targetFolder = ROOTPATH . 'public/uploads/cms/' . $folder;
+        $basePublic   = defined('FCPATH') ? rtrim(FCPATH, '/\\') : rtrim(ROOTPATH, '/\\') . '/public';
+        $targetFolder = $basePublic . '/uploads/cms/' . $folder;
         if (!is_dir($targetFolder)) {
-            mkdir($targetFolder, 0755, true);
+            @mkdir($targetFolder, 0777, true);
         }
 
         $file->move($targetFolder, $newName);

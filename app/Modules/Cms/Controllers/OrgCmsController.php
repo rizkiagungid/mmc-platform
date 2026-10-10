@@ -8,12 +8,24 @@ class OrgCmsController extends BaseController
 {
     public function index()
     {
+        helper(['media']);
         $db = \Config\Database::connect();
         $structures = $db->table('org_structures')->orderBy('sort_order', 'ASC')->get()->getResultArray();
+
+        $users = $db->table('users')
+            ->select('users.id, users.full_name, users.username, users.email, users.avatar, users.social_instagram, users.social_linkedin, users.class_dept, users.role_id, roles.name as role_name, roles.slug as role_slug')
+            ->join('roles', 'roles.id = users.role_id', 'left')
+            ->where('users.deleted_at IS NULL')
+            ->orderBy("CASE WHEN users.status = 'active' THEN 0 ELSE 1 END", 'ASC', false)
+            ->orderBy('users.role_id', 'ASC')
+            ->orderBy('users.full_name', 'ASC')
+            ->get()
+            ->getResultArray();
 
         return view('App\Modules\Cms\Views\structure\index', [
             'title'      => 'Manajemen Bagan Organisasi & Pengurus',
             'structures' => $structures,
+            'users'      => $users,
         ]);
     }
 
