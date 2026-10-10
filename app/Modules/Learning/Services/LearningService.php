@@ -20,7 +20,7 @@ class LearningService extends BaseService
         parent::__construct();
         $this->materialModel = new LearningMaterialModel();
         $this->tagModel      = new LearningTagModel();
-        $this->revisionModel = new LearningRevisionModel();
+        $this->revisionModel = new LearningRevisionModel(); 
         $this->auditLogModel = new AuditLogModel();
         $this->ensureTablesExist();
     }
